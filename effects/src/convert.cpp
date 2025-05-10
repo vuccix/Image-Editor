@@ -1,7 +1,5 @@
 #include "../effects.h"
 
-using Effects::RGB_IMAGE, Effects::GRAYSCALE, Effects::LUMINANCE, Effects::PIXEL;
-
 GRAYSCALE convert_1D(const RGB_IMAGE& img, const float arr[3]) {
     const int rows = static_cast<int>(img.size());
     const int cols = static_cast<int>(img[0].size());

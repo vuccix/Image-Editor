@@ -68,6 +68,11 @@ bool processImage(const char* input, const char* output, const char* effect) {
     else if (strcmp(effect, "blur") == 0) {
         Effects::blur(image);
     }
+    else if (strcmp(effect, "sobel") == 0) {
+        GRAYSCALE gray = Effects::sobelOperator(image);
+        grayscaleWrite(width, height, gray, output);
+        return true;
+    }
     else if (strcmp(effect, "seam_carving") == 0) {
         int cntW, cntH;
 

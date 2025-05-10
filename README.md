@@ -11,6 +11,7 @@ A lightweight command-line image editor written in C++. This tool allows you to 
 - Rotate 90° (clockwise & counter-clockwise)
 - Seam carving (content-aware resizing)
 - Gaussian blur
+- Edge detection (Sobel operator)
 
 ## How to build
 
@@ -40,6 +41,7 @@ Run the editor from the terminal as follows: `./image_editor <input_image_path> 
 - `rotate`
 - `seam_carving`
 - `blur`
+- `sobel`
 
 ## Dependencies
 

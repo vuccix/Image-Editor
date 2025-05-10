@@ -1,7 +1,5 @@
 #include "../effects.h"
 
-using Effects::RGB_IMAGE, Effects::PIXEL;
-
 void Effects::invert(RGB_IMAGE& img) {
     for (auto& row : img) {
         for (PIXEL& pixel : row) {
@@ -12,7 +10,7 @@ void Effects::invert(RGB_IMAGE& img) {
     }
 }
 
-RGB_IMAGE Effects::rotate90deg(const Effects::RGB_IMAGE &img, bool clockwise) {
+RGB_IMAGE Effects::rotate90deg(const RGB_IMAGE &img, bool clockwise) {
     size_t rows = img.size();
     size_t cols = img[0].size();
 

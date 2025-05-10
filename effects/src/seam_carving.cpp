@@ -4,8 +4,6 @@
 #include <vector>
 #include <limits>
 
-using Effects::RGB_IMAGE, Effects::GRAYSCALE, Effects::PIXEL;
-
 GRAYSCALE sobel(const GRAYSCALE& img, bool axis) {
     static constexpr float dx[3][3] = { { -1.f,  0.f,  1.f }, { -2.f, 0.f, 2.f }, { -1.f, 0.f, 1.f } };
     static constexpr float dy[3][3] = { { -1.f, -2.f, -1.f }, {  0.f, 0.f, 0.f }, {  1.f, 2.f, 1.f } };
@@ -92,7 +90,7 @@ void removeSeam(RGB_IMAGE& img, const std::vector<int>& seam, GRAYSCALE& data) {
     }
 }
 
-void Effects::seam_carving(Effects::RGB_IMAGE &img, const int iterCnt, const bool isAccurate = false) {
+void Effects::seam_carving(RGB_IMAGE &img, const int iterCnt, const bool isAccurate = false) {
     GRAYSCALE imgGray = grayscale(img);
     GRAYSCALE energy  = energyMap(imgGray);
 
@@ -109,4 +107,8 @@ void Effects::seam_carving(Effects::RGB_IMAGE &img, const int iterCnt, const boo
             energy = energyMap(imgGray);
         }
     }
+}
+
+GRAYSCALE Effects::sobelOperator(const RGB_IMAGE& img) {
+    return energyMap(grayscale(img));
 }
