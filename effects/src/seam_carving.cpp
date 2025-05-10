@@ -1,4 +1,5 @@
 #include "../effects.h"
+#include "../../utils/convolution.h"
 #include <cmath>
 #include <vector>
 #include <limits>
@@ -6,32 +7,11 @@
 using Effects::RGB_IMAGE, Effects::GRAYSCALE, Effects::PIXEL;
 
 GRAYSCALE sobel(const GRAYSCALE& img, bool axis) {
-    const int rows = static_cast<int>(img.size());
-    const int cols = static_cast<int>(img[0].size());
-    GRAYSCALE result(rows, std::vector<float>(cols, 0.f));
-
     static constexpr float dx[3][3] = { { -1.f,  0.f,  1.f }, { -2.f, 0.f, 2.f }, { -1.f, 0.f, 1.f } };
     static constexpr float dy[3][3] = { { -1.f, -2.f, -1.f }, {  0.f, 0.f, 0.f }, {  1.f, 2.f, 1.f } };
 
     const auto& kernel = !axis ? dx : dy;
-
-    // convolution
-    for (int i{}; i < rows; ++i) {
-        for (int j{}; j < cols; ++j) {
-            float gradient = 0.f;
-
-            for (int ki = -1; ki < 2; ++ki)
-                for (int kj = -1; kj < 2; ++kj) {
-                    int idX = (i + ki < 0 || i + ki > rows - 1) ? i : i + ki;
-                    int idY = (j + kj < 0 || j + kj > cols - 1) ? j : j + kj;
-                    gradient += kernel[ki + 1][kj + 1] * img[idX][idY];
-                }
-
-            result[i][j] = gradient;
-        }
-    }
-
-    return result;
+    return convolution3x3(img, kernel);
 }
 
 GRAYSCALE energyMap(const GRAYSCALE& img) {

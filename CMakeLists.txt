@@ -13,4 +13,7 @@ add_executable(image_editor main.cpp
         effects/src/simple.cpp
         effects/src/seam_carving.cpp
         libs/src/stb_implementation.cpp
+        effects/src/blur.cpp
+        utils/src/convolution.cpp
+        utils/convolution.h
 )

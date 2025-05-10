@@ -65,6 +65,9 @@ bool processImage(const char* input, const char* output, const char* effect) {
     else if (strcmp(effect, "invert") == 0) {
         Effects::invert(image);
     }
+    else if (strcmp(effect, "blur") == 0) {
+        Effects::blur(image);
+    }
     else if (strcmp(effect, "seam_carving") == 0) {
         int cntW, cntH;
 
