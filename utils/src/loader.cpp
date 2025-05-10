@@ -1,65 +1,23 @@
 #include "../loader.h"
-#include "../../effects/effects.h"
 #include "../../libs/stb_image.h"
 #include "../../libs/stb_image_write.h"
 #include <iostream>
 #include <cstring>
 
-bool processImage(const char* input, const char* output, const char* effect) {
-    // check correct input
-//    if (!Effects::HAS(effect)) {
-//    if (!Effects::AVAILABLE_EFFECTS.contains(effect)) {
-//        std::cerr << "Effect: \"" << effect << "\" not available\n";
-//        return false;
-//    }
+void grayscaleWrite(int width, int height, const GRAYSCALE& image, const char* output) {
+    std::vector<unsigned char> gray_data(width * height);
 
-    // load given image
-    int width, height, channels;
-    unsigned char* data = stbi_load(input, &width, &height, &channels, 0);
-    if (!data) {
-        std::cerr << "Failed to load image\n";
-        return false;
-    }
-
-    using Effects::RGB_IMAGE, Effects::GRAYSCALE;
-    RGB_IMAGE image(height, std::vector<std::array<uint8_t , 3>>(width));
-
-    for (int y{}; y < height; ++y)
+    for (int y{}; y < height; ++y) {
         for (int x{}; x < width; ++x) {
-            int idx = (y * width + x) * channels;
-            image[y][x] = { data[idx], data[idx + 1], data[idx + 2] };
+            int gray = static_cast<int>(image[y][x]);
+            gray_data[y * width + x] = static_cast<unsigned char>(gray);
         }
-
-    stbi_image_free(data);
-
-    if (strcmp(effect, "grayscale") == 0) {
-        GRAYSCALE gray = Effects::grayscale(image);
-    }
-    else if (strcmp(effect, "luminance") == 0) {
-        GRAYSCALE gray = Effects::luminance(image);
-    }
-    else if (strcmp(effect, "sepia") == 0) {
-        Effects::sepia(image);
-    }
-    else if (strcmp(effect, "invert") == 0) {
-        Effects::invert(image);
-    }
-    else if (strcmp(effect, "seam_carving") == 0) {
-        int cnt{};
-        std::cout << "Number of iterations: ";
-        std::cin >> cnt;
-
-        if (std::cin.fail() || cnt < 1) {
-            std::cerr << "Incorrect input!\n";
-            return false;
-        }
-
-        std::cout << "start\n";
-        image = Effects::seam_carving(image, cnt, false);
-        std::cout << "finish\n";
-        width -= cnt;
     }
 
+    stbi_write_png(output, width, height, 1, gray_data.data(), width);
+}
+
+void rgbWrite(int width, int height, const RGB_IMAGE& image, const char* output) {
     std::vector<unsigned char> output_data(width * height * 3);
     for (int y{}; y < height; ++y) {
         for (int x{}; x < width; ++x) {
@@ -71,6 +29,91 @@ bool processImage(const char* input, const char* output, const char* effect) {
     }
 
     stbi_write_png(output, width, height, 3, output_data.data(), width * 3);
+}
+
+bool processImage(const char* input, const char* output, const char* effect) {
+    // load given image
+    int width, height, channels;
+    unsigned char* data = stbi_load(input, &width, &height, &channels, 0);
+    if (!data) {
+        std::cerr << "Failed to load image\n";
+        return false;
+    }
+
+    RGB_IMAGE image(height, std::vector<PIXEL>(width));
+
+    for (int y{}; y < height; ++y)
+        for (int x{}; x < width; ++x) {
+            int idx = (y * width + x) * channels;
+            image[y][x] = { data[idx], data[idx + 1], data[idx + 2] };
+        }
+
+    stbi_image_free(data);
+
+    if (strcmp(effect, "grayscale") == 0) {
+        GRAYSCALE gray = Effects::grayscale(image);
+        grayscaleWrite(width, height, gray, output);
+        return true;
+    }
+    else if (strcmp(effect, "luminance") == 0) {
+        GRAYSCALE gray = Effects::luminance(image);
+        grayscaleWrite(width, height, gray, output);
+        return true;
+    }
+    else if (strcmp(effect, "sepia") == 0) {
+        Effects::sepia(image);
+    }
+    else if (strcmp(effect, "invert") == 0) {
+        Effects::invert(image);
+    }
+    else if (strcmp(effect, "seam_carving") == 0) {
+        int cntW, cntH;
+
+        std::cout << "Number of iterations (width): ";
+        std::cin >> cntW;
+        if (std::cin.fail() || cntW < 0 || cntW >= width) {
+            std::cerr << "Incorrect input!\n";
+            return false;
+        }
+
+        std::cout << "Number of iterations (height): ";
+        std::cin >> cntH;
+        if (std::cin.fail() || cntH < 0 || cntH >= height) {
+            std::cerr << "Incorrect input!\n";
+            return false;
+        }
+
+        if (cntW != 0) {
+            Effects::seam_carving(image, cntW, false);
+            width -= cntW;
+        }
+
+        if (cntH != 0) {
+            image = Effects::rotate90deg(image, true);
+            Effects::seam_carving(image, cntH, false);
+            image = Effects::rotate90deg(image, false);
+            height -= cntH;
+        }
+    }
+    else if (strcmp(effect, "rotate") == 0) {
+        char sign;
+        std::cout << "Left or right (l/r): ";
+        std::cin >> sign;
+
+        if (std::cin.fail() || (sign != 'l' && sign != 'r')) {
+            std::cerr << "Incorrect input!\n";
+            return false;
+        }
+
+        image = Effects::rotate90deg(image, sign == 'r');
+        std::swap(height, width);
+    }
+    else {
+        std::cerr << "Effect: \"" << effect << "\" not available\n";
+        return false;
+    }
+
+    rgbWrite(width, height, image, output);
 
     return true;
 }

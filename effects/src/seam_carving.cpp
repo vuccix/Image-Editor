@@ -3,7 +3,7 @@
 #include <vector>
 #include <limits>
 
-using Effects::RGB_IMAGE, Effects::GRAYSCALE;
+using Effects::RGB_IMAGE, Effects::GRAYSCALE, Effects::PIXEL;
 
 GRAYSCALE sobel(const GRAYSCALE& img, bool axis) {
     const int rows = static_cast<int>(img.size());
@@ -41,8 +41,8 @@ GRAYSCALE energyMap(const GRAYSCALE& img) {
 
     // compute energy map
     GRAYSCALE energy(img.size(), std::vector<float>(img[0].size(), 0.f));
-    for (int i{}; i < energy.size(); ++i)
-        for (int j{}; j < energy[0].size(); ++j)
+    for (size_t i{}; i < energy.size(); ++i)
+        for (size_t j{}; j < energy[0].size(); ++j)
             energy[i][j] = std::sqrt(Gx[i][j] * Gx[i][j] + Gy[i][j] * Gy[i][j]);
 
     return energy;
@@ -112,7 +112,7 @@ void removeSeam(RGB_IMAGE& img, const std::vector<int>& seam, GRAYSCALE& data) {
     }
 }
 
-RGB_IMAGE Effects::seam_carving(Effects::RGB_IMAGE &img, const int iterCnt, const bool isAccurate = false) {
+void Effects::seam_carving(Effects::RGB_IMAGE &img, const int iterCnt, const bool isAccurate = false) {
     GRAYSCALE imgGray = grayscale(img);
     GRAYSCALE energy  = energyMap(imgGray);
 
@@ -129,6 +129,4 @@ RGB_IMAGE Effects::seam_carving(Effects::RGB_IMAGE &img, const int iterCnt, cons
             energy = energyMap(imgGray);
         }
     }
-
-    return img;
 }
