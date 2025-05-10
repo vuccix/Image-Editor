@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.20)
 project(image_editor)
 
 set(CMAKE_CXX_STANDARD 20)
+
+add_compile_options(-Wall -pedantic -O2)
 
 add_executable(image_editor main.cpp
         effects/src/convert.cpp
@@ -10,4 +12,5 @@ add_executable(image_editor main.cpp
         effects/effects.h
         effects/src/simple.cpp
         effects/src/seam_carving.cpp
+        libs/src/stb_implementation.cpp
 )
