@@ -1,6 +1,6 @@
 #include "../effects.h"
 
-using Effects::RGB_IMAGE, Effects::GRAYSCALE, Effects::LUMINANCE;
+using Effects::RGB_IMAGE, Effects::GRAYSCALE, Effects::LUMINANCE, Effects::PIXEL;
 
 GRAYSCALE convert_1D(const RGB_IMAGE& img, const float arr[3]) {
     const int rows = static_cast<int>(img.size());
@@ -8,8 +8,13 @@ GRAYSCALE convert_1D(const RGB_IMAGE& img, const float arr[3]) {
     GRAYSCALE result(rows, std::vector<float>(cols));
 
     for (int i{}; i < rows; ++i)
-        for (int j{}; j < cols; ++j)
-            result[i][j] = (arr[0] * img[i][j][0]) + (arr[1] * img[i][j][1]) + (arr[2] * img[i][j][2]);
+        for (int j{}; j < cols; ++j) {
+            float r = img[i][j][0];
+            float g = img[i][j][1];
+            float b = img[i][j][2];
+
+            result[i][j] = (arr[0] * r) + (arr[1] * g) + (arr[2] * b);
+        }
 
     return result;
 }
@@ -20,9 +25,17 @@ void convert_2D(RGB_IMAGE& img, const float arr[3][3]) {
 
     for (int i{}; i < rows; ++i)
         for (int j{}; j < cols; ++j) {
-            img[i][j][0] = (arr[0][0] * img[i][j][0]) + (arr[0][1] * img[i][j][1]) + (arr[0][2] * img[i][j][2]);
-            img[i][j][1] = (arr[1][0] * img[i][j][0]) + (arr[1][1] * img[i][j][1]) + (arr[1][2] * img[i][j][2]);
-            img[i][j][2] = (arr[2][0] * img[i][j][0]) + (arr[2][1] * img[i][j][1]) + (arr[2][2] * img[i][j][2]);
+            float r = img[i][j][0];
+            float g = img[i][j][1];
+            float b = img[i][j][2];
+
+            int new_r = static_cast<int>(arr[0][0] * r + arr[0][1] * g + arr[0][2] * b);
+            int new_g = static_cast<int>(arr[1][0] * r + arr[1][1] * g + arr[1][2] * b);
+            int new_b = static_cast<int>(arr[2][0] * r + arr[2][1] * g + arr[2][2] * b);
+
+            img[i][j][0] = static_cast<uint8_t>(std::min(255, new_r));
+            img[i][j][1] = static_cast<uint8_t>(std::min(255, new_g));
+            img[i][j][2] = static_cast<uint8_t>(std::min(255, new_b));
         }
 }
 

@@ -5,16 +5,15 @@
 #include <cstring>
 
 void grayscaleWrite(int width, int height, const GRAYSCALE& image, const char* output) {
-    std::vector<unsigned char> gray_data(width * height);
+    std::vector<unsigned char> grayData(width * height);
 
-    for (int y{}; y < height; ++y) {
+    for (int y{}; y < height; ++y)
         for (int x{}; x < width; ++x) {
-            int gray = static_cast<int>(image[y][x]);
-            gray_data[y * width + x] = static_cast<unsigned char>(gray);
+            int gray = static_cast<int>((image[y][x]));
+            grayData[y * width + x] = static_cast<unsigned char>(std::min(255, gray));
         }
-    }
 
-    stbi_write_png(output, width, height, 1, gray_data.data(), width);
+    stbi_write_png(output, width, height, 1, grayData.data(), width);
 }
 
 void rgbWrite(int width, int height, const RGB_IMAGE& image, const char* output) {
