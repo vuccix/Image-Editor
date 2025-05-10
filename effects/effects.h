@@ -2,10 +2,11 @@
 
 #include <array>
 #include <vector>
+#include <cstdint>
 #include <unordered_set>
 
 namespace Effects {
-    using RGB_IMAGE = std::vector<std::vector<std::array<int, 3>>>;
+    using RGB_IMAGE = std::vector<std::vector<std::array<uint8_t, 3>>>;
     using GRAYSCALE = std::vector<std::vector<float>>;
     using LUMINANCE = GRAYSCALE;
     using SEPIA     = RGB_IMAGE;
@@ -24,5 +25,5 @@ namespace Effects {
     void sepia(RGB_IMAGE& img);
     GRAYSCALE grayscale(const RGB_IMAGE& img);
     LUMINANCE luminance(const RGB_IMAGE& img);
-    RGB_IMAGE seam_carving(const RGB_IMAGE& img, int iterCnt);
+    RGB_IMAGE seam_carving(RGB_IMAGE& img, int iterCnt, bool isAccurate);
 }

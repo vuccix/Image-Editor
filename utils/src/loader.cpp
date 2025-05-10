@@ -5,9 +5,11 @@
 #include <iostream>
 
 bool processImage(const char* input, const char* output, const char* effect) {
+    // check correct input
     if (!Effects::HAS(effect))
         return false;
 
+    // load given image
     int width, height, channels;
     unsigned char* data = stbi_load(input, &width, &height, &channels, 0);
     if (!data) {
@@ -25,6 +27,8 @@ bool processImage(const char* input, const char* output, const char* effect) {
         }
     }
     stbi_image_free(data);
+
+
 
     return true;
 }

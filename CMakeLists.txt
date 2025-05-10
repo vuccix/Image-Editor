@@ -9,4 +9,5 @@ add_executable(image_editor main.cpp
         utils/loader.h
         effects/effects.h
         effects/src/simple.cpp
+        effects/src/seam_carving.cpp
 )
