@@ -6,11 +6,10 @@ A lightweight command-line image editor written in C++. This tool allows you to 
 
 - Invert colors
 - Sepia tone
-- Grayscale conversion
-- Luminance conversion (similar to grayscale)
+- Grayscale & luminance conversions
 - Rotate 90° (clockwise & counter-clockwise)
 - Seam carving (content-aware resizing)
-- Gaussian blur (3x3 and 5x5 kernels)
+- Gaussian blur (3x3 & 5x5 kernels)
 - Edge detection (Sobel, Canny)
 
 ## How to build
@@ -35,8 +34,7 @@ Run the editor from the terminal as follows: `./image_editor <input_image_path> 
 ### Effect names:
 
 - `invert`
-- `grayscale`
-- `luminance`
+- `grayscale`, `luminance`
 - `sepia`
 - `rotate`
 - `seam_carving`
