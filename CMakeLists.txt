@@ -16,4 +16,7 @@ add_executable(image_editor main.cpp
         effects/src/blur.cpp
         utils/src/convolution.cpp
         utils/convolution.h
+        effects/src/canny.cpp
+        utils/src/sobel.cpp
+        utils/sobel.h
 )

@@ -76,6 +76,11 @@ bool processImage(const char* input, const char* output, const char* effect) {
         grayscaleWrite(width, height, gray, output);
         return true;
     }
+    else if (strcmp(effect, "canny") == 0) {
+        GRAYSCALE gray = Effects::cannyEdge(image);
+        grayscaleWrite(width, height, gray, output);
+        return true;
+    }
     else if (strcmp(effect, "seam_carving") == 0) {
         int cntW, cntH;
 

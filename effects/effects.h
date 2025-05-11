@@ -19,5 +19,6 @@ namespace Effects {
     GRAYSCALE grayscale(const RGB_IMAGE& img);
     LUMINANCE luminance(const RGB_IMAGE& img);
     GRAYSCALE sobelOperator(const RGB_IMAGE& img);
+    GRAYSCALE cannyEdge(RGB_IMAGE& img);
     RGB_IMAGE rotate90deg(const RGB_IMAGE& img, bool side);
 }
