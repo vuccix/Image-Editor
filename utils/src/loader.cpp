@@ -71,6 +71,24 @@ bool processImage(const char* input, const char* output, const char* effect) {
     else if (strcmp(effect, "blur5") == 0) {
         Effects::blur5x5(image);
     }
+    else if (strcmp(effect, "swap") == 0) {
+        Effects::channelSwap(image);
+    }
+    else if (strcmp(effect, "duotone") == 0) {
+        Effects::duotone(image);
+    }
+    else if (strcmp(effect, "brightness") == 0) {
+        int value{};
+        std::cout << "Brightness value: ";
+        std::cin  >> value;
+
+        if (std::cin.fail()) {
+            std::cerr << "Incorrect input!\n";
+            return false;
+        }
+
+        Effects::brightness(image, value);
+    }
     else if (strcmp(effect, "sobel") == 0) {
         GRAYSCALE gray = Effects::sobelOperator(image);
         grayscaleWrite(width, height, gray, output);
