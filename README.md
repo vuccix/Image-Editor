@@ -10,7 +10,7 @@ A lightweight command-line image editor written in C++. This tool allows you to 
 - Luminance conversion (similar to grayscale)
 - Rotate 90° (clockwise & counter-clockwise)
 - Seam carving (content-aware resizing)
-- Gaussian blur
+- Gaussian blur (3x3 and 5x5 kernels)
 - Edge detection (Sobel operator)
 
 ## How to build
@@ -40,7 +40,7 @@ Run the editor from the terminal as follows: `./image_editor <input_image_path> 
 - `sepia`
 - `rotate`
 - `seam_carving`
-- `blur`
+- `blur3`, `blur5`
 - `sobel`
 
 ## Dependencies

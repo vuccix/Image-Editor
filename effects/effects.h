@@ -14,7 +14,8 @@ namespace Effects {
     void invert(RGB_IMAGE& img);
     void sepia(RGB_IMAGE& img);
     void seam_carving(RGB_IMAGE& img, int iterCnt, bool isAccurate);
-    void blur(RGB_IMAGE& img);
+    void blur3x3(RGB_IMAGE& img);
+    void blur5x5(RGB_IMAGE& img);
     GRAYSCALE grayscale(const RGB_IMAGE& img);
     LUMINANCE luminance(const RGB_IMAGE& img);
     GRAYSCALE sobelOperator(const RGB_IMAGE& img);

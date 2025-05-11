@@ -65,8 +65,11 @@ bool processImage(const char* input, const char* output, const char* effect) {
     else if (strcmp(effect, "invert") == 0) {
         Effects::invert(image);
     }
-    else if (strcmp(effect, "blur") == 0) {
-        Effects::blur(image);
+    else if (strcmp(effect, "blur3") == 0) {
+        Effects::blur3x3(image);
+    }
+    else if (strcmp(effect, "blur5") == 0) {
+        Effects::blur5x5(image);
     }
     else if (strcmp(effect, "sobel") == 0) {
         GRAYSCALE gray = Effects::sobelOperator(image);
