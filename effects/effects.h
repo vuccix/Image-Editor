@@ -18,7 +18,9 @@ namespace Effects {
     void blur5x5(RGB_IMAGE& img);
     void channelSwap(RGB_IMAGE& img);
     void brightness(RGB_IMAGE& img, int value);
-    void duotone(RGB_IMAGE& img);
+    void contrast(RGB_IMAGE& img, float factor);
+    void duotone(RGB_IMAGE& img, const PIXEL& col1, const PIXEL& col2);
+    void pixelate(RGB_IMAGE& img, int size);
     GRAYSCALE grayscale(const RGB_IMAGE& img);
     LUMINANCE luminance(const RGB_IMAGE& img);
     GRAYSCALE sobelOperator(const RGB_IMAGE& img);

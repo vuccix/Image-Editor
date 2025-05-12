@@ -8,8 +8,9 @@ A lightweight command-line image editor written in C++. This tool allows you to 
 - Sepia tone
 - Grayscale & luminance conversions
 - Rotate 90° (clockwise & counter-clockwise)
-- Brightness adjusting
+- Brightness & contrast adjusting
 - Channel swap (RGB -> BRG)
+- Pixelate (mosaic) effect
 - Duotone effect
 - Seam carving (content-aware resizing)
 - Gaussian blur (3x3 & 5x5 kernels)
@@ -37,11 +38,12 @@ Run the editor from the terminal as follows: `./image_editor <input_image_path> 
 ### Effect names:
 
 - `invert`
-- `grayscale`, `luminance`
-- `brightness`
 - `sepia`
+- `grayscale`, `luminance`
 - `rotate`
+- `brightness`, `contrast`
 - `swap`
+- `pixelate`
 - `duotone`
 - `seam_carving`
 - `blur3`, `blur5`

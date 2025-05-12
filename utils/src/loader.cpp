@@ -74,8 +74,41 @@ bool processImage(const char* input, const char* output, const char* effect) {
     else if (strcmp(effect, "swap") == 0) {
         Effects::channelSwap(image);
     }
+    else if (strcmp(effect, "pixel") == 0) {
+        int value{};
+        std::cout << "Block size: ";
+        std::cin  >> value;
+
+        if (std::cin.fail()) {
+            std::cerr << "Incorrect input!\n";
+            return false;
+        }
+
+        Effects::pixelate(image, value);
+    }
     else if (strcmp(effect, "duotone") == 0) {
-        Effects::duotone(image);
+        PIXEL high, low;
+
+        int r1, g1, b1, r2, g2, b2;
+
+        std::cout << "Enter 6 RGB values (0–255) for high and low colors: ";
+        std::cin >> r1 >> g1 >> b1 >> r2 >> g2 >> b2;
+        if (std::cin.fail()) {
+            std::cerr << "Incorrect input!\n";
+            return false;
+        }
+
+        auto inRange = [](int val) { return val <= 255 && val >= 0; };
+        if (!inRange(r1) || !inRange(g1) || !inRange(b1) ||
+            !inRange(r2) || !inRange(g2) || !inRange(b2)) {
+            std::cerr << "Incorrect input!\n";
+            return false;
+        }
+
+        high = { uint8_t(r1), uint8_t(g1), uint8_t(b1) };
+        low  = { uint8_t(r2), uint8_t(g2), uint8_t(b2) };
+
+        Effects::duotone(image, high, low);
     }
     else if (strcmp(effect, "brightness") == 0) {
         int value{};
@@ -88,6 +121,18 @@ bool processImage(const char* input, const char* output, const char* effect) {
         }
 
         Effects::brightness(image, value);
+    }
+    else if (strcmp(effect, "contrast") == 0) {
+        float factor{};
+        std::cout << "Contrast factor: ";
+        std::cin >> factor;
+
+        if (std::cin.fail()) {
+            std::cerr << "Incorrect input!\n";
+            return false;
+        }
+
+        Effects::contrast(image, factor);
     }
     else if (strcmp(effect, "sobel") == 0) {
         GRAYSCALE gray = Effects::sobelOperator(image);
