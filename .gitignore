@@ -67,3 +67,23 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+
+# IDE generated files
+.idea/
+cmake-build-debug/
+cmake-build-release/
+cmake-build-*/
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+Debug/
+Release/
+x64/
+x86/
+[Bb]uild/
