@@ -1,7 +1,8 @@
-#include <iostream>
+#include "Application.h"
 
 int main() {
-    std::cout << "Hello Image Editor\n";
+    Application app;
+    app.run();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

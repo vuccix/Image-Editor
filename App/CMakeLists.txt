@@ -1,4 +1,4 @@
-add_executable(Editor main.cpp)
+add_executable(Editor main.cpp Application.cpp)
 
 # TODO: enable
 #target_compile_options(Editor PRIVATE
@@ -8,4 +8,5 @@ add_executable(Editor main.cpp)
 
 target_link_libraries(Editor
         PRIVATE
+        Window
 )
