@@ -15,6 +15,11 @@ set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(GLFW)
 
+# glm ==================================================================================================================
+add_library(glm INTERFACE)
+target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/glm)
+target_compile_definitions(glm INTERFACE GLM_ENABLE_EXPERIMENTAL)
+
 # stb ==================================================================================================================
 add_library(stb STATIC stb/stb/stb_impl.cpp)
 target_include_directories(stb PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/stb)
