@@ -1,6 +1,6 @@
 #include <Controller/Application.h>
 
-Application::Application() : m_window(1280, 720, "Paint++"), m_ui(m_window.getNative()) {}
+Application::Application() : m_window(1280, 720, "Paint++") {}
 
 void Application::run() {
     while (!m_window.shouldClose()) {

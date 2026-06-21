@@ -4,10 +4,13 @@
 
 class UIManager {
 public:
-    explicit UIManager(void* window);
+    UIManager();
 
     // renders UI and modifies state based on user input
     void render(EditorState& state);
+
+private:
+    uint8_t m_selectedTheme = 0;
 
 private:
     void drawToolbar(EditorState& state);
