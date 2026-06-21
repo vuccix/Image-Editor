@@ -1,4 +1,4 @@
-add_executable(Editor main.cpp Application.cpp)
+add_executable(Editor main.cpp)
 
 # TODO: enable
 #target_compile_options(Editor PRIVATE
@@ -6,7 +6,8 @@ add_executable(Editor main.cpp Application.cpp)
 #        $<$<CONFIG:Release>:-O3>
 #)
 
-target_link_libraries(Editor
-        PRIVATE
-        Window
-)
+target_include_directories(Editor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_subdirectory(Model)
+add_subdirectory(View)
+add_subdirectory(Controller)
