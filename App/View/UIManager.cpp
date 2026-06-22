@@ -3,6 +3,7 @@
 #include "UI/EditorThemes.h"
 #include "Utils.h"
 #include <ImGui/imgui.h>
+#include <array>
 
 UIManager::UIManager() {
     ui.init();
@@ -11,7 +12,54 @@ UIManager::UIManager() {
 void UIManager::render(EditorState& state) {
     ui.beginFrame();
     ui.dockspace([this, &state] { drawMenuBar(state); });
+    drawToolbar(state);
     ui.endFrame();
+}
+
+void UIManager::drawToolbar(EditorState& state) {
+    constexpr ImGuiWindowFlags flags = ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse
+                                     | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove
+                                     | ImGuiWindowFlags_NoResize   | ImGuiWindowFlags_AlwaysAutoResize;
+
+    if (ImGui::Begin("Tools", nullptr, flags)) {
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 4));
+
+        if (ImGui::BeginTable("ToolbarGrid", 1, ImGuiTableFlags_None)) {
+            constexpr ImVec2 buttonSize(32, 32);
+            constexpr std::array<const char*, 12> tools = {
+                "V", "M",  // Move, Marquee
+                "L", "W",  // Lasso, Magic Wand
+                "C", "I",  // Crop, Eyedropper
+                "B", "S",  // Brush, Stamp
+                "E", "G",  // Eraser, Gradient
+                "P", "T"   // Pen, Text
+            };
+
+            for (size_t i = 0; i < tools.size(); ++i) {
+                ImGui::TableNextColumn();
+                ImGui::PushID(static_cast<int>(i));
+
+                if (ImGui::Button(tools[i], buttonSize)) {
+                    // TODO: handle tool selection logic
+                }
+
+                ImGui::PopID();
+            }
+
+            ui.spacing();
+            ui.separator();
+            ui.spacing();
+
+            constexpr ImGuiColorEditFlags colorFlags = ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel;
+            if (ImGui::ColorEdit4("Primary Color",   &state.primaryColor[0],   colorFlags)) {}
+            if (ImGui::ColorEdit4("Secondary Color", &state.secondaryColor[0], colorFlags)) {}
+
+            ImGui::EndTable();
+        }
+
+        ImGui::PopStyleVar();
+    }
+    ImGui::End();
 }
 
 void UIManager::drawMenuBar(EditorState& state) {

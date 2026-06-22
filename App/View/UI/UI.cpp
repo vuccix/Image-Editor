@@ -1,11 +1,10 @@
 #include "UI.h"
 #include "Fonts/font_roboto.hf"
 #include "Fonts/font_roboto_bold.hf"
+#include <GLFW/glfw3.h>
 #include <ImGui/imgui_impl_glfw.h>
 #include <ImGui/imgui_impl_opengl3.h>
 #include <cstdarg>
-
-#include "GLFW/glfw3.h"
 
 void UI::init() {
     if (m_isInit) return;

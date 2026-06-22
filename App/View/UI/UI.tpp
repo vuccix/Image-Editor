@@ -16,8 +16,9 @@ void UI::addFont(const auto& font, const float sizePixels) {
 }
 
 void UI::dockspace(auto&& callback) {
-    constexpr ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-    const     ImGuiViewport* viewport            = ImGui::GetMainViewport();
+    constexpr ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None     | ImGuiDockNodeFlags_NoResize
+                                                 | ImGuiDockNodeFlags_NoTabBar | ImGuiDockNodeFlags_NoCloseButton;
+    const     ImGuiViewport*     viewport        = ImGui::GetMainViewport();
 
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
