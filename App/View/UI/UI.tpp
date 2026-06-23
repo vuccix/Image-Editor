@@ -42,6 +42,27 @@ void UI::dockspace(auto&& callback) {
     ImGui::End();
 }
 
+void UI::window(const char* name, auto&& body) {
+    if (ImGui::Begin(name))
+        body();
+
+    ImGui::End();
+}
+
+void UI::window(const char* name, bool& open, auto&& body) {
+    if (ImGui::Begin(name, &open))
+        body();
+
+    ImGui::End();
+}
+
+void UI::window(const char* name, const int flags, auto&& body) {
+    if (ImGui::Begin(name, nullptr, flags))
+        body();
+
+    ImGui::End();
+}
+
 void UI::menuBar(auto&& body) {
     if (ImGui::BeginMenuBar()) {
         body();
@@ -71,3 +92,11 @@ void UI::item(const char* label, const char* shortcut, auto&& callback) {
         std::invoke(std::forward<decltype(callback)>(callback));
 }
 
+    ImGui::TextUnformatted(label);
+
+    ImGui::TableSetColumnIndex(1);
+    ImGui::SetNextItemWidth(-FLT_MIN);
+    widget();
+}
+
+void UI::table(const char* label, const int columns, auto&& body) {

@@ -16,4 +16,7 @@ private:
     void drawToolbar(EditorState& state);
     void drawPropertiesPanel(EditorState& state);
     void drawMenuBar(EditorState& state);
+    void drawCanvas(EditorState& state);
+
+    void setTheme(uint8_t theme);
 };

@@ -4,16 +4,30 @@
 #include "Utils.h"
 #include <ImGui/imgui.h>
 #include <array>
+#include <algorithm>
 
 UIManager::UIManager() {
     ui.init();
+    setTheme(0);
 }
 
 void UIManager::render(EditorState& state) {
     ui.beginFrame();
-    ui.dockspace([this, &state] { drawMenuBar(state); });
+    ui.dockspace([this, &state] {
+        drawMenuBar(state);
+    });
+
     drawToolbar(state);
+    drawPropertiesPanel(state);
+    drawCanvas(state);
+
     ui.endFrame();
+}
+
+void UIManager::drawCanvas(EditorState& state) {
+    ui.window("Canvas", [&] {
+
+    });
 }
 
 void UIManager::drawToolbar(EditorState& state) {
@@ -21,10 +35,10 @@ void UIManager::drawToolbar(EditorState& state) {
                                      | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove
                                      | ImGuiWindowFlags_NoResize   | ImGuiWindowFlags_AlwaysAutoResize;
 
-    if (ImGui::Begin("Tools", nullptr, flags)) {
+    ui.window("Tools", flags, [&] {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 4));
 
-        if (ImGui::BeginTable("ToolbarGrid", 1, ImGuiTableFlags_None)) {
+        ui.table("ToolbarGrid", 1, [&] {
             constexpr ImVec2 buttonSize(32, 32);
             constexpr std::array<const char*, 12> tools = {
                 "V", "M",  // Move, Marquee
@@ -53,13 +67,20 @@ void UIManager::drawToolbar(EditorState& state) {
             constexpr ImGuiColorEditFlags colorFlags = ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel;
             if (ImGui::ColorEdit4("Primary Color",   &state.primaryColor[0],   colorFlags)) {}
             if (ImGui::ColorEdit4("Secondary Color", &state.secondaryColor[0], colorFlags)) {}
-
-            ImGui::EndTable();
-        }
+        });
 
         ImGui::PopStyleVar();
-    }
-    ImGui::End();
+    });
+}
+
+void UIManager::drawPropertiesPanel(EditorState& state) {
+    ui.window("Layers", [&] {
+
+    });
+
+    ui.window("History", [&] {
+
+    });
 }
 
 void UIManager::drawMenuBar(EditorState& state) {
@@ -177,20 +198,20 @@ void UIManager::drawMenuBar(EditorState& state) {
         });
 
         ui.menu("Settings", [&] {
-            ui.item("Configure Pain++...", [&] {});
+            ui.item("Configure Paint++...", [&] {});
             ui.separator();
             ui.menu("Themes", [&] {
-                ui.item("Classic ImGui", (m_selectedTheme ==  0), [&] { m_selectedTheme =  0; Themes::classicImGuiTheme(); });
-                ui.item("Dark ImGui",    (m_selectedTheme ==  1), [&] { m_selectedTheme =  1; Themes::darkImGuiTheme();    });
-                ui.item("Light ImGui",   (m_selectedTheme ==  2), [&] { m_selectedTheme =  2; Themes::lightImGuiTheme();   });
-                ui.item("Classic Valve", (m_selectedTheme ==  3), [&] { m_selectedTheme =  3; Themes::classicValveTheme(); });
-                ui.item("Dracula",       (m_selectedTheme ==  4), [&] { m_selectedTheme =  4; Themes::draculaTheme();      });
-                ui.item("Discord",       (m_selectedTheme ==  5), [&] { m_selectedTheme =  5; Themes::discordTheme();      });
-                ui.item("EnemyMouse",    (m_selectedTheme ==  6), [&] { m_selectedTheme =  6; Themes::enemyMouseTheme();   });
-                ui.item("Green",         (m_selectedTheme ==  7), [&] { m_selectedTheme =  7; Themes::greenTheme();        });
-                ui.item("Photoshop",     (m_selectedTheme ==  8), [&] { m_selectedTheme =  8; Themes::photoshopTheme();    });
-                ui.item("Visual Studio", (m_selectedTheme ==  9), [&] { m_selectedTheme =  9; Themes::visualStudioTheme(); });
-                ui.item("ProgTest",      (m_selectedTheme == 10), [&] { m_selectedTheme = 10; Themes::progtestTheme();     });
+                ui.item("Classic ImGui", (m_selectedTheme ==  0), [&] { setTheme(0);  });
+                ui.item("Dark ImGui",    (m_selectedTheme ==  1), [&] { setTheme(1);  });
+                ui.item("Light ImGui",   (m_selectedTheme ==  2), [&] { setTheme(2);  });
+                ui.item("Classic Valve", (m_selectedTheme ==  3), [&] { setTheme(3);  });
+                ui.item("Dracula",       (m_selectedTheme ==  4), [&] { setTheme(4);  });
+                ui.item("Discord",       (m_selectedTheme ==  5), [&] { setTheme(5);  });
+                ui.item("EnemyMouse",    (m_selectedTheme ==  6), [&] { setTheme(6);  });
+                ui.item("Green",         (m_selectedTheme ==  7), [&] { setTheme(7);  });
+                ui.item("Photoshop",     (m_selectedTheme ==  8), [&] { setTheme(8);  });
+                ui.item("Visual Studio", (m_selectedTheme ==  9), [&] { setTheme(9);  });
+                ui.item("ProgTest",      (m_selectedTheme == 10), [&] { setTheme(10); });
             });
         });
 
@@ -207,9 +228,28 @@ void UIManager::drawMenuBar(EditorState& state) {
 
             ui.separator();
 
-            ui.item("About Pain++", [&] {
+            ui.item("About Paint++", [&] {
                 Utils::openURL("https://github.com/vuccix/Image-Editor");
             });
         });
     });
+}
+
+void UIManager::setTheme(const uint8_t theme) {
+    m_selectedTheme = theme;
+
+    switch (m_selectedTheme) {
+        case  0: Themes::darkImGuiTheme();    break;
+        case  1: Themes::lightImGuiTheme();   break;
+        case  2: Themes::classicImGuiTheme(); break;
+        case  3: Themes::classicValveTheme(); break;
+        case  4: Themes::draculaTheme();      break;
+        case  5: Themes::discordTheme();      break;
+        case  6: Themes::enemyMouseTheme();   break;
+        case  7: Themes::greenTheme();        break;
+        case  8: Themes::photoshopTheme();    break;
+        case  9: Themes::visualStudioTheme(); break;
+        case 10: Themes::progtestTheme();     break;
+        default: break;
+    }
 }

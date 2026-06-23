@@ -9,6 +9,9 @@ struct UI {
     void addFont(const auto& font, float sizePixels);
 
     void dockspace(auto&& callback);
+    void window(const char* name, auto&& body);
+    void window(const char* name, bool& open, auto&& body);
+    void window(const char* name, int flags, auto&& body);
 
     void menuBar(auto&& body);
     void menu(const char* name, auto&& body);
@@ -18,6 +21,8 @@ struct UI {
 
     void separator();
     void spacing();
+
+    void table(const char* label, int columns, auto&& body);
 
 private:
     bool m_isInit = false;
