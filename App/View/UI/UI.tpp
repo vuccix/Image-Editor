@@ -92,11 +92,11 @@ void UI::item(const char* label, const char* shortcut, auto&& callback) {
         std::invoke(std::forward<decltype(callback)>(callback));
 }
 
-    ImGui::TextUnformatted(label);
+void UI::table(const char* label, const int columns, auto&& body) {
+    if (ImGui::BeginTable(label, columns, ImGuiTableFlags_SizingStretchProp)) {
+        body();
 
-    ImGui::TableSetColumnIndex(1);
-    ImGui::SetNextItemWidth(-FLT_MIN);
-    widget();
+        ImGui::EndTable();
+    }
 }
 
-void UI::table(const char* label, const int columns, auto&& body) {
