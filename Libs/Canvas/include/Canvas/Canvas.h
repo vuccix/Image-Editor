@@ -2,22 +2,26 @@
 
 #include <Canvas/Image.h>
 #include <string>
-#include <span>
+#include <mdspan>
 
 class Layer {
 public:
-    Layer(int32_t w, int32_t h, std::string name);
+    Layer(int32_t width, int32_t height, std::string name);
+
+    void resize(int32_t width, int32_t height);
+    void scale(int32_t width, int32_t height);
 
     const Pixel& operator[](int32_t x, int32_t y) const;
           Pixel& operator[](int32_t x, int32_t y);
 
-    std::span<const Pixel> pixels() const;
-    std::span<Pixel>       pixels();
+    std::mdspan<const Pixel, std::dextents<size_t, 2>> pixels() const;
+    std::mdspan<Pixel,       std::dextents<size_t, 2>> pixels();
 
 public:
     std::string        name;
     bool               isActive = true;
-    float              opacity  = 1.f;
+    float              opacity  = 1.f; // affects entire layer (styles, effects, blend modes)
+    float              fill     = 1.f; // affects only pixels
 
 private:
     std::vector<Pixel> m_data;
