@@ -1,4 +1,5 @@
 #include <Renderer/Renderer.h>
+#include <Canvas/Image.h>
 #include <glad/glad.h>
 
 Renderer::Renderer() {
@@ -9,8 +10,6 @@ Renderer::Renderer() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_EDGE);
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
 Renderer::~Renderer() {
@@ -22,37 +21,34 @@ uint32_t Renderer::textureID() const {
     return m_texture;
 }
 
-void Renderer::upload(const Image& img) const {
+void Renderer::resize(const int32_t width, const int32_t height) {
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
-    if (img.channels == 1) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-    }
-    else {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
-    }
-
-    GLenum format; GLint internal;
-    switch (img.channels) {
-        case 3:  format = GL_RGB;  internal = GL_RGB8;  break;
-        case 4:  format = GL_RGBA; internal = GL_RGBA8; break;
-        default: format = GL_RED;  internal = GL_R8;    break;
-    }
-
+    // allocate memory on the GPU without uploading data
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        internal,
+        GL_RGBA8,
+        width,
+        height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        nullptr
+    );
+}
+
+void Renderer::upload(const Image& img) const {
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+
+    // replace existing GPU pixels
+    glTexSubImage2D(
+        GL_TEXTURE_2D,
+        0,
+        0, 0,
         img.width,
         img.height,
-        0,
-        format,
+        GL_RGBA,
         GL_UNSIGNED_BYTE,
         img.pixels.data()
     );

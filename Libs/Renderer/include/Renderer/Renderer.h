@@ -1,13 +1,15 @@
 #pragma once
 
-#include <Canvas/Image.h>
 #include <cstdint>
+
+struct Image;
 
 class Renderer {
 public:
     Renderer();
    ~Renderer();
 
+    void resize(int32_t width, int32_t height);
     void upload(const Image& img) const;
     uint32_t textureID() const;
 
