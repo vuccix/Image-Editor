@@ -79,7 +79,7 @@ void Canvas::mergeWithLayerBelow(const size_t layerID) {
         for (int32_t x = 0; x < m_width; ++x) {
             const Pixel b = bottom[y, x];
             const Pixel t = top[y, x];
-            bottom[y, x]  = mergePixels(b, t, opacity, fill);
+            bottom[y, x]  = ::mergePixels(b, t, opacity, fill);
         }
     }
 
@@ -87,8 +87,8 @@ void Canvas::mergeWithLayerBelow(const size_t layerID) {
 }
 
 void Canvas::mergeAllLayers() {
-    for (size_t i = m_layers.size(); i-- > 1; )
-        mergeWithLayerBelow(i);
+    while (m_layers.size() > 1)
+        mergeWithLayerBelow(m_layers.size() - 1);
 }
 
 void Canvas::moveLayerToIndex(const size_t layerID, const size_t index) {
@@ -109,38 +109,42 @@ void Canvas::moveLayerToIndex(const size_t layerID, const size_t index) {
 }
 
 void Canvas::updateComposite() {
-    if (m_composite.width != m_width || m_composite.height != m_height)
-        m_composite.pixels.resize(m_composite.width * m_composite.height * sizeof(Pixel));
+    if (m_composite.width != m_width || m_composite.height != m_height) {
+        m_composite.width  = m_width;
+        m_composite.height = m_height;
+        m_composite.pixels.resize(m_width * m_height * sizeof(Pixel));
+    }
 
-    struct Info {
-        Pixel pixel;
-        float opacity;
-        float fill;
-    };
+    const size_t numLayers = m_layers.size();
+    if (numLayers == 0) {
+        std::ranges::fill(m_composite.pixels, 0);
+        return;
+    }
 
-    static std::vector<Info> pixelStack(m_layers.size());
+    auto mergePixelStack = [&](const int32_t x, const int32_t y) -> Pixel {
+        Pixel res = m_layers[0].pixels()[y, x];
 
-    auto merge = [&](const int32_t x, const int32_t y) -> Pixel {
-        for (size_t i = 0; i < pixelStack.size(); ++i) {
-            Layer& layer  = m_layers[i];
-            pixelStack[i] = Info{ layer.pixels()[x, y], layer.opacity, layer.fill };
+        for (size_t i = 1; i < numLayers; ++i) {
+            const auto& layer = m_layers[i];
+
+            // skip hidden layers
+            if (!layer.isActive)
+                continue;
+
+            res = ::mergePixels(res, layer.pixels()[y, x], layer.opacity, layer.fill);
         }
-
-        Pixel res = pixelStack.back().pixel;
-        for (size_t i = pixelStack.size() - 1; i-- > 1; )
-            res = mergePixels(pixelStack[i].pixel, res, pixelStack[i].opacity, pixelStack[i].fill);
 
         return res;
     };
 
-    std::vector<uint8_t>& pixels = m_composite.pixels;
+    uint8_t* outPtr = m_composite.pixels.data();
     for (int32_t y = 0; y < m_height; ++y) {
-        for (int32_t x = 0; x < m_width; ) {
-            const auto [r, g, b, a]   = merge(x, y);
-            pixels[y * m_width + x++] = r;
-            pixels[y * m_width + x++] = g;
-            pixels[y * m_width + x++] = b;
-            pixels[y * m_width + x++] = a;
+        for (int32_t x = 0; x < m_width; ++x) {
+            const auto [r, g, b, a] = mergePixelStack(x, y);
+            *outPtr++ = r;
+            *outPtr++ = g;
+            *outPtr++ = b;
+            *outPtr++ = a;
         }
     }
 }
