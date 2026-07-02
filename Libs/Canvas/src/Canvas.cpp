@@ -60,16 +60,6 @@ void Layer::scale(const int32_t w, const int32_t h) {
     m_data   = std::move(newData);
 }
 
-const Pixel& Layer::operator[](const int32_t x, const int32_t y) const {
-    assert(y < m_height && y >= 0 && x < m_width && x >= 0);
-    return m_data[y * m_width + x];
-}
-
-Pixel& Layer::operator[](const int32_t x, const int32_t y) {
-    assert(y < m_height && y >= 0 && x < m_width && x >= 0);
-    return m_data[y * m_width + x];
-}
-
 std::mdspan<const Pixel, std::dextents<size_t, 2>> Layer::pixels() const {
     return std::mdspan(m_data.data(), m_height, m_width);
 }

@@ -11,9 +11,6 @@ public:
     void resize(int32_t width, int32_t height);
     void scale(int32_t width, int32_t height);
 
-    const Pixel& operator[](int32_t x, int32_t y) const;
-          Pixel& operator[](int32_t x, int32_t y);
-
     std::mdspan<const Pixel, std::dextents<size_t, 2>> pixels() const;
     std::mdspan<Pixel,       std::dextents<size_t, 2>> pixels();
 
