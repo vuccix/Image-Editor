@@ -1,0 +1,81 @@
+#include <Canvas/Layer.h>
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+
+uint8_t Pixel::operator[](const int32_t channel) const {
+    assert(0 <= channel && channel <= 3);
+
+    switch (channel) {
+        case 0:  return r;
+        case 1:  return g;
+        case 2:  return b;
+        default: return a;
+    }
+}
+
+Layer::Layer(const int32_t w, const int32_t h, std::string n) : name(std::move(n)),
+                                                                m_width(w),
+                                                                m_height(h) {
+    m_data.resize(w * h, Pixel{ 0, 0, 0, 0 });
+}
+
+void Layer::resize(const int32_t w, const int32_t h) {
+    assert(w >= 1 && h >= 1);
+
+    std::vector newData(w * h, Pixel{ 0, 0, 0, 0 });
+    const auto  oldSpan    = std::mdspan(m_data.data(), m_height, m_width);
+    const auto  newSpan    = std::mdspan(newData.data(), h, w);
+
+    const int32_t w_offset = (w - m_width)  / 2;
+    const int32_t h_offset = (h - m_height) / 2;
+
+    for (int32_t y = 0; y < m_height; ++y) {
+        for (int32_t x = 0; x < m_width; ++x) {
+            const int32_t newX = x + w_offset;
+            const int32_t newY = y + h_offset;
+
+            if (newX >= 0 && newX < w && newY >= 0 && newY < h)
+                newSpan[newY, newX] = oldSpan[y, x];
+        }
+    }
+
+    m_width  = w;
+    m_height = h;
+    m_data   = std::move(newData);
+}
+
+void Layer::scale(const int32_t w, const int32_t h) {
+    assert(w >= 1 && h >= 1);
+
+    std::vector newData(w * h, Pixel{ 0, 0, 0, 0 });
+    const auto  oldSpan = std::mdspan(m_data.data(), m_height, m_width);
+    const auto  newSpan = std::mdspan(newData.data(), h, w);
+
+    const double scaleX = static_cast<double>(m_width)  / w;
+    const double scaleY = static_cast<double>(m_height) / h;
+
+    for (int32_t y = 0; y < h; ++y) {
+        for (int32_t x = 0; x < w; ++x) {
+            const double xFactor = x * scaleX;
+            const double yFactor = y * scaleY;
+
+            const int32_t oldX   = std::clamp(static_cast<int32_t>(std::floor(xFactor)), 0, m_width  - 1);
+            const int32_t oldY   = std::clamp(static_cast<int32_t>(std::floor(yFactor)), 0, m_height - 1);
+
+            newSpan[y, x]        = oldSpan[oldY, oldX];
+        }
+    }
+
+    m_width  = w;
+    m_height = h;
+    m_data   = std::move(newData);
+}
+
+std::mdspan<const Pixel, std::dextents<size_t, 2>> Layer::pixels() const {
+    return std::mdspan(m_data.data(), m_height, m_width);
+}
+
+std::mdspan<Pixel, std::dextents<size_t, 2>> Layer::pixels() {
+    return std::mdspan(m_data.data(), m_height, m_width);
+}
