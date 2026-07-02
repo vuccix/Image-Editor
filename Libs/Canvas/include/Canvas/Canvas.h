@@ -19,7 +19,8 @@ public:
 
     void moveLayerToIndex(size_t layerID, size_t index);
 
-    Image getComposite() const;
+    void updateComposite();
+    const Image& getComposite();
 
     const Layer& operator[](size_t layerID) const;
           Layer& operator[](size_t layerID);
@@ -31,4 +32,6 @@ private:
     std::vector<Layer> m_layers;
     int32_t            m_width;
     int32_t            m_height;
+
+    Image              m_composite;
 };
