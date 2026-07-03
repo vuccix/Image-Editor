@@ -21,7 +21,7 @@ uint32_t Renderer::textureID() const {
     return m_texture;
 }
 
-void Renderer::resize(const int32_t width, const int32_t height) {
+void Renderer::resize(const uint32_t width, const uint32_t height) {
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
     // allocate memory on the GPU without uploading data
@@ -29,8 +29,8 @@ void Renderer::resize(const int32_t width, const int32_t height) {
         GL_TEXTURE_2D,
         0,
         GL_RGBA8,
-        width,
-        height,
+        static_cast<GLsizei>(width),
+        static_cast<GLsizei>(height),
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -46,8 +46,8 @@ void Renderer::upload(const Image& img) const {
         GL_TEXTURE_2D,
         0,
         0, 0,
-        img.width,
-        img.height,
+        static_cast<GLsizei>(img.width),
+        static_cast<GLsizei>(img.height),
         GL_RGBA,
         GL_UNSIGNED_BYTE,
         img.pixels.data()

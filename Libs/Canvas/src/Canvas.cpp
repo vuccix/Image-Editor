@@ -2,11 +2,11 @@
 #include <cassert>
 #include <format>
 
-Canvas::Canvas(const int32_t w, const int32_t h) : m_width(w), m_height(h) {
+Canvas::Canvas(const uint32_t w, const uint32_t h) : m_width(w), m_height(h), m_composite{} {
     m_layers.emplace_back(m_width, m_height, "Background");
 }
 
-void Canvas::resize(const int32_t w, const int32_t h) {
+void Canvas::resize(const uint32_t w, const uint32_t h) {
     m_width  = w;
     m_height = h;
 
@@ -14,7 +14,7 @@ void Canvas::resize(const int32_t w, const int32_t h) {
         layer.resize(w, h);
 }
 
-void Canvas::scale(const int32_t w, const int32_t h) {
+void Canvas::scale(const uint32_t w, const uint32_t h) {
     m_width  = w;
     m_height = h;
 
@@ -57,10 +57,10 @@ Pixel mergePixels(const Pixel bot, const Pixel top, const float opacity, const f
     const float outB = (topB * topA + botB * botA * (1.f - topA)) * invA;
 
     return Pixel{
-        static_cast<std::uint8_t>(std::clamp(outR * 255.f, 0.f, 255.f)),
-        static_cast<std::uint8_t>(std::clamp(outG * 255.f, 0.f, 255.f)),
-        static_cast<std::uint8_t>(std::clamp(outB * 255.f, 0.f, 255.f)),
-        static_cast<std::uint8_t>(std::clamp(outA * 255.f, 0.f, 255.f))
+        static_cast<uint8_t>(std::clamp(outR * 255.f, 0.f, 255.f)),
+        static_cast<uint8_t>(std::clamp(outG * 255.f, 0.f, 255.f)),
+        static_cast<uint8_t>(std::clamp(outB * 255.f, 0.f, 255.f)),
+        static_cast<uint8_t>(std::clamp(outA * 255.f, 0.f, 255.f))
     };
 }
 
@@ -75,8 +75,8 @@ void Canvas::mergeWithLayerBelow(const size_t layerID) {
     const float opacity = m_layers[layerID].opacity;
     const float fill    = m_layers[layerID].fill;
 
-    for (int32_t y = 0; y < m_height; ++y) {
-        for (int32_t x = 0; x < m_width; ++x) {
+    for (uint32_t y = 0; y < m_height; ++y) {
+        for (uint32_t x = 0; x < m_width; ++x) {
             const Pixel b = bottom[y, x];
             const Pixel t = top[y, x];
             bottom[y, x]  = ::mergePixels(b, t, opacity, fill);
@@ -121,7 +121,7 @@ void Canvas::updateComposite() {
         return;
     }
 
-    auto mergePixelStack = [&](const int32_t x, const int32_t y) -> Pixel {
+    auto mergePixelStack = [&](const uint32_t x, const uint32_t y) -> Pixel {
         Pixel res = m_layers[0].pixels()[y, x];
 
         for (size_t i = 1; i < numLayers; ++i) {
@@ -138,8 +138,8 @@ void Canvas::updateComposite() {
     };
 
     uint8_t* outPtr = m_composite.pixels.data();
-    for (int32_t y = 0; y < m_height; ++y) {
-        for (int32_t x = 0; x < m_width; ++x) {
+    for (uint32_t y = 0; y < m_height; ++y) {
+        for (uint32_t x = 0; x < m_width; ++x) {
             const auto [r, g, b, a] = mergePixelStack(x, y);
             *outPtr++ = r;
             *outPtr++ = g;
@@ -156,5 +156,6 @@ const Image& Canvas::getComposite() {
 const Layer& Canvas::operator[](const size_t layerID) const { return m_layers[layerID]; }
       Layer& Canvas::operator[](const size_t layerID)       { return m_layers[layerID]; }
 
-int32_t Canvas::width()  const { return m_width;  }
-int32_t Canvas::height() const { return m_height; }
+uint32_t Canvas::width()      const { return m_width;         }
+uint32_t Canvas::height()     const { return m_height;        }
+size_t   Canvas::layerCount() const { return m_layers.size(); }

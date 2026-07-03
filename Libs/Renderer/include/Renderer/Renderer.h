@@ -9,7 +9,7 @@ public:
     Renderer();
    ~Renderer();
 
-    void resize(int32_t width, int32_t height);
+    void resize(uint32_t width, uint32_t height);
     void upload(const Image& img) const;
     uint32_t textureID() const;
 
