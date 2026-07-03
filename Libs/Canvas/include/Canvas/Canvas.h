@@ -3,12 +3,17 @@
 #include <Canvas/Image.h>
 #include <Canvas/Layer.h>
 
+struct Rect {
+    uint32_t x     = 0, y      = 0;
+    uint32_t width = 0, height = 0;
+};
+
 class Canvas {
 public:
-    Canvas(int32_t width, int32_t height);
+    Canvas(uint32_t width, uint32_t height);
 
-    void resize(int32_t width, int32_t height);
-    void scale(int32_t width, int32_t height);
+    void resize(uint32_t width, uint32_t height);
+    void scale(uint32_t width, uint32_t height);
 
     void addLayer();
     void deleteLayer(size_t layerID);
@@ -25,13 +30,14 @@ public:
     const Layer& operator[](size_t layerID) const;
           Layer& operator[](size_t layerID);
 
-    int32_t width()  const;
-    int32_t height() const;
+    uint32_t width()      const;
+    uint32_t height()     const;
+    size_t   layerCount() const;
 
 private:
     std::vector<Layer> m_layers;
-    int32_t            m_width;
-    int32_t            m_height;
+    uint32_t           m_width;
+    uint32_t           m_height;
 
     Image              m_composite;
 };
