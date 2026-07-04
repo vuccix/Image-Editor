@@ -2,19 +2,19 @@
 #include "UI/UI.h"
 #include "UI/EditorThemes.h"
 #include "Utils.h"
+#include <Renderer/Renderer.h>
 #include <ImGui/imgui.h>
 #include <array>
-#include <algorithm>
 
-UIManager::UIManager() {
+UIManager::UIManager(Renderer& renderer) : m_renderer(renderer) {
     ui.init();
-    setTheme(0);
+    setTheme(2);
 }
 
-void UIManager::render(EditorState& state) {
+void UIManager::render(EditorState& state, const std::function<void()>& onQuitRequest) {
     ui.beginFrame();
-    ui.dockspace([this, &state] {
-        drawMenuBar(state);
+    ui.dockspace([&] {
+        drawMenuBar(state, onQuitRequest);
     });
 
     drawToolbar(state);
@@ -26,6 +26,31 @@ void UIManager::render(EditorState& state) {
 
 void UIManager::drawCanvas(EditorState& state) {
     ui.window("Canvas", [&] {
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+        // calculate canvas position
+        const ImVec2 windowPos = ImGui::GetCursorScreenPos();
+        const auto   pMin      = ImVec2(windowPos.x + state.panOffset.x, windowPos.y + state.panOffset.y);
+        const auto   pMax      = ImVec2(pMin.x + (state.canvas.width()  * state.zoomLevel),
+                                        pMin.y + (state.canvas.height() * state.zoomLevel));
+
+        // draw canvas composite using absolute coordinates
+        drawList->AddImage(static_cast<ImTextureID>(static_cast<intptr_t>(m_renderer.textureID())), pMin, pMax);
+
+        // handle mouse input (pan & zoom)
+        const ImGuiIO& io = ImGui::GetIO();
+        if (ImGui::IsWindowHovered()) {
+            // zoom
+            if (io.MouseWheel != 0.f) {
+                const float zoomDelta = io.MouseWheel * 0.1f;
+                state.zoomLevel       = std::max(0.1f, state.zoomLevel + zoomDelta);
+            }
+
+            // pan
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle)) {
+                state.panOffset.x += io.MouseDelta.x;
+                state.panOffset.y += io.MouseDelta.y;
+            }
 
     });
 }
@@ -83,7 +108,7 @@ void UIManager::drawPropertiesPanel(EditorState& state) {
     });
 }
 
-void UIManager::drawMenuBar(EditorState& state) {
+void UIManager::drawMenuBar(EditorState& state, const std::function<void()>& onQuitRequest) {
     ui.menuBar([&] {
         ui.menu("File", [&] {
             ui.item("New...", "Ctrl+N", [&] {});
@@ -91,11 +116,13 @@ void UIManager::drawMenuBar(EditorState& state) {
             ui.separator();
             ui.item("Save", "Ctrl+S", [&] {});
             ui.item("Save As...", "Ctrl+Shift+S", [&] {});
-            ui.item("Save All", "Ctrl+Shift+All", [&] {});
+            ui.item("Save All...", "Ctrl+Shift+All", [&] {});
             ui.separator();
             ui.item("Close", "Ctrl+W", [&] {});
             ui.separator();
-            ui.item("Quit", "Ctrl+Q", [&] {});
+            ui.item("Quit", "Ctrl+Q", [&] {
+                onQuitRequest();
+            });
         });
 
         ui.menu("Edit", [&] {
@@ -115,7 +142,7 @@ void UIManager::drawMenuBar(EditorState& state) {
 
         ui.menu("Image", [&] {
             ui.item("Resize...", "Ctrl+R", [&] {});
-            ui.item("Canvas Size...", "Ctrl+R", [&] {});
+            ui.item("Canvas Size...", "Ctrl+Shift+R", [&] {});
             ui.item("Crop to Selection", "Ctrl+Shift+X", [&] {});
             ui.separator();
             ui.item("Flip Horizontally", [&] {});
@@ -145,9 +172,9 @@ void UIManager::drawMenuBar(EditorState& state) {
 
         ui.menu("Filters", [&] {
             ui.menu("Adjust", [&] {
-                ui.item("Brightness", [&] {});
-                ui.item("Contrast", [&] {});
-                ui.item("Saturation", [&] {});
+                ui.item("Brightness...", [&] {});
+                ui.item("Contrast...", [&] {});
+                ui.item("Saturation...", [&] {});
             });
 
             ui.menu("Color", [&] {
@@ -193,7 +220,7 @@ void UIManager::drawMenuBar(EditorState& state) {
             ui.menu("Smart", [&] {
                 ui.item("Fourier Transform", [&] {});
                 ui.item("Normal Map", [&] {});
-                ui.item("Seam Carving", [&] {});
+                ui.item("Seam Carving...", [&] {});
             });
         });
 
@@ -220,8 +247,6 @@ void UIManager::drawMenuBar(EditorState& state) {
                 Utils::openURL("https://github.com/vuccix/Image-Editor/wiki");
             });
 
-            ui.separator();
-
             ui.item("Report a Bug...", [&] {
                 Utils::openURL("https://github.com/vuccix/Image-Editor/issues/new");
             });
@@ -239,9 +264,9 @@ void UIManager::setTheme(const uint8_t theme) {
     m_selectedTheme = theme;
 
     switch (m_selectedTheme) {
-        case  0: Themes::darkImGuiTheme();    break;
-        case  1: Themes::lightImGuiTheme();   break;
-        case  2: Themes::classicImGuiTheme(); break;
+        case  0: Themes::classicImGuiTheme(); break;
+        case  1: Themes::darkImGuiTheme();    break;
+        case  2: Themes::lightImGuiTheme();   break;
         case  3: Themes::classicValveTheme(); break;
         case  4: Themes::draculaTheme();      break;
         case  5: Themes::discordTheme();      break;

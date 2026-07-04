@@ -1,21 +1,25 @@
 #pragma once
 
 #include <Model/EditorState.h>
+#include <functional>
+
+class Renderer;
 
 class UIManager {
 public:
-    UIManager();
+    explicit UIManager(Renderer& renderer);
 
     // renders UI and modifies state based on user input
-    void render(EditorState& state);
+    void render(EditorState& state, const std::function<void()>& onQuitRequest);
 
 private:
-    uint8_t m_selectedTheme = 0;
+    Renderer& m_renderer;
+    uint8_t   m_selectedTheme = 0;
 
 private:
     void drawToolbar(EditorState& state);
     void drawPropertiesPanel(EditorState& state);
-    void drawMenuBar(EditorState& state);
+    void drawMenuBar(EditorState& state, const std::function<void()>& onQuitRequest);
     void drawCanvas(EditorState& state);
 
     void setTheme(uint8_t theme);

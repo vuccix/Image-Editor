@@ -5,6 +5,7 @@ target_link_libraries(AppView
         imgui
         glm
         glfw
+        Renderer
         PUBLIC
         AppModel
 )

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Canvas/Canvas.h>
+#include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 
 enum class ActiveTool {
@@ -19,4 +21,10 @@ struct EditorState {
 
     bool       requestSave    = false;
     bool       requestLoad    = false;
+
+    float      zoomLevel      = 1.f;
+    glm::vec2  panOffset      = { 0.f, 0.f };
+
+    uint32_t   version        = 0;
+    Canvas     canvas         = { 600, 400 };
 };

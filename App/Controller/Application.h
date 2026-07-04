@@ -16,4 +16,7 @@ private:
     Renderer    m_renderer;
     EditorState m_editorState;
     UIManager   m_ui;
+
+private:
+    uint32_t    m_lastUploadedVersion = -1;
 };
