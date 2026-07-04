@@ -24,16 +24,16 @@ void Layer::resize(const uint32_t w, const uint32_t h) {
     assert(w >= 1 && h >= 1);
 
     std::vector newData(w * h, Pixel{ 0, 0, 0, 0 });
-    const auto  oldSpan    = std::mdspan(m_data.data(), m_height, m_width);
-    const auto  newSpan    = std::mdspan(newData.data(), h, w);
+    const auto  oldSpan   = std::mdspan(m_data.data(), m_height, m_width);
+    const auto  newSpan   = std::mdspan(newData.data(), h, w);
 
-    const int32_t w_offset = (static_cast<int32_t>(w) - static_cast<int32_t>(m_width))  / 2;
-    const int32_t h_offset = (static_cast<int32_t>(h) - static_cast<int32_t>(m_height)) / 2;
+    const int32_t wOffset = (static_cast<int32_t>(w) - static_cast<int32_t>(m_width))  / 2;
+    const int32_t hOffset = (static_cast<int32_t>(h) - static_cast<int32_t>(m_height)) / 2;
 
     for (uint32_t y = 0; y < m_height; ++y) {
         for (uint32_t x = 0; x < m_width; ++x) {
-            const int32_t newX = static_cast<int32_t>(x) + w_offset;
-            const int32_t newY = static_cast<int32_t>(y) + h_offset;
+            const int32_t newX = static_cast<int32_t>(x) + wOffset;
+            const int32_t newY = static_cast<int32_t>(y) + hOffset;
 
             if (newX >= 0 && static_cast<uint32_t>(newX) < w && newY >= 0 && static_cast<uint32_t>(newY) < h)
                 newSpan[newY, newX] = oldSpan[y, x];

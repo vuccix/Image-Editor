@@ -12,6 +12,7 @@ struct Pixel {
     uint8_t a = 255;
 
     uint8_t operator[](uint32_t channel) const;
+    auto operator<=>(const Pixel&) const = default;
 };
 
 class Layer {

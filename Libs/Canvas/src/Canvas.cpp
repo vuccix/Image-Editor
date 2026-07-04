@@ -109,22 +109,19 @@ void Canvas::moveLayerToIndex(const size_t layerID, const size_t index) {
 }
 
 void Canvas::updateComposite() {
+    assert(m_layers.empty() == false && "Canvas has no layers!");
+    assert(m_width > 0 && m_height > 0 && "Incorrect width and/or height!");
+
     if (m_composite.width != m_width || m_composite.height != m_height) {
         m_composite.width  = m_width;
         m_composite.height = m_height;
         m_composite.pixels.resize(m_width * m_height * sizeof(Pixel));
     }
 
-    const size_t numLayers = m_layers.size();
-    if (numLayers == 0) {
-        std::ranges::fill(m_composite.pixels, 0);
-        return;
-    }
-
     auto mergePixelStack = [&](const uint32_t x, const uint32_t y) -> Pixel {
         Pixel res = m_layers[0].pixels()[y, x];
 
-        for (size_t i = 1; i < numLayers; ++i) {
+        for (size_t i = 1; i < m_layers.size(); ++i) {
             const auto& layer = m_layers[i];
 
             // skip hidden layers
