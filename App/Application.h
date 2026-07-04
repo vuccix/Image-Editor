@@ -12,11 +12,11 @@ public:
     void run();
 
 private:
-    Window      m_window;
-    Renderer    m_renderer;
-    EditorState m_editorState;
-    UIManager   m_ui;
+    Window         m_window;
+    Renderer       m_renderer;
+    EditorState    m_editorState;
+    UIManager      m_ui;
 
 private:
-    uint32_t    m_lastUploadedVersion = -1;
+    uint32_t       m_lastUploadedVersion = -1;
 };

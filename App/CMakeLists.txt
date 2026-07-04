@@ -2,7 +2,7 @@ add_subdirectory(Model)
 add_subdirectory(View)
 add_subdirectory(Controller)
 
-add_executable(Editor main.cpp)
+add_executable(Editor main.cpp Application.cpp)
 
 target_link_libraries(Editor
         PRIVATE

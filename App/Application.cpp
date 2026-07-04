@@ -1,4 +1,4 @@
-#include <Controller/Application.h>
+#include "Application.h"
 
 Application::Application() : m_window(1280, 720, "Paint++"),
                              m_ui(m_renderer) {}
