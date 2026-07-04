@@ -1,10 +1,12 @@
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "*.cpp")
+add_library(AppView OBJECT UIManager.cpp Utils.cpp UI/EditorThemes.cpp UI/UI.cpp)
 
-target_sources(Editor PRIVATE ${SOURCES})
-
-target_link_libraries(Editor
+target_link_libraries(AppView
         PRIVATE
         imgui
         glm
         glfw
+        PUBLIC
+        AppModel
 )
+
+target_include_directories(AppView PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

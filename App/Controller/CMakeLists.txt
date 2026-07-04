@@ -1,7 +1,11 @@
-target_sources(Editor PRIVATE Application.cpp)
+add_library(AppController OBJECT Application.cpp)
 
-target_link_libraries(Editor
-        PRIVATE
-        Window
+target_link_libraries(AppController
+        PUBLIC
         Renderer
+        Window
+        AppModel
+        AppView
 )
+
+target_include_directories(AppController PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
