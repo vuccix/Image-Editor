@@ -17,7 +17,7 @@ Renderer::~Renderer() {
         glDeleteTextures(1, &m_texture);
 }
 
-uint32_t Renderer::textureID() const {
+uint32_t Renderer::textureID() const noexcept {
     return m_texture;
 }
 

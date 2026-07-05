@@ -153,6 +153,6 @@ const Image& Canvas::getComposite() {
 const Layer& Canvas::operator[](const size_t layerID) const { return m_layers[layerID]; }
       Layer& Canvas::operator[](const size_t layerID)       { return m_layers[layerID]; }
 
-uint32_t Canvas::width()      const { return m_width;         }
-uint32_t Canvas::height()     const { return m_height;        }
-size_t   Canvas::layerCount() const { return m_layers.size(); }
+uint32_t Canvas::width()      const noexcept { return m_width;         }
+uint32_t Canvas::height()     const noexcept { return m_height;        }
+size_t   Canvas::layerCount() const noexcept { return m_layers.size(); }

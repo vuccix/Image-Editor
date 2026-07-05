@@ -30,9 +30,9 @@ public:
     const Layer& operator[](size_t layerID) const;
           Layer& operator[](size_t layerID);
 
-    uint32_t width()      const;
-    uint32_t height()     const;
-    size_t   layerCount() const;
+    uint32_t width()      const noexcept;
+    uint32_t height()     const noexcept;
+    size_t   layerCount() const noexcept;
 
 private:
     std::vector<Layer> m_layers;
