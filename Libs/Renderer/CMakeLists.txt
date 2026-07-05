@@ -1,4 +1,4 @@
-add_library(Renderer STATIC src/Renderer.cpp)
+add_library(Renderer STATIC src/Renderer.cpp src/Texture.cpp)
 
 target_include_directories(Renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
