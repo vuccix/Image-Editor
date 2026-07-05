@@ -274,12 +274,9 @@ void UIManager::drawMenuBar(EditorState& state, const std::function<void()>& onQ
             ui.item("Configure Paint++...", [&] {});
             ui.separator();
             ui.menu("Themes", [&] {
-                ui.item("Discord",       (m_selectedTheme ==  5), [&] { setTheme(5);  });
-                ui.item("EnemyMouse",    (m_selectedTheme ==  6), [&] { setTheme(6);  });
-                ui.item("Green",         (m_selectedTheme ==  7), [&] { setTheme(7);  });
-                ui.item("Photoshop",     (m_selectedTheme ==  8), [&] { setTheme(8);  });
-                ui.item("Visual Studio", (m_selectedTheme ==  9), [&] { setTheme(9);  });
-                ui.item("ProgTest",      (m_selectedTheme == 10), [&] { setTheme(10); });
+                ui.item("Classic ImGui", (m_theme ==  0), [&] { setTheme(0);  });
+                ui.item("Dark ImGui",    (m_theme ==  1), [&] { setTheme(1);  });
+                ui.item("Light ImGui",   (m_theme ==  2), [&] { setTheme(2);  });
                 ui.item("Classic Valve", (m_theme ==  3), [&] { setTheme(3);  });
                 ui.item("Dracula",       (m_theme ==  4), [&] { setTheme(4);  });
                 ui.item("Discord",       (m_theme ==  5), [&] { setTheme(5);  });
