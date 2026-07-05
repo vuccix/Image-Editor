@@ -14,7 +14,7 @@ public:
 
 private:
     Renderer& m_renderer;
-    uint8_t   m_selectedTheme = 0;
+    uint8_t   m_theme    = 0;
 
 private:
     void drawToolbar(EditorState& state);
