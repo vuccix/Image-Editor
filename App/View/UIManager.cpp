@@ -93,7 +93,7 @@ void UIManager::drawCanvas(EditorState& state) {
         // draw checkerboard background
         constexpr float checkerSize = 16.f;
         const     auto  uvMax       = ImVec2(scaledWidth / checkerSize, scaledHeight / checkerSize);
-        drawList->AddImage(static_cast<ImTextureID>(static_cast<intptr_t>(m_assets.get("transparent"))),
+        drawList->AddImage(static_cast<ImTextureID>(static_cast<intptr_t>(m_assets.get(Asset::Checkerboard))),
                            pMin, pMax, ImVec2(0, 0), uvMax);
 
         // draw canvas composite
