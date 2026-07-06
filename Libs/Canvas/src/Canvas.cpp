@@ -33,7 +33,8 @@ void Canvas::deleteLayer(const size_t layerID) {
 
 void Canvas::duplicateLayer(const size_t layerID) {
     assert(layerID < m_layers.size());
-    m_layers.insert(m_layers.begin() + layerID + 1, m_layers[layerID]);
+    const auto layer = m_layers.insert(m_layers.begin() + layerID + 1, m_layers[layerID]);
+    layer->name      = layer->name + " (copy)";
 }
 
 namespace {
