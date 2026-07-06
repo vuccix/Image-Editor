@@ -9,6 +9,8 @@ target_link_libraries(Editor
         AppController
         AppView
         AppModel
+        Window
+        Renderer
 )
 
 ## TODO: enable

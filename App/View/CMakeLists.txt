@@ -6,8 +6,9 @@ target_link_libraries(AppView
         glm
         glfw
         Renderer
-        PUBLIC
         AppModel
+        AppController
+        PUBLIC
         Assets
 )
 
