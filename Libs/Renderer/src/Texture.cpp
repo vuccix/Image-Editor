@@ -1,12 +1,17 @@
 #include <Renderer/Texture.h>
 #include <glad/glad.h>
 #include <utility>
+#include <cassert>
 
 Texture::Texture(const uint32_t width, const uint32_t height, const std::span<const uint8_t> rgbaPixels)
         : m_width(width), m_height(height) {
 
+    assert(width > 0 && height > 0);
+
     glGenTextures(1, &m_texture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
+
+    assert(glIsTexture(m_texture) == GL_TRUE);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -52,6 +57,8 @@ Texture& Texture::operator=(Texture&& other) noexcept {
 }
 
 void Texture::resize(const uint32_t width, const uint32_t height) {
+    assert(width > 0 && height > 0);
+
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
     // allocate memory on the GPU without uploading data
@@ -72,6 +79,8 @@ void Texture::resize(const uint32_t width, const uint32_t height) {
 }
 
 void Texture::update(const std::span<const uint8_t> rgbaPixels) {
+    assert(rgbaPixels.empty() == false);
+
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
     // replace existing GPU pixels
