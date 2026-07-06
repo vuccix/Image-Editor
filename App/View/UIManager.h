@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Model/EditorState.h>
+#include <Assets/AssetManager.h>
 #include <functional>
 
 class Renderer;
@@ -13,8 +14,9 @@ public:
     void render(EditorState& state, const std::function<void()>& onQuitRequest);
 
 private:
-    Renderer& m_renderer;
-    uint8_t   m_theme    = 0;
+    AssetManager m_assets;
+    Renderer&    m_renderer;
+    uint8_t      m_theme    = 0;
 
 private:
     void drawToolbar(EditorState& state);

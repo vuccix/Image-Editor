@@ -9,6 +9,7 @@
 UIManager::UIManager(Renderer& renderer) : m_renderer(renderer) {
     ui.init();
     setTheme(2);
+    Utils::loadAssets(m_assets);
 }
 
 void UIManager::render(EditorState& state, const std::function<void()>& onQuitRequest) {
@@ -89,7 +90,11 @@ void UIManager::drawCanvas(EditorState& state) {
             }
         }
 
-        // TODO: draw transparency checkerboard background
+        // draw checkerboard background
+        constexpr float checkerSize = 16.f;
+        const     auto  uvMax       = ImVec2(scaledWidth / checkerSize, scaledHeight / checkerSize);
+        drawList->AddImage(static_cast<ImTextureID>(static_cast<intptr_t>(m_assets.get("transparent"))),
+                           pMin, pMax, ImVec2(0, 0), uvMax);
 
         // draw canvas composite
         drawList->AddImage(static_cast<ImTextureID>(static_cast<intptr_t>(m_renderer.textureID())),

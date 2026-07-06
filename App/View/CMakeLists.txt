@@ -8,6 +8,7 @@ target_link_libraries(AppView
         Renderer
         PUBLIC
         AppModel
+        Assets
 )
 
 target_include_directories(AppView PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
