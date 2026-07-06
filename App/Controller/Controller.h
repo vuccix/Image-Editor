@@ -8,7 +8,9 @@ public:
     Controller();
 
     void execute(EditorState& state, std::unique_ptr<Command> command);
+
     void undo(EditorState& state);
+    void redo(EditorState& state);
 
     void setHistoryLength(size_t length);
 

@@ -20,6 +20,16 @@ void Controller::undo(EditorState& state) {
     m_redoStack.emplace_back(std::move(command));
 }
 
+void Controller::redo(EditorState& state) {
+    if (m_redoStack.empty()) return;
+
+    auto command = std::move(m_redoStack.back());
+    m_redoStack.pop_back();
+
+    command->execute(state);
+    m_undoStack.emplace_back(std::move(command));
+}
+
 void Controller::setHistoryLength(const size_t length) {
     m_undoStack.reserve(length);
     m_redoStack.reserve(length);

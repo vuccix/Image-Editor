@@ -11,5 +11,5 @@ public:
     virtual void execute(EditorState& state) = 0;
     virtual void undo(EditorState& state)    = 0;
 
-    virtual std::string getName() const = 0;
+    virtual std::string getName() const      = 0;
 };
