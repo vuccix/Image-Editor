@@ -5,7 +5,7 @@
 
 class Texture {
 public:
-    Texture(uint32_t width, uint32_t height, std::span<const uint32_t> rgbaPixels);
+    Texture(uint32_t width, uint32_t height, std::span<const uint8_t> rgbaPixels);
    ~Texture();
 
     Texture(const Texture&)            = delete;

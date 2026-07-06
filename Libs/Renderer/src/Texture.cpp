@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <utility>
 
-Texture::Texture(const uint32_t width, const uint32_t height, const std::span<const uint32_t> rgbaPixels)
+Texture::Texture(const uint32_t width, const uint32_t height, const std::span<const uint8_t> rgbaPixels)
         : m_width(width), m_height(height) {
 
     glGenTextures(1, &m_textureId);
