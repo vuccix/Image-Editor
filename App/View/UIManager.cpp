@@ -150,12 +150,155 @@ void UIManager::drawToolbar(EditorState& state) {
 }
 
 void UIManager::drawPropertiesPanel(EditorState& state) {
-    ui.window("Layers", [&] {
+    assert(state.canvas.layerCount() > 0);
 
+    ui.window("Layers", [&] {
+        Canvas& canvas          = state.canvas;
+        const size_t layerCount = canvas.layerCount();
+        bool hasChanged         = false;
+
+        if (state.selectedLayerID >= layerCount)
+            state.selectedLayerID = static_cast<uint32_t>(layerCount - 1);
+
+        Layer& selectedLayer = canvas[state.selectedLayerID];
+
+        // selected layer properties ===================================================================================
+
+        ImGui::PushID("SelectedLayerControls");
+
+        // blending mode dropdown
+        constexpr const char* blendModes[] = { "Normal", "Multiply", "Screen", "Overlay", "Darken", "Lighten" };
+        static int32_t currentBlendMode    = 0; // placeholder state
+
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+        if (ImGui::Combo("##BlendMode", &currentBlendMode, blendModes, IM_ARRAYSIZE(blendModes))) {
+            // selectedLayer.blendMode = currentBlendMode;
+        }
+
+        ImGui::SameLine();
+        ImGui::TextUnformatted("Blend Mode");
+
+        float opacity = selectedLayer.opacity * 100.f;
+        float fill    = selectedLayer.fill    * 100.f;
+
+        // opacity slider
+        if (ImGui::SliderFloat("Opacity", &opacity, 0.f, 100.f, "%.0f%%")) {
+            selectedLayer.opacity = opacity * 0.01f;
+            hasChanged            = true;
+        }
+
+        // fill slider
+        if (ImGui::SliderFloat("Fill", &fill, 0.f, 100.f, "%.0f%%")) {
+            selectedLayer.fill = fill * 0.01f;
+            hasChanged         = true;
+        }
+
+        ImGui::PopID();
+        ImGui::Separator();
+
+        // layer stack list ============================================================================================
+
+        const float footerHeight = ImGui::GetFrameHeightWithSpacing() + ImGui::GetStyle().ItemSpacing.y;
+        ImGui::BeginChild("LayerList", ImVec2(0, -footerHeight), ImGuiChildFlags_Borders);
+
+        size_t moveFrom = SIZE_MAX;
+        size_t moveTo   = SIZE_MAX;
+
+        for (size_t i = layerCount; i-- > 0; ) {
+            Layer& layer = canvas[i];
+
+            ImGui::PushID(static_cast<int32_t>(i));
+
+            const bool isSelected = (state.selectedLayerID == i);
+
+            ImGui::BeginGroup();
+
+            // visibility checkbox
+            if (ImGui::Checkbox("##visible", &layer.isActive))
+                hasChanged = true;
+
+            ImGui::SameLine();
+
+            // thumbnail preview
+            // ImTextureID thumbTex = (ImTextureID)(intptr_t)layer.getThumbnailTextureID();
+            constexpr ImTextureID thumbTex = static_cast<intptr_t>(0); // placeholder
+            ImGui::Image(thumbTex, ImVec2(24, 24), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 0.5f));
+            ImGui::SameLine();
+
+            // selectable layer row
+            std::string label = layer.name + "##selectable";
+            if (ImGui::Selectable(label.c_str(), isSelected, ImGuiSelectableFlags_None, ImVec2(0, 24)))
+                state.selectedLayerID = static_cast<uint32_t>(i);
+
+            ImGui::EndGroup();
+
+            // drag and drop reordering
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+                ImGui::SetDragDropPayload("DND_LAYER_INDEX", &i, sizeof(size_t)); // <-- FIXED: changed to sizeof(size_t)
+                ImGui::Text("%s", layer.name.c_str());
+                ImGui::EndDragDropSource();
+            }
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_LAYER_INDEX")) {
+                    moveFrom = *static_cast<const size_t*>(payload->Data);
+                    moveTo   = i;
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::PopID();
+        }
+
+        // reorder if a drag and drop finished
+        if (moveFrom != SIZE_MAX && moveTo != SIZE_MAX && moveFrom != moveTo) {
+            canvas.moveLayerToIndex(moveFrom, moveTo);
+            state.selectedLayerID = static_cast<uint32_t>(moveTo); // keep moved layer selected
+            hasChanged            = true;
+        }
+
+        ImGui::EndChild();
+        ImGui::Separator();
+
+        // action buttons footer =======================================================================================
+
+        if (ImGui::Button("+ New")) {
+            canvas.addLayer();
+            state.selectedLayerID = static_cast<uint32_t>(canvas.layerCount() - 1);
+            hasChanged = true;
+        }
+        ImGui::SameLine();
+
+        if (ImGui::Button("Duplicate")) {
+            canvas.duplicateLayer(state.selectedLayerID);
+            state.selectedLayerID = static_cast<uint32_t>(canvas.layerCount() - 1);
+            hasChanged = true;
+        }
+        ImGui::SameLine();
+
+        const bool hasLayers = layerCount > 1;
+        if (!hasLayers) ImGui::BeginDisabled();
+
+        if (ImGui::Button("Delete")) {
+            canvas.deleteLayer(state.selectedLayerID);
+            hasChanged = true;
+
+            if (canvas.layerCount() == 0)
+                state.selectedLayerID = 0;
+
+            else if (state.selectedLayerID >= canvas.layerCount())
+                state.selectedLayerID = static_cast<uint32_t>(canvas.layerCount() - 1);
+        }
+
+        if (!hasLayers) ImGui::EndDisabled();
+
+        if (hasChanged) {
+            state.canvas.updateComposite();
+            ++state.version;
+        }
     });
 
     ui.window("History", [&] {
-
+        // TODO
     });
 }
 
