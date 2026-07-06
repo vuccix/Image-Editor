@@ -31,9 +31,10 @@ void Layer::resize(const uint32_t w, const uint32_t h) {
     const int32_t hOffset = (static_cast<int32_t>(h) - static_cast<int32_t>(m_height)) / 2;
 
     for (uint32_t y = 0; y < m_height; ++y) {
+        const int32_t newY = static_cast<int32_t>(y) + hOffset;
+
         for (uint32_t x = 0; x < m_width; ++x) {
             const int32_t newX = static_cast<int32_t>(x) + wOffset;
-            const int32_t newY = static_cast<int32_t>(y) + hOffset;
 
             if (newX >= 0 && static_cast<uint32_t>(newX) < w && newY >= 0 && static_cast<uint32_t>(newY) < h)
                 newSpan[newY, newX] = oldSpan[y, x];
@@ -56,9 +57,10 @@ void Layer::scale(const uint32_t w, const uint32_t h) {
     const double scaleY = static_cast<double>(m_height) / h;
 
     for (uint32_t y = 0; y < h; ++y) {
+        const double yFactor = y * scaleY;
+
         for (uint32_t x = 0; x < w; ++x) {
             const double xFactor = x * scaleX;
-            const double yFactor = y * scaleY;
 
             const uint32_t oldX  = std::clamp(static_cast<uint32_t>(std::floor(xFactor)), 0u, m_width  - 1);
             const uint32_t oldY  = std::clamp(static_cast<uint32_t>(std::floor(yFactor)), 0u, m_height - 1);
@@ -79,3 +81,11 @@ std::mdspan<const Pixel, std::dextents<size_t, 2>> Layer::pixels() const {
 std::mdspan<Pixel, std::dextents<size_t, 2>> Layer::pixels() {
     return std::mdspan(m_data.data(), m_height, m_width);
 }
+
+void Layer::setData(std::vector<Pixel> data) {
+    m_data = std::move(data);
+}
+
+std::vector<Pixel> Layer::copyData() const { return m_data;   }
+uint32_t           Layer::width()    const { return m_width;  }
+uint32_t           Layer::height()   const { return m_height; }

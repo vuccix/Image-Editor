@@ -25,6 +25,12 @@ public:
     std::mdspan<const Pixel, std::dextents<size_t, 2>> pixels() const;
     std::mdspan<Pixel,       std::dextents<size_t, 2>> pixels();
 
+    void setData(std::vector<Pixel> data);
+    std::vector<Pixel> copyData() const;
+
+    uint32_t width() const;
+    uint32_t height() const;
+
 public:
     std::string        name;
     bool               isActive = true;

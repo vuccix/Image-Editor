@@ -2,7 +2,7 @@
 #include <cassert>
 #include <format>
 
-Canvas::Canvas(const uint32_t w, const uint32_t h) : m_width(w), m_height(h), m_composite{} {
+Canvas::Canvas(const uint32_t w, const uint32_t h) : m_width(w), m_height(h) {
     m_layers.emplace_back(m_width, m_height, "Background");
 }
 
