@@ -14,17 +14,18 @@ enum class ActiveTool {
 };
 
 struct EditorState {
-    ActiveTool activeTool     = ActiveTool::Brush;
-    float      brushSize      = 10.f;
-    glm::vec4  primaryColor   = { 1.f, 1.f, 1.f, 1.f };
-    glm::vec4  secondaryColor = { 0.f, 0.f, 0.f, 1.f };
+    ActiveTool activeTool      = ActiveTool::Brush;
+    float      brushSize       = 10.f;
+    glm::vec4  primaryColor    = { 1.f, 1.f, 1.f, 1.f };
+    glm::vec4  secondaryColor  = { 0.f, 0.f, 0.f, 1.f };
 
-    bool       requestSave    = false;
-    bool       requestLoad    = false;
+    bool       requestSave     = false;
+    bool       requestLoad     = false;
 
-    float      zoomLevel      = 1.f;
-    glm::vec2  panOffset      = { 0.f, 0.f };
+    float      zoomLevel       = 1.f;
+    glm::vec2  panOffset       = { 0.f, 0.f };
 
-    uint32_t   version        = 0;
-    Canvas     canvas         = { 600, 400 };
+    Canvas     canvas          = { 600, 400 };
+    uint32_t   version         = 0;
+    uint32_t   selectedLayerID = 0;
 };
