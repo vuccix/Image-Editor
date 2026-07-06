@@ -23,7 +23,7 @@ void loadAssets(AssetManager& assetManager) {
             255, 255, 255, 255,   200, 200, 200, 255
         };
 
-        assetManager.load("transparent", 2, 2, checkerData);
+        assetManager.load(2, 2, checkerData);
     }
 
     // ...
