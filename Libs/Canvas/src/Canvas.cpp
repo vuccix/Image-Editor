@@ -120,11 +120,9 @@ void Canvas::updateComposite() {
     }
 
     auto mergePixelStack = [&](const uint32_t x, const uint32_t y) -> Pixel {
-        Pixel res = m_layers[0].pixels()[y, x];
+        Pixel res{ 0, 0, 0, 0 };
 
-        for (size_t i = 1; i < m_layers.size(); ++i) {
-            const auto& layer = m_layers[i];
-
+        for (const Layer& layer : m_layers) {
             // skip hidden layers
             if (!layer.isActive)
                 continue;
