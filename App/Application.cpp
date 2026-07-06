@@ -20,7 +20,7 @@ void Application::run() {
             m_lastUploadedVersion = m_editorState.version;
         }
 
-        m_ui.render(m_editorState, [this] { m_window.close(); });
+        m_ui.render(m_editorState, m_controller, [this] { m_window.close(); });
 
         m_window.swapBuffers();
     }

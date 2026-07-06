@@ -3,6 +3,8 @@
 #include "UI/EditorThemes.h"
 #include "Utils.h"
 #include <Renderer/Renderer.h>
+#include <Model/EditorState.h>
+#include <Controller/Controller.h>
 #include <ImGui/imgui.h>
 #include <array>
 
@@ -12,10 +14,10 @@ UIManager::UIManager(Renderer& renderer) : m_renderer(renderer) {
     Utils::loadAssets(m_assets);
 }
 
-void UIManager::render(EditorState& state, const std::function<void()>& onQuitRequest) {
+void UIManager::render(EditorState& state, Controller& controller, const std::function<void()>& onQuitRequest) {
     ui.beginFrame();
     ui.dockspace([&] {
-        drawMenuBar(state, onQuitRequest);
+        drawMenuBar(state, controller, onQuitRequest);
     });
 
     drawToolbar(state);
@@ -201,11 +203,11 @@ void UIManager::drawPropertiesPanel(EditorState& state) {
             const float footerHeight = ImGui::GetFrameHeightWithSpacing() + ImGui::GetStyle().ItemSpacing.y;
             ImGui::BeginChild("LayerList", ImVec2(0, -footerHeight), ImGuiChildFlags_Borders);
 
-            size_t moveFrom = SIZE_MAX;
-            size_t moveTo   = SIZE_MAX;
-
             const ImGuiStyle& style   = ImGui::GetStyle();
             constexpr float rowHeight = 48.f;
+
+            size_t moveFrom           = SIZE_MAX;
+            size_t moveTo             = SIZE_MAX;
 
             for (size_t i = layerCount; i-- > 0; ) {
                 Layer& layer = canvas[i];
@@ -319,7 +321,7 @@ void UIManager::drawPropertiesPanel(EditorState& state) {
     });
 }
 
-void UIManager::drawMenuBar(EditorState& state, const std::function<void()>& onQuitRequest) {
+void UIManager::drawMenuBar(EditorState& state, Controller& controller, const std::function<void()>& onQuitRequest) {
     ui.menuBar([&] {
         ui.menu("File", [&] {
             ui.item("New...", "Ctrl+N", [&] {});

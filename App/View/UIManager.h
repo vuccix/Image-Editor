@@ -1,17 +1,18 @@
 #pragma once
 
-#include <Model/EditorState.h>
 #include <Assets/AssetManager.h>
 #include <functional>
 
 class Renderer;
+class EditorState;
+class Controller;
 
 class UIManager {
 public:
     explicit UIManager(Renderer& renderer);
 
     // renders UI and modifies state based on user input
-    void render(EditorState& state, const std::function<void()>& onQuitRequest);
+    void render(EditorState& state, Controller& controller, const std::function<void()>& onQuitRequest);
 
 private:
     AssetManager m_assets;
@@ -21,7 +22,7 @@ private:
 private:
     void drawToolbar(EditorState& state);
     void drawPropertiesPanel(EditorState& state);
-    void drawMenuBar(EditorState& state, const std::function<void()>& onQuitRequest);
+    void drawMenuBar(EditorState& state, Controller& controller, const std::function<void()>& onQuitRequest);
     void drawCanvas(EditorState& state);
 
     void setTheme(uint8_t theme);
