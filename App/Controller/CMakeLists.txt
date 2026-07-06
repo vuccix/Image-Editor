@@ -1,4 +1,4 @@
-add_library(AppController OBJECT Application.cpp)
+add_library(AppController OBJECT Controller.cpp)
 
 target_link_libraries(AppController
         PUBLIC
