@@ -390,9 +390,9 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
 
         ui.menu("Filters", [&] {
             ui.menu("Adjust", [&] {
-                ui.item("Brightness...", [&] { exec(Cmd::brightness(25)); });
-                ui.item("Contrast...",   [&] { exec(Cmd::contrast(5.f));  });
-                ui.item("Saturation...", [&] {});
+                ui.item("Brightness...", [&] { exec(Cmd::brightness(25));  });
+                ui.item("Contrast...",   [&] { exec(Cmd::contrast(5.f));   });
+                ui.item("Saturation...", [&] { exec(Cmd::saturation(-5.f)); });
             });
 
             ui.menu("Color", [&] {
