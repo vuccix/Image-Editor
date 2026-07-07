@@ -13,6 +13,10 @@ public:
     void redo(EditorState& state);
 
     void setHistoryLength(size_t length);
+    size_t getHistoryLength() const noexcept;
+
+    bool hasUndo() const;
+    bool hasRedo() const;
 
 private:
     std::vector<std::unique_ptr<Command>> m_undoStack;
