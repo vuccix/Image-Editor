@@ -92,6 +92,16 @@ void UI::item(const char* label, const char* shortcut, auto&& callback) {
         std::invoke(std::forward<decltype(callback)>(callback));
 }
 
+void UI::disabled(const bool isDisabled, auto&& body) {
+    if (isDisabled)
+        ImGui::BeginDisabled();
+
+    std::invoke(std::forward<decltype(body)>(body));
+
+    if (isDisabled)
+        ImGui::EndDisabled();
+}
+
 void UI::table(const char* label, const int columns, auto&& body) {
     if (ImGui::BeginTable(label, columns, ImGuiTableFlags_SizingStretchProp)) {
         body();

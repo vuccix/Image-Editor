@@ -19,6 +19,8 @@ struct UI {
     void item(const char* label, bool isSelected, auto&& callback);
     void item(const char* label, const char* shortcut, auto&& callback);
 
+    void disabled(bool isDisabled, auto&& body);
+
     void separator();
     void spacing();
 
