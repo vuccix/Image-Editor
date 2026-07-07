@@ -35,3 +35,10 @@ void Controller::setHistoryLength(const size_t length) {
     m_redoStack.reserve(length);
     m_historyLength = length;
 }
+
+size_t Controller::getHistoryLength() const noexcept {
+    return m_historyLength;
+}
+
+bool Controller::hasUndo() const { return !m_undoStack.empty(); }
+bool Controller::hasRedo() const { return !m_redoStack.empty(); }
