@@ -5,8 +5,9 @@ set(CMAKE_CXX_STANDARD           23)
 set(CMAKE_CXX_STANDARD_REQUIRED  ON)
 set(CMAKE_CXX_EXTENSIONS        OFF)
 
-add_compile_options(-Wall -Wpedantic -Wextra -Werror)
-add_compile_options(-g -O3) # TODO: remove later
+add_compile_options(-Wall -Wpedantic #[[-Wextra -Werror]])
+add_compile_options(-g -O3 -fopenmp) # TODO: remove later
+add_link_options(-fopenmp)
 
 option(BUILD_SHARED_LIBS OFF)
 

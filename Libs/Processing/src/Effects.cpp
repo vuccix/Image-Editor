@@ -1,5 +1,30 @@
 #include <Processing/Effects.h>
 #include <Canvas/Layer.h>
+#include <algorithm>
+#include <omp.h>
+
+void Effects::flipHorizontally(Layer& image) {
+    const auto pixels = image.pixels();
+
+    #pragma omp parallel for
+    for (uint32_t y = 0; y < image.height(); ++y) {
+        Pixel* rowStart = &pixels[y, 0];
+        std::ranges::reverse(rowStart, rowStart + image.width());
+    }
+}
+
+void Effects::flipVertically(Layer& image) {
+    const auto pixels     = image.pixels();
+    const uint32_t height = image.height();
+
+    #pragma omp parallel for collapse(2)
+    for (uint32_t y = 0; y < height / 2; ++y) {
+        for (uint32_t x = 0; x < image.width(); ++x) {
+            const uint32_t targetY = height - 1 - y;
+            std::swap(pixels[y, x], pixels[targetY, x]);
+        }
+    }
+}
 
 void Effects::invert(Layer& image) {
     const auto pixels = image.pixels();
