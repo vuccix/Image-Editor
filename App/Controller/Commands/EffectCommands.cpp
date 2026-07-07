@@ -1,72 +1,60 @@
 #include "EffectCommands.h"
 #include <Processing/Effects.h>
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace Cmd {
 
-void FlipHorizontalCommand::execute(EditorState& state) {
+LayerEffectCommand::LayerEffectCommand(std::string name, std::move_only_function<void(Layer&)> effectFunc)
+    : m_name(std::move(name)), m_effectFunc(std::move(effectFunc)) {}
+
+void LayerEffectCommand::execute(EditorState& state) {
     m_layerID    = state.selectedLayerID;
     Layer& layer = state.canvas[m_layerID];
     m_backup     = layer.copyData();
 
-    Effects::flipHorizontally(layer);
+    m_effectFunc(layer);
     ++state.version;
 }
 
-void FlipHorizontalCommand::undo(EditorState& state) {
+void LayerEffectCommand::undo(EditorState& state) {
     Layer& layer = state.canvas[m_layerID];
     layer.setData(std::move(m_backup));
     ++state.version;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void FlipVerticalCommand::execute(EditorState& state) {
-    m_layerID    = state.selectedLayerID;
-    Layer& layer = state.canvas[m_layerID];
-    m_backup     = layer.copyData();
-
-    Effects::flipVertically(layer);
-    ++state.version;
+std::string LayerEffectCommand::getName() const {
+    return m_name;
 }
 
-void FlipVerticalCommand::undo(EditorState& state) {
-    Layer& layer = state.canvas[m_layerID];
-    layer.setData(std::move(m_backup));
-    ++state.version;
+std::unique_ptr<LayerEffectCommand> flipHoriz() {
+    return std::make_unique<LayerEffectCommand>(
+        "Flip Horizontally", [](Layer& layer) {
+            Effects::flipHorizontally(layer);
+        }
+    );
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void InvertCommand::execute(EditorState& state) {
-    m_layerID    = state.selectedLayerID;
-    Layer& layer = state.canvas[m_layerID];
-    m_backup     = layer.copyData();
-
-    Effects::invert(layer);
-    ++state.version;
+std::unique_ptr<LayerEffectCommand> flipVert() {
+    return std::make_unique<LayerEffectCommand>(
+        "Flip Vertically", [](Layer& layer) {
+            Effects::flipVertically(layer);
+        }
+    );
 }
 
-void InvertCommand::undo(EditorState& state) {
-    Layer& layer = state.canvas[m_layerID];
-    layer.setData(std::move(m_backup));
-    ++state.version;
+std::unique_ptr<LayerEffectCommand> invert() {
+    return std::make_unique<LayerEffectCommand>(
+        "Invert Colors", [](Layer& layer) {
+            Effects::invert(layer);
+        }
+    );
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void InvertAlphaCommand::execute(EditorState& state) {
-    m_layerID    = state.selectedLayerID;
-    Layer& layer = state.canvas[m_layerID];
-    m_backup     = layer.copyData();
-
-    Effects::invertAlpha(layer);
-    ++state.version;
+std::unique_ptr<LayerEffectCommand> invertAlpha() {
+    return std::make_unique<LayerEffectCommand>(
+        "Invert Alpha", [](Layer& layer) {
+            Effects::invertAlpha(layer);
+        }
+    );
 }
 
-void InvertAlphaCommand::undo(EditorState& state) {
-    Layer& layer = state.canvas[m_layerID];
-    layer.setData(std::move(m_backup));
-    ++state.version;
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

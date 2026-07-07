@@ -1,69 +1,32 @@
 #pragma once
 
 #include <Controller/Command.h>
+#include <functional>
+#include <string>
+#include <vector>
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace Cmd {
 
-class FlipHorizontalCommand : public Command {
-public:
-    void execute(EditorState& state) override;
-    void undo(EditorState& state) override;
+    class LayerEffectCommand : public Command {
+    public:
+        LayerEffectCommand(std::string name, std::move_only_function<void(Layer&)> effectFunc);
 
-    std::string getName() const override {
-        return "Flip Horizontally";
-    }
+        void execute(EditorState& state) override;
+        void undo(EditorState& state)    override;
+        std::string getName() const      override;
 
-private:
-    std::vector<Pixel> m_backup;
-    size_t             m_layerID = SIZE_MAX;
-};
+    private:
+        std::string                           m_name;
+        std::move_only_function<void(Layer&)> m_effectFunc;
+        std::vector<Pixel>                    m_backup;
+        size_t                                m_layerID = SIZE_MAX;
+    };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // -----------------------------------------------------------------------------------------------------------------
 
-class FlipVerticalCommand : public Command {
-public:
-    void execute(EditorState& state) override;
-    void undo(EditorState& state) override;
+    std::unique_ptr<LayerEffectCommand> flipHoriz();
+    std::unique_ptr<LayerEffectCommand> flipVert();
+    std::unique_ptr<LayerEffectCommand> invert();
+    std::unique_ptr<LayerEffectCommand> invertAlpha();
 
-    std::string getName() const override {
-        return "Flip Vertically";
-    }
-
-private:
-    std::vector<Pixel> m_backup;
-    size_t             m_layerID = SIZE_MAX;
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-class InvertCommand : public Command {
-public:
-    void execute(EditorState& state) override;
-    void undo(EditorState& state) override;
-
-    std::string getName() const override {
-        return "Invert Colors";
-    }
-
-private:
-    std::vector<Pixel> m_backup;
-    size_t             m_layerID = SIZE_MAX;
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-class InvertAlphaCommand : public Command {
-public:
-    void execute(EditorState& state) override;
-    void undo(EditorState& state) override;
-
-    std::string getName() const override {
-        return "Invert Alpha";
-    }
-
-private:
-    std::vector<Pixel> m_backup;
-    size_t             m_layerID = SIZE_MAX;
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}
