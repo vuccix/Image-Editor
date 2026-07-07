@@ -3,10 +3,10 @@
 
 namespace Cmd {
 
-LayerEffectCommand::LayerEffectCommand(std::string name, std::move_only_function<void(Layer&)> effectFunc)
+LayerCommand::LayerCommand(std::string name, std::move_only_function<void(Layer&)> effectFunc)
     : m_name(std::move(name)), m_effectFunc(std::move(effectFunc)) {}
 
-void LayerEffectCommand::execute(EditorState& state) {
+void LayerCommand::execute(EditorState& state) {
     m_layerID    = state.selectedLayerID;
     Layer& layer = state.canvas[m_layerID];
     m_backup     = layer.copyData();
@@ -15,44 +15,84 @@ void LayerEffectCommand::execute(EditorState& state) {
     ++state.version;
 }
 
-void LayerEffectCommand::undo(EditorState& state) {
+void LayerCommand::undo(EditorState& state) {
     Layer& layer = state.canvas[m_layerID];
     layer.setData(std::move(m_backup));
     ++state.version;
 }
 
-std::string LayerEffectCommand::getName() const {
+std::string LayerCommand::getName() const {
     return m_name;
 }
 
-std::unique_ptr<LayerEffectCommand> flipHoriz() {
-    return std::make_unique<LayerEffectCommand>(
+std::unique_ptr<LayerCommand> flipHoriz() {
+    return std::make_unique<LayerCommand>(
         "Flip Horizontally", [](Layer& layer) {
             Effects::flipHorizontally(layer);
         }
     );
 }
 
-std::unique_ptr<LayerEffectCommand> flipVert() {
-    return std::make_unique<LayerEffectCommand>(
+std::unique_ptr<LayerCommand> flipVert() {
+    return std::make_unique<LayerCommand>(
         "Flip Vertically", [](Layer& layer) {
             Effects::flipVertically(layer);
         }
     );
 }
 
-std::unique_ptr<LayerEffectCommand> invert() {
-    return std::make_unique<LayerEffectCommand>(
+std::unique_ptr<LayerCommand> invert() {
+    return std::make_unique<LayerCommand>(
         "Invert Colors", [](Layer& layer) {
             Effects::invert(layer);
         }
     );
 }
 
-std::unique_ptr<LayerEffectCommand> invertAlpha() {
-    return std::make_unique<LayerEffectCommand>(
+std::unique_ptr<LayerCommand> invertAlpha() {
+    return std::make_unique<LayerCommand>(
         "Invert Alpha", [](Layer& layer) {
             Effects::invertAlpha(layer);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> brightness(const int32_t value) {
+    return std::make_unique<LayerCommand>(
+        "Brightness", [value](Layer& layer) {
+            Effects::brightness(layer, value);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> contrast(float factor) {
+    return std::make_unique<LayerCommand>(
+        "Contrast", [factor](Layer& layer) {
+            Effects::contrast(layer, factor);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> grayscale() {
+    return std::make_unique<LayerCommand>(
+        "Grayscale", [](Layer& layer) {
+            Effects::grayscale(layer);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> luminance() {
+    return std::make_unique<LayerCommand>(
+        "Luminance", [](Layer& layer) {
+            Effects::luminance(layer);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> sepia() {
+    return std::make_unique<LayerCommand>(
+        "Sepia", [](Layer& layer) {
+            Effects::sepia(layer);
         }
     );
 }

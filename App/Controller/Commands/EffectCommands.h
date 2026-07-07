@@ -7,9 +7,9 @@
 
 namespace Cmd {
 
-    class LayerEffectCommand : public Command {
+    class LayerCommand : public Command {
     public:
-        LayerEffectCommand(std::string name, std::move_only_function<void(Layer&)> effectFunc);
+        LayerCommand(std::string name, std::move_only_function<void(Layer&)> effectFunc);
 
         void execute(EditorState& state) override;
         void undo(EditorState& state)    override;
@@ -24,9 +24,14 @@ namespace Cmd {
 
     // -----------------------------------------------------------------------------------------------------------------
 
-    std::unique_ptr<LayerEffectCommand> flipHoriz();
-    std::unique_ptr<LayerEffectCommand> flipVert();
-    std::unique_ptr<LayerEffectCommand> invert();
-    std::unique_ptr<LayerEffectCommand> invertAlpha();
+    std::unique_ptr<LayerCommand> flipHoriz();
+    std::unique_ptr<LayerCommand> flipVert();
+    std::unique_ptr<LayerCommand> invert();
+    std::unique_ptr<LayerCommand> invertAlpha();
+    std::unique_ptr<LayerCommand> brightness(int32_t value);
+    std::unique_ptr<LayerCommand> contrast(float factor);
+    std::unique_ptr<LayerCommand> grayscale();
+    std::unique_ptr<LayerCommand> luminance();
+    std::unique_ptr<LayerCommand> sepia();
 
 }

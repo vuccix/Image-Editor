@@ -323,6 +323,10 @@ void UIManager::drawPropertiesPanel(EditorState& state) {
 }
 
 void UIManager::drawMenuBar(EditorState& state, Controller& controller, const std::function<void()>& onQuitRequest) {
+    auto exec = [&controller, &state](std::unique_ptr<Command>&& func) {
+        controller.execute(state, std::move(func));
+    };
+
     ui.menuBar([&] {
         ui.menu("File", [&] {
             ui.item("New...", "Ctrl+N", [&] {});
@@ -380,12 +384,8 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.separator();
             ui.item("Flatten Image", "Ctrl+Shift+F", [&] {});
             ui.separator();
-            ui.item("Flip Horizontally", [&] {});
-            ui.item("Flip Vertically", [&] {});
-            ui.separator();
-            ui.item("Rotate 90° Left", [&] {});
-            ui.item("Rotate 90° Right", [&] {});
-            ui.item("Rotate 180°", [&] {});
+            ui.item("Flip Horizontally", [&] { exec(Cmd::flipHoriz()); });
+            ui.item("Flip Vertically",   [&] { exec(Cmd::flipVert());  });
         });
 
         ui.menu("Filters", [&] {
@@ -396,11 +396,11 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             });
 
             ui.menu("Color", [&] {
-                ui.item("Invert",       [&] { controller.execute(state, std::make_unique<InvertCommand>());      });
-                ui.item("Invert Alpha", [&] { controller.execute(state, std::make_unique<InvertAlphaCommand>()); });
-                ui.item("Grayscale", [&] {});
-                ui.item("Luminance", [&] {});
-                ui.item("Sepia", [&] {});
+                ui.item("Invert",       [&] { exec(Cmd::invert());      });
+                ui.item("Invert Alpha", [&] { exec(Cmd::invertAlpha()); });
+                ui.item("Grayscale",    [&] { exec(Cmd::grayscale());   });
+                ui.item("Luminance",    [&] { exec(Cmd::luminance());   });
+                ui.item("Sepia",        [&] { exec(Cmd::sepia());       });
             });
 
             ui.separator();
