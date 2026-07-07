@@ -5,6 +5,7 @@
 #include <Renderer/Renderer.h>
 #include <Model/EditorState.h>
 #include <Controller/Controller.h>
+#include <Controller/Commands/EffectCommands.h>
 #include <ImGui/imgui.h>
 #include <array>
 
@@ -339,8 +340,8 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
         });
 
         ui.menu("Edit", [&] {
-            ui.item("Undo", "Ctrl+Z", [&] {});
-            ui.item("Redo", "Ctrl+R", [&] {});
+            ui.item("Undo", "Ctrl+Z", [&] { controller.undo(state); });
+            ui.item("Redo", "Ctrl+R", [&] { controller.redo(state); });
             ui.separator();
             ui.item("Cut", "Ctrl+C", [&] {});
             ui.item("Copy", "Ctrl+V", [&] {});
@@ -391,8 +392,8 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             });
 
             ui.menu("Color", [&] {
-                ui.item("Invert", [&] {});
-                ui.item("Invert Alpha", [&] {});
+                ui.item("Invert",       [&] { controller.execute(state, std::make_unique<InvertCommand>());      });
+                ui.item("Invert Alpha", [&] { controller.execute(state, std::make_unique<InvertAlphaCommand>()); });
                 ui.item("Grayscale", [&] {});
                 ui.item("Luminance", [&] {});
                 ui.item("Sepia", [&] {});
