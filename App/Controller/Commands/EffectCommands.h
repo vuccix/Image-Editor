@@ -26,10 +26,14 @@ namespace Cmd {
 
     std::unique_ptr<LayerCommand> flipHoriz();
     std::unique_ptr<LayerCommand> flipVert();
+
     std::unique_ptr<LayerCommand> invert();
     std::unique_ptr<LayerCommand> invertAlpha();
+
     std::unique_ptr<LayerCommand> brightness(int32_t value);
     std::unique_ptr<LayerCommand> contrast(float factor);
+    std::unique_ptr<LayerCommand> saturation(float factor);
+
     std::unique_ptr<LayerCommand> grayscale();
     std::unique_ptr<LayerCommand> luminance();
     std::unique_ptr<LayerCommand> sepia();

@@ -1,19 +1,21 @@
 #pragma once
+#include <cstdint>
 
 class Layer;
+class Canvas;
 
 namespace Effects {
 
     void flipHorizontally(Layer& image);
     void flipVertically(Layer& image);
 
-    void rotateLeft(Layer& image);
-    void rotateRight(Layer& image);
-    void rotate180(Layer& image);
+    void rotateLeft(Canvas& image);
+    void rotateRight(Canvas& image);
+    void rotate180(Canvas& image);
 
-    void brightness(Layer& image);
-    void contrast(Layer& image);
-    void saturation(Layer& image);
+    void brightness(Layer& image, int32_t value);
+    void contrast(Layer& image, float factor);
+    void saturation(Layer& image, float factor);
 
     void invert(Layer& image);
     void invertAlpha(Layer& image);

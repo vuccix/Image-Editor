@@ -65,10 +65,18 @@ std::unique_ptr<LayerCommand> brightness(const int32_t value) {
     );
 }
 
-std::unique_ptr<LayerCommand> contrast(float factor) {
+std::unique_ptr<LayerCommand> contrast(const float factor) {
     return std::make_unique<LayerCommand>(
         "Contrast", [factor](Layer& layer) {
             Effects::contrast(layer, factor);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> saturation(const float factor) {
+    return std::make_unique<LayerCommand>(
+        "Saturation", [factor](Layer& layer) {
+            Effects::saturation(layer, factor);
         }
     );
 }
