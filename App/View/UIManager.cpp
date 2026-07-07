@@ -340,8 +340,12 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
         });
 
         ui.menu("Edit", [&] {
-            ui.item("Undo", "Ctrl+Z", [&] { controller.undo(state); });
-            ui.item("Redo", "Ctrl+R", [&] { controller.redo(state); });
+            ui.disabled(!controller.hasUndo(), [&] {
+                ui.item("Undo", "Ctrl+Z", [&] { controller.undo(state); });
+            });
+            ui.disabled(!controller.hasRedo(), [&] {
+                ui.item("Redo", "Ctrl+R", [&] { controller.redo(state); });
+            });
             ui.separator();
             ui.item("Cut", "Ctrl+C", [&] {});
             ui.item("Copy", "Ctrl+V", [&] {});
