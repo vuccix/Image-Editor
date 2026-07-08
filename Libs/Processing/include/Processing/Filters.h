@@ -1,6 +1,7 @@
 #pragma once
 
 class Layer;
+class Canvas;
 
 namespace Filters {
 
@@ -24,8 +25,8 @@ namespace Filters {
     void scharr(Layer& image);
     void sobel(Layer& image);
 
-    void fourierTransform(Layer& image);
+    void fourierTransform(Canvas& image);
     void normalMap(Layer& image);
-    void seamCarving(Layer& image);
+    void seamCarving(Canvas& image);
 
 }

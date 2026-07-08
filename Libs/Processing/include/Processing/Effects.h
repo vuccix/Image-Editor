@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include "Canvas/Canvas.h"
 
 class Layer;
 class Canvas;
@@ -8,12 +8,14 @@ namespace Effects {
 
     void flipHorizontally(Layer& image);
     void flipVertically(Layer& image);
+    void flipHorizontally(Canvas& canvas);
+    void flipVertically(Canvas& canvas);
 
-    void rotateLeft(Canvas& image);
-    void rotateRight(Canvas& image);
-    void rotate180(Canvas& image);
+    void rotateLeft(Canvas& canvas);
+    void rotateRight(Canvas& canvas);
+    void rotate180(Canvas& canvas);
 
-    void brightness(Layer& image, int32_t value);
+    void brightness(Layer& image, int value);
     void contrast(Layer& image, float factor);
     void saturation(Layer& image, float factor);
 
