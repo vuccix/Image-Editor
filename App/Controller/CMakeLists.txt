@@ -1,4 +1,4 @@
-add_library(AppController OBJECT Controller.cpp Commands/FilterCommands.cpp Commands/EffectCommands.cpp)
+add_library(AppController OBJECT Controller.cpp Commands/LayerCommand.cpp Commands/CanvasCommand.cpp)
 
 target_link_libraries(AppController
         PUBLIC

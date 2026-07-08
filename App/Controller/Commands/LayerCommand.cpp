@@ -1,4 +1,5 @@
-#include "EffectCommands.h"
+#include "LayerCommand.h"
+#include <Processing/Filters.h>
 #include <Processing/Effects.h>
 
 namespace Cmd {
@@ -16,6 +17,8 @@ void LayerCommand::execute(EditorState& state) {
 }
 
 void LayerCommand::undo(EditorState& state) {
+    assert(m_backup.empty() == false);
+
     Layer& layer = state.canvas[m_layerID];
     layer.setData(std::move(m_backup));
     ++state.version;
