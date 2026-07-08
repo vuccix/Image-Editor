@@ -8,6 +8,7 @@
 #include <Controller/Commands/CanvasCommand.h>
 #include <Controller/Commands/LayerCommand.h>
 #include <ImGui/imgui.h>
+#include <algorithm>
 #include <array>
 
 UIManager::UIManager(Renderer& renderer) : m_renderer(renderer) {
@@ -57,7 +58,10 @@ void UIManager::drawCanvas(EditorState& state) {
             // zoom
             if (io.MouseWheel != 0.f && isCtrlDown) {
                 const float oldZoom        = state.zoomLevel;
-                state.zoomLevel            = std::max(0.5f, state.zoomLevel + io.MouseWheel * 0.1f);
+
+                const float zoomFactor     = 1.f + (io.MouseWheel * 0.15f);
+                state.zoomLevel            = std::clamp(state.zoomLevel * zoomFactor, 0.05f, 64.f);
+
                 const float zoomRatio      = state.zoomLevel / oldZoom;
 
                 const float mouseToCenterX = io.MousePos.x - canvasCenter.x;
@@ -107,6 +111,28 @@ void UIManager::drawCanvas(EditorState& state) {
         // draw canvas border
         const ImU32 borderColor = ImGui::GetColorU32(ImGuiCol_Border);
         drawList->AddRect(pMin, pMax, borderColor, 0.f, 0, 2.f);
+
+        // status bar --------------------------------------------------------------------------------------------------
+        {
+            uint32_t canvasX = 0;
+            uint32_t canvasY = 0;
+
+            if (ImGui::IsWindowHovered()) {
+                canvasX = static_cast<uint32_t>((io.MousePos.x - pMin.x) / state.zoomLevel);
+                canvasY = static_cast<uint32_t>((io.MousePos.y - pMin.y) / state.zoomLevel);
+            }
+
+            // status bar position
+            ImGui::SetCursorScreenPos(ImVec2(windowPos.x, windowPos.y + windowSize.y - 25.f));
+
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetColorU32(ImGuiCol_TableHeaderBg, 0.7f));
+            if (ImGui::BeginChild("StatusBar", ImVec2(250.f, 24.f), ImGuiChildFlags_Borders,
+                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar))
+                ImGui::Text(" X: %d px | Y: %d px | Zoom: %.0f%%", canvasX, canvasY, state.zoomLevel * 100.f);
+
+            ImGui::EndChild();
+            ImGui::PopStyleColor();
+        }
     });
 }
 
