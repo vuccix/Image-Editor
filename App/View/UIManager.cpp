@@ -5,7 +5,8 @@
 #include <Renderer/Renderer.h>
 #include <Model/EditorState.h>
 #include <Controller/Controller.h>
-#include <Controller/Commands/EffectCommands.h>
+#include <Controller/Commands/CanvasCommand.h>
+#include <Controller/Commands/LayerCommand.h>
 #include <ImGui/imgui.h>
 #include <array>
 
@@ -351,6 +352,9 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                 ui.item("Redo", "Ctrl+R", [&] { controller.redo(state); });
             });
             ui.separator();
+
+            ui.disabled(true, [] { // <---------------------------------------------------------------------------------
+
             ui.item("Cut", "Ctrl+C", [&] {});
             ui.item("Copy", "Ctrl+V", [&] {});
             ui.item("Paste", "Ctrl+P", [&] {});
@@ -360,19 +364,25 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.item("Invert Selection", "Ctrl+I", [&] {});
             ui.item("Select All", "Ctrl+A", [&] {});
             ui.item("Deselect", "Ctrl+D", [&] {});
+
+            }); // <----------------------------------------------------------------------------------------------------
         });
 
         ui.menu("Image", [&] {
-            ui.item("Resize...", "Ctrl+R", [&] {});
-            ui.item("Canvas Size...", "Ctrl+Shift+R", [&] {});
-            ui.item("Crop to Selection", "Ctrl+Shift+X", [&] {});
+            ui.item("Resize...",      "Ctrl+R",       [&] { exec(Cmd::scale(800, 1800));   });
+            ui.item("Canvas Size...", "Ctrl+Shift+R", [&] { exec(Cmd::resize(1500, 1000)); });
+
+            ui.disabled(true, [] {
+                ui.item("Crop to Selection", "Ctrl+Shift+X", [&] {});
+            });
+
             ui.separator();
-            ui.item("Flip Horizontally", [&] {});
-            ui.item("Flip Vertically", [&] {});
+            ui.item("Flip Horizontally", [&] { exec(Cmd::flipHorizCanvas()); });
+            ui.item("Flip Vertically",   [&] { exec(Cmd::flipVertCanvas());  });
             ui.separator();
-            ui.item("Rotate 90° Left", [&] {});
-            ui.item("Rotate 90° Right", [&] {});
-            ui.item("Rotate 180°", [&] {});
+            ui.item("Rotate 90° Left",  [&] { exec(Cmd::rotateLeft());  });
+            ui.item("Rotate 90° Right", [&] { exec(Cmd::rotateRight()); });
+            ui.item("Rotate 180°",      [&] { exec(Cmd::rotate180());   });
         });
 
         ui.menu("Layers", [&] {
@@ -390,8 +400,8 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
 
         ui.menu("Filters", [&] {
             ui.menu("Adjust", [&] {
-                ui.item("Brightness...", [&] { exec(Cmd::brightness(25));  });
-                ui.item("Contrast...",   [&] { exec(Cmd::contrast(5.f));   });
+                ui.item("Brightness...", [&] { exec(Cmd::brightness(25));   });
+                ui.item("Contrast...",   [&] { exec(Cmd::contrast(5.f));    });
                 ui.item("Saturation...", [&] { exec(Cmd::saturation(-5.f)); });
             });
 
@@ -473,7 +483,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.separator();
 
             ui.item("About Paint++", [&] {
-                Utils::openURL("https://github.com/vuccix/Image-Editor");
+                Utils::openURL("https://github.com/vuccix/Image-Editor/blob/main/README.md");
             });
         });
     });
