@@ -7,6 +7,9 @@ Canvas::Canvas(const uint32_t w, const uint32_t h) : m_width(w), m_height(h) {
 }
 
 void Canvas::resize(const uint32_t w, const uint32_t h) {
+    if (m_width == w && m_height == h)
+        return;
+
     m_width  = w;
     m_height = h;
 
@@ -15,11 +18,18 @@ void Canvas::resize(const uint32_t w, const uint32_t h) {
 }
 
 void Canvas::scale(const uint32_t w, const uint32_t h) {
+    if (m_width == w && m_height == h)
+        return;
+
     m_width  = w;
     m_height = h;
 
     for (auto& layer : m_layers)
         layer.scale(w, h);
+}
+
+void Canvas::flipDimensions() {
+    std::swap(m_width, m_height);
 }
 
 void Canvas::addLayer() {

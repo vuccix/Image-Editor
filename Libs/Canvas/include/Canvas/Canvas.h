@@ -15,6 +15,8 @@ public:
     void resize(uint32_t width, uint32_t height);
     void scale(uint32_t width, uint32_t height);
 
+    void flipDimensions(); // goofy ahh bullshit TODO: remove
+
     void addLayer();
     void deleteLayer(size_t layerID);
     void duplicateLayer(size_t layerID);

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <mdspan>
+#include <span>
 
 struct Pixel {
     uint8_t r = 255;
@@ -25,10 +26,13 @@ public:
     std::mdspan<const Pixel, std::dextents<size_t, 2>> pixels() const;
     std::mdspan<Pixel,       std::dextents<size_t, 2>> pixels();
 
-    void setData(std::vector<Pixel> data);
+    std::span<const Pixel> data() const;
+    std::span<Pixel>       data();
+
+    void setData(std::vector<Pixel>&& data, uint32_t width = 0, uint32_t height = 0);
     std::vector<Pixel> copyData() const;
 
-    uint32_t width() const;
+    uint32_t width()  const;
     uint32_t height() const;
 
 public:

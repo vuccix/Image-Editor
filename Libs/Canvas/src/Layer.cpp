@@ -23,6 +23,9 @@ Layer::Layer(const uint32_t w, const uint32_t h, std::string n) : name(std::move
 void Layer::resize(const uint32_t w, const uint32_t h) {
     assert(w >= 1 && h >= 1);
 
+    if (m_width == w && m_height == h)
+        return;
+
     std::vector newData(w * h, Pixel{ 0, 0, 0, 0 });
     const auto  oldSpan   = std::mdspan(m_data.data(), m_height, m_width);
     const auto  newSpan   = std::mdspan(newData.data(), h, w);
@@ -48,6 +51,9 @@ void Layer::resize(const uint32_t w, const uint32_t h) {
 
 void Layer::scale(const uint32_t w, const uint32_t h) {
     assert(w >= 1 && h >= 1);
+
+    if (m_width == w && m_height == h)
+        return;
 
     std::vector newData(w * h, Pixel{ 0, 0, 0, 0 });
     const auto  oldSpan = std::mdspan(m_data.data(), m_height, m_width);
@@ -82,7 +88,17 @@ std::mdspan<Pixel, std::dextents<size_t, 2>> Layer::pixels() {
     return std::mdspan(m_data.data(), m_height, m_width);
 }
 
-void Layer::setData(std::vector<Pixel> data) {
+std::span<const Pixel> Layer::data() const { return m_data; }
+std::span<Pixel>       Layer::data()       { return m_data; }
+
+void Layer::setData(std::vector<Pixel>&& data, const uint32_t w, const uint32_t h) {
+    assert((w >= 1 && h >= 1) || (w == 0 && h == 0));
+
+    if (w != 0 || h != 0) {
+        m_width  = w;
+        m_height = h;
+    }
+
     m_data = std::move(data);
 }
 
