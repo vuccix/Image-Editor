@@ -108,4 +108,28 @@ std::unique_ptr<LayerCommand> sepia() {
     );
 }
 
+std::unique_ptr<LayerCommand> swapChannels(const int32_t combination) {
+    return std::make_unique<LayerCommand>(
+        "Swap Channels", [combination](Layer& layer) {
+            Filters::swapChannels(layer, combination);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> emboss() {
+    return std::make_unique<LayerCommand>(
+        "Emboss", [](Layer& layer) {
+            Filters::emboss(layer);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> outline() {
+    return std::make_unique<LayerCommand>(
+        "Outline", [](Layer& layer) {
+            Filters::outline(layer);
+        }
+    );
+}
+
 }

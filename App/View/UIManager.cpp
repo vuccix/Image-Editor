@@ -454,9 +454,9 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             });
 
             ui.menu("Effects", [&] {
-                ui.item("Swap Channels...", [&] {});
-                ui.item("Emboss", [&] {});
-                ui.item("Outline", [&] {});
+                ui.item("Swap Channels...", [&] { exec(Cmd::swapChannels(1)); });
+                ui.item("Emboss",  [&] { exec(Cmd::emboss());  });
+                ui.item("Outline", [&] { exec(Cmd::outline()); });
                 ui.item("Sharpen...", [&] {});
                 ui.item("Pixelate...", [&] {});
             });

@@ -13,7 +13,7 @@ namespace Filters {
     void gaussianBlur(Layer& image);
     void motionBlur(Layer& image);
 
-    void swapChannels(Layer& image);
+    void swapChannels(Layer& image, int change);
     void emboss(Layer& image);
     void outline(Layer& image);
     void sharpen(Layer& image);
