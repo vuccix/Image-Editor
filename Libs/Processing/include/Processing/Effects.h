@@ -1,5 +1,4 @@
 #pragma once
-#include "Canvas/Canvas.h"
 
 class Layer;
 class Canvas;
