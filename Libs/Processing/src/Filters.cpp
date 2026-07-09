@@ -7,6 +7,16 @@
 #include <algorithm>
 #include <array>
 
+void Filters::blur(Layer& image) {
+    constexpr float kernel[] = {
+        1.f / 9.f, 1.f / 9.f, 1.f / 9.f,
+        1.f / 9.f, 1.f / 9.f, 1.f / 9.f,
+        1.f / 9.f, 1.f / 9.f, 1.f / 9.f,
+    };
+
+    Utils::convolution(image, std::mdspan(kernel, 3, 3));
+}
+
 void Filters::swapChannels(Layer& image, const int change) {
     assert(change >= 0 && change < 6);
 

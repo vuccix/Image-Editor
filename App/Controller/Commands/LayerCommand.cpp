@@ -108,6 +108,14 @@ std::unique_ptr<LayerCommand> sepia() {
     );
 }
 
+std::unique_ptr<LayerCommand> blur() {
+    return std::make_unique<LayerCommand>(
+        "Blur", [](Layer& layer) {
+            Filters::blur(layer);
+        }
+    );
+}
+
 std::unique_ptr<LayerCommand> swapChannels(const int32_t combination) {
     return std::make_unique<LayerCommand>(
         "Swap Channels", [combination](Layer& layer) {
