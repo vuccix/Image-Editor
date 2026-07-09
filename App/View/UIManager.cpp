@@ -448,7 +448,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             });
 
             ui.menu("Blur", [&] {
-                ui.item("Blur...", [&] {});
+                ui.item("Blur...", [&] { exec(Cmd::blur(2)); });
                 ui.item("Gaussian Blur...", [&] {});
                 ui.item("Motion Blur...", [&] {});
             });

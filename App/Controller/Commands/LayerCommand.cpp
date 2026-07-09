@@ -108,10 +108,10 @@ std::unique_ptr<LayerCommand> sepia() {
     );
 }
 
-std::unique_ptr<LayerCommand> blur() {
+std::unique_ptr<LayerCommand> blur(const int32_t amount) {
     return std::make_unique<LayerCommand>(
-        "Blur", [](Layer& layer) {
-            Filters::blur(layer);
+        "Blur", [amount](Layer& layer) {
+            Filters::blur(layer, amount);
         }
     );
 }

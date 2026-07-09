@@ -7,14 +7,14 @@
 #include <algorithm>
 #include <array>
 
-void Filters::blur(Layer& image) {
-    constexpr float kernel[] = {
-        1.f / 9.f, 1.f / 9.f, 1.f / 9.f,
-        1.f / 9.f, 1.f / 9.f, 1.f / 9.f,
-        1.f / 9.f, 1.f / 9.f, 1.f / 9.f,
-    };
+void Filters::blur(Layer& image, const int amount) {
+    assert(amount > 0);
 
-    Utils::convolution(image, std::mdspan(kernel, 3, 3));
+    const size_t kSize = 2 * amount + 1;
+    const std::vector kernel(kSize, (1.f / kSize));
+
+    Utils::convolution(image, std::mdspan(kernel.data(), kernel.size(), 1));
+    Utils::convolution(image, std::mdspan(kernel.data(), 1, kernel.size()));
 }
 
 void Filters::swapChannels(Layer& image, const int change) {

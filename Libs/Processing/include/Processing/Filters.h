@@ -9,7 +9,7 @@ namespace Filters {
     void waterColor(Layer& image);
     void oilPainting(Layer& image);
 
-    void blur(Layer& image);
+    void blur(Layer& image, int amount);
     void gaussianBlur(Layer& image);
     void motionBlur(Layer& image);
 
