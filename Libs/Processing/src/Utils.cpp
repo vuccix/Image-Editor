@@ -2,7 +2,6 @@
 #include <Canvas/Layer.h>
 #include <algorithm>
 #include <cassert>
-#include <vector>
 #include <omp.h>
 
 template <typename T, typename U>

@@ -4,8 +4,6 @@
 #include <vector>
 #include <mdspan>
 
-class Layer;
-
 namespace Utils {
 
     template <typename T, typename U>
