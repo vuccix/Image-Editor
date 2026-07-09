@@ -14,6 +14,17 @@ uint8_t Pixel::operator[](const uint32_t channel) const {
     }
 }
 
+uint8_t& Pixel::operator[](const uint32_t channel) {
+    assert(channel <= 3);
+
+    switch (channel) {
+        case 0:  return r;
+        case 1:  return g;
+        case 2:  return b;
+        default: return a;
+    }
+}
+
 Layer::Layer(const uint32_t w, const uint32_t h, std::string n) : name(std::move(n)),
                                                                   m_width(w),
                                                                   m_height(h) {
