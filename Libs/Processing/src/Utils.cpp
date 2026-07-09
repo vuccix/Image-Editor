@@ -11,8 +11,8 @@ void Utils::convolution(Layer& image, std::mdspan<const T, std::dextents<size_t,
 
     const auto rows    = static_cast<int32_t>(image.height());
     const auto cols    = static_cast<int32_t>(image.width());
-    const auto kWidth  = static_cast<int32_t>(kernel.extent(0));
-    const auto kHeight = static_cast<int32_t>(kernel.extent(1));
+    const auto kHeight = static_cast<int32_t>(kernel.extent(0));
+    const auto kWidth  = static_cast<int32_t>(kernel.extent(1));
 
     const int32_t rW   = kWidth  / 2;
     const int32_t rH   = kHeight / 2;
@@ -52,6 +52,7 @@ void Utils::convolution(Layer& image, std::mdspan<const T, std::dextents<size_t,
         for (int32_t x = 0; x < cols; ++x) {
             const auto [sumR, sumG, sumB] = sumKernel(x, y);
             constexpr T lo = 0, hi = 255;
+
             newPixels[y, x] = {
                 .r = static_cast<uint8_t>(std::clamp(sumR, lo, hi)),
                 .g = static_cast<uint8_t>(std::clamp(sumG, lo, hi)),
