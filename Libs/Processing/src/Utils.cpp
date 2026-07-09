@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <cassert>
 #include <vector>
+#include <omp.h>
 
-void Utils::convolution(Layer& image, const std::mdspan<const int32_t, std::dextents<size_t, 2>> kernel) {
+template <typename T>
+void Utils::convolution(Layer& image, std::mdspan<const T, std::dextents<size_t, 2>> kernel) {
     std::vector result(image.width() * image.height(), Pixel{});
 
     const auto rows    = static_cast<int32_t>(image.height());
@@ -21,7 +23,7 @@ void Utils::convolution(Layer& image, const std::mdspan<const int32_t, std::dext
 
     const auto pixels = image.pixels();
     auto sumKernel = [&](const int32_t x, const int32_t y) {
-        std::array sum = { 0, 0, 0 };
+        std::array<T, 3> sum = { 0, 0, 0 };
 
         for (int32_t ky = -rH; ky <= rH; ++ky) {
             const int32_t iy = index(y + ky, rows);
@@ -31,7 +33,7 @@ void Utils::convolution(Layer& image, const std::mdspan<const int32_t, std::dext
                 const int32_t ix = index(x + kx, cols);
                 const int32_t kj = kx + rW;
 
-                const int32_t v  = kernel[ki, kj];
+                const T       v  = kernel[ki, kj];
                 const Pixel&  p  = pixels[iy, ix];
 
                 sum[0] += p.r * v;
@@ -43,18 +45,25 @@ void Utils::convolution(Layer& image, const std::mdspan<const int32_t, std::dext
         return sum;
     };
 
-    const auto newPixels = std::mdspan(result.data(), image.height(), image.width());
+    const auto newPixels = std::mdspan(result.data(), rows, cols);
+
+    #pragma omp parallel for collapse(2)
     for (int32_t y = 0; y < rows; ++y) {
         for (int32_t x = 0; x < cols; ++x) {
             const auto [sumR, sumG, sumB] = sumKernel(x, y);
+            constexpr T lo = 0, hi = 255;
             newPixels[y, x] = {
-                .r = static_cast<uint8_t>(std::clamp(sumR, 0, 255)),
-                .g = static_cast<uint8_t>(std::clamp(sumG, 0, 255)),
-                .b = static_cast<uint8_t>(std::clamp(sumB, 0, 255)),
-                .a = newPixels[y, x].a
+                .r = static_cast<uint8_t>(std::clamp(sumR, lo, hi)),
+                .g = static_cast<uint8_t>(std::clamp(sumG, lo, hi)),
+                .b = static_cast<uint8_t>(std::clamp(sumB, lo, hi)),
+                .a = pixels[y, x].a
             };
         }
     }
 
     image.setData(std::move(result));
 }
+
+template void Utils::convolution<int32_t>(Layer& image, std::mdspan<const int32_t, std::dextents<size_t, 2>> kernel);
+template void Utils::convolution<float  >(Layer& image, std::mdspan<const float,   std::dextents<size_t, 2>> kernel);
+template void Utils::convolution<double >(Layer& image, std::mdspan<const double,  std::dextents<size_t, 2>> kernel);
