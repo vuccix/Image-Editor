@@ -13,8 +13,10 @@ void Filters::blur(Layer& image, const int amount) {
     const size_t kSize = 2 * amount + 1;
     const std::vector kernel(kSize, (1.f / kSize));
 
-    Utils::convolution(image, std::mdspan(kernel.data(), kernel.size(), 1));
-    Utils::convolution(image, std::mdspan(kernel.data(), 1, kernel.size()));
+    const auto pixels = std::as_const(image).pixels();
+    auto result       = Utils::convolution(pixels, std::mdspan(kernel.data(), 1, kernel.size()));
+
+    image.setData(std::move(result));
 }
 
 void Filters::swapChannels(Layer& image, const int change) {
@@ -42,7 +44,10 @@ void Filters::emboss(Layer& image) {
          0,  1, 2,
     };
 
-    Utils::convolution(image, std::mdspan(kernel, 3, 3));
+    const auto pixels = std::as_const(image).pixels();
+    auto result       = Utils::convolution(pixels, std::mdspan(kernel, 3, 3));
+
+    image.setData(std::move(result));
 }
 
 void Filters::outline(Layer& image) {
@@ -53,5 +58,9 @@ void Filters::outline(Layer& image) {
     };
 
     Effects::grayscale(image);
-    Utils::convolution(image, std::mdspan(kernel, 3, 3));
+
+    const auto pixels = std::as_const(image).pixels();
+    auto result       = Utils::convolution(pixels, std::mdspan(kernel, 3, 3));
+
+    image.setData(std::move(result));
 }
