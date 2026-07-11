@@ -1,15 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 #include <mdspan>
-#include <span>
 
 struct Pixel;
 
 namespace Utils {
-
-    template <typename T>
-    using std_mdspan = std::mdspan<T, std::dextents<size_t, 2>>;
 
     template <typename T>
     std::vector<T> promote(std::span<const Pixel> pixels);
@@ -17,7 +14,12 @@ namespace Utils {
     template <typename T>
     void demote(std::span<const T> data, std::span<Pixel> pixels);
 
-    template <typename T, typename U>
-    std::vector<T> convolution(std_mdspan<const T> image, std_mdspan<const U> kernel);
+    template <typename T>
+    using std_mdspan = std::mdspan<T, std::dextents<size_t, 2>>;
+
+    template <typename T, typename Op, typename Writer>
+    void convolution(std_mdspan<const T> image, int32_t kHeight, int32_t kWidth, Op&& op, Writer&& writer);
 
 }
+
+#include "Utils.tpp"
