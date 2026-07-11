@@ -1,6 +1,10 @@
 #pragma once
 
-#include <Canvas/Layer.h>
+#include <vector>
+#include <mdspan>
+#include <span>
+
+struct Pixel;
 
 namespace Utils {
 

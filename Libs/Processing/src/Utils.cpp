@@ -1,10 +1,13 @@
 #include "Utils.h"
+#include <Canvas/Layer.h>
 #include <algorithm>
 #include <cassert>
 #include <omp.h>
 
 template <typename T>
 std::vector<T> Utils::promote(const std::span<const Pixel> pixels) {
+    assert(pixels.empty() == false);
+
     std::vector<T> result(pixels.size(), T{});
 
     for (size_t i = 0; i < pixels.size(); ++i)
@@ -14,7 +17,7 @@ std::vector<T> Utils::promote(const std::span<const Pixel> pixels) {
 }
 
 template <typename T>
-void Utils::demote(std::span<const T> data, const std::span<Pixel> pixels) {
+void Utils::demote(const std::span<const T> data, const std::span<Pixel> pixels) {
     assert(data.size() == pixels.size());
 
     constexpr T lo = 0, hi = 255;
@@ -27,7 +30,7 @@ void Utils::demote(std::span<const T> data, const std::span<Pixel> pixels) {
 }
 
 template <typename T, typename U>
-std::vector<T> Utils::convolution(std_mdspan<const T> image, std_mdspan<const U> kernel) {
+std::vector<T> Utils::convolution(const std_mdspan<const T> image, const std_mdspan<const U> kernel) {
     const auto rows    = static_cast<int32_t>(image.extent(0));
     const auto cols    = static_cast<int32_t>(image.extent(1));
     const auto kHeight = static_cast<int32_t>(kernel.extent(0));
@@ -42,8 +45,10 @@ std::vector<T> Utils::convolution(std_mdspan<const T> image, std_mdspan<const U>
         return (id < 0) ? -id - 1 : (id >= max) ? 2 * max - id - 1 : id;
     };
 
-    auto sumKernel = [&](const int32_t x, const int32_t y) {
-        std::array<U, 3> sum = { 0, 0, 0 };
+    auto sumKernel = [=, &image, &kernel](const int32_t x, const int32_t y) {
+        using Value = std::conditional_t<std::is_same_v<T, Pixel>, std::array<U, 3>, U>;
+
+        Value sum{};
 
         for (int32_t ky = -rH; ky <= rH; ++ky) {
             const int32_t iy = index(y + ky, rows);
@@ -62,7 +67,7 @@ std::vector<T> Utils::convolution(std_mdspan<const T> image, std_mdspan<const U>
                     sum[2] += p.b * v;
                 }
                 else {
-                    sum[0] += p * v;
+                    sum += p * v;
                 }
             }
         }
@@ -87,8 +92,8 @@ std::vector<T> Utils::convolution(std_mdspan<const T> image, std_mdspan<const U>
                 };
             }
             else {
-                const auto sum  = sumKernel(x, y);
-                newPixels[y, x] = sum[0];
+                const U sum     = sumKernel(x, y);
+                newPixels[y, x] = sum;
             }
         }
     }
