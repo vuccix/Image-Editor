@@ -16,8 +16,8 @@ namespace Filters {
     void swapChannels(Layer& image, int change);
     void emboss(Layer& image);
     void outline(Layer& image);
-    void sharpen(Layer& image);
-    void pixelate(Layer& image);
+    void sharpen(Layer& image, int amount);
+    void pixelate(Layer& image, int amount);
 
     void canny(Layer& image);
     void laplace(Layer& image);

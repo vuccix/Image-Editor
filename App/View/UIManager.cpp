@@ -464,11 +464,11 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.separator();
 
             ui.menu("Edge Detection", [&] {
-                ui.item("Canny", [&] {});
-                ui.item("Laplace", [&] {});
-                ui.item("Prewitt", [&] {});
-                ui.item("Scharr", [&] {});
-                ui.item("Sobel", [&] {});
+                // ui.item("Canny",   [&] { exec(Cmd::canny());   });
+                ui.item("Laplace", [&] { exec(Cmd::laplace()); });
+                ui.item("Prewitt", [&] { exec(Cmd::prewitt()); });
+                ui.item("Scharr",  [&] { exec(Cmd::scharr());  });
+                ui.item("Sobel",   [&] { exec(Cmd::sobel());   });
             });
 
             ui.menu("Smart", [&] {

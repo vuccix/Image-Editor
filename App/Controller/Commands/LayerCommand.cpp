@@ -1,6 +1,8 @@
 #include "LayerCommand.h"
 #include <Processing/Filters.h>
 #include <Processing/Effects.h>
+#include <iostream>
+#include <chrono>
 
 namespace Cmd {
 
@@ -8,16 +10,26 @@ LayerCommand::LayerCommand(std::string name, std::move_only_function<void(Layer&
     : m_name(std::move(name)), m_effectFunc(std::move(effectFunc)) {}
 
 void LayerCommand::execute(EditorState& state) {
+    using clock = std::chrono::steady_clock;
+    const auto start = clock::now();
+
+    // --------------------------------------------------------------
     m_layerID    = state.selectedLayerID;
     Layer& layer = state.canvas[m_layerID];
     m_backup     = layer.copyData();
 
     m_effectFunc(layer);
     ++state.version;
+    // --------------------------------------------------------------
+
+    const auto end = clock::now();
+    const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << m_name << " took " << dur.count() << " ms\n";
 }
 
 void LayerCommand::undo(EditorState& state) {
     assert(m_backup.empty() == false);
+    assert(m_layerID != SIZE_MAX);
 
     Layer& layer = state.canvas[m_layerID];
     layer.setData(std::move(m_backup));
@@ -136,6 +148,38 @@ std::unique_ptr<LayerCommand> outline() {
     return std::make_unique<LayerCommand>(
         "Outline", [](Layer& layer) {
             Filters::outline(layer);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> laplace() {
+    return std::make_unique<LayerCommand>(
+        "Laplace", [](Layer& layer) {
+            Filters::laplace(layer);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> prewitt() {
+    return std::make_unique<LayerCommand>(
+        "Prewitt", [](Layer& layer) {
+            Filters::prewitt(layer);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> scharr() {
+    return std::make_unique<LayerCommand>(
+        "Scharr", [](Layer& layer) {
+            Filters::scharr(layer);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> sobel() {
+    return std::make_unique<LayerCommand>(
+        "Sobel", [](Layer& layer) {
+            Filters::sobel(layer);
         }
     );
 }
