@@ -48,8 +48,8 @@ void Filters::emboss(Layer& image) {
          0,  1, 2,
     };
 
-    const auto pixels = std::as_const(image).pixels();
-    auto result       = Utils::convolution(pixels, std::mdspan(kernel, 3, 3));
+    const auto  pixels = std::as_const(image).pixels();
+    std::vector result = Utils::convolution(pixels, std::mdspan(kernel, 3, 3));
 
     image.setData(std::move(result));
 }
@@ -63,30 +63,31 @@ void Filters::outline(Layer& image) {
 
     Effects::grayscale(image);
 
-    const auto pixels = std::as_const(image).pixels();
-    auto result       = Utils::convolution(pixels, std::mdspan(kernel, 3, 3));
+    const auto  pixels = std::as_const(image).pixels();
+    std::vector result = Utils::convolution(pixels, std::mdspan(kernel, 3, 3));
 
     image.setData(std::move(result));
 }
 
 void Filters::laplace(Layer& image) {
-    constexpr std::array ker = { -1, -1, -1, /**/ -1, 8, -1, /**/ -1, -1, -1 };
+    constexpr int32_t ker[] = { 1, 4, 1, /**/ 4, -20, 4, /**/ 1, 4, 1 };
 
     Filters::blur(image, 1);
     Effects::grayscale(image);
 
     const std::vector promoted = Utils::promote<int32_t>(image.data());
-    const auto        pixels   = std::mdspan(promoted.data(), image.height(), image.width());
+    const std::mdspan pixels   = std::mdspan(promoted.data(), image.height(), image.width());
     const std::span   data     = image.data();
 
-    const std::vector L        = Utils::convolution(pixels, std::mdspan(ker.data(), 3, 3));
+    const std::vector L        = Utils::convolution(pixels, std::mdspan(ker, 3, 3));
 
     for (size_t i = 0; i < data.size(); ++i) {
-        const int32_t G = std::abs(L[i]);
+        const uint8_t G = static_cast<uint8_t>(std::clamp(std::abs(L[i]), 0, 255));
         data[i] = {
-            .r = static_cast<uint8_t>(std::clamp(G, 0, 255)),
-            .g = static_cast<uint8_t>(std::clamp(G, 0, 255)),
-            .b = static_cast<uint8_t>(std::clamp(G, 0, 255)),
+            .r = G,
+            .g = G,
+            .b = G,
+            .a = data[i].a
         };
     }
 }
@@ -98,7 +99,7 @@ void edgeDetectionHelper(Layer& image, const int32_t dx[], const int32_t dy[]) {
     Effects::grayscale(image);
 
     const std::vector promoted = Utils::promote<int32_t>(image.data());
-    const auto        pixels   = std::mdspan(promoted.data(), image.height(), image.width());
+    const std::mdspan pixels   = std::mdspan(promoted.data(), image.height(), image.width());
     const std::span   data     = image.data();
 
     const std::vector Gx       = Utils::convolution(pixels, std::mdspan(dx, 3, 3));
@@ -106,10 +107,12 @@ void edgeDetectionHelper(Layer& image, const int32_t dx[], const int32_t dy[]) {
 
     for (size_t i = 0; i < data.size(); ++i) {
         const int32_t G = std::abs(Gx[i]) + std::abs(Gy[i]);
+        const uint8_t v = static_cast<uint8_t>(std::clamp(G, 0, 255));
         data[i] = {
-            .r = static_cast<uint8_t>(std::clamp(G, 0, 255)),
-            .g = static_cast<uint8_t>(std::clamp(G, 0, 255)),
-            .b = static_cast<uint8_t>(std::clamp(G, 0, 255)),
+            .r = v,
+            .g = v,
+            .b = v,
+            .a = data[i].a
         };
     }
 }
@@ -119,17 +122,17 @@ void edgeDetectionHelper(Layer& image, const int32_t dx[], const int32_t dy[]) {
 void Filters::prewitt(Layer& image) {
     constexpr int32_t dx[] = { -1,  0,  1, /**/ -1, 0, 1, /**/ -1, 0, 1 };
     constexpr int32_t dy[] = { -1, -1, -1, /**/  0, 0, 0, /**/  1, 1, 1 };
-    edgeDetectionHelper(image, dx, dy);
+    ::edgeDetectionHelper(image, dx, dy);
 }
 
 void Filters::scharr(Layer& image) {
     constexpr int32_t dx[] = { -3,   0,  3, /**/ -10, 0, 10, /**/ -3,  0, 3 };
     constexpr int32_t dy[] = { -3, -10, -3, /**/   0, 0,  0, /**/  3, 10, 3 };
-    edgeDetectionHelper(image, dx, dy);
+    ::edgeDetectionHelper(image, dx, dy);
 }
 
 void Filters::sobel(Layer& image) {
     constexpr int32_t dx[] = { -1, 0, 1, /**/ -2, 0, 2, /**/ -1,  0,  1 };
     constexpr int32_t dy[] = {  1, 2, 1, /**/  0, 0, 0, /**/ -1, -2, -1 };
-    edgeDetectionHelper(image, dx, dy);
+    ::edgeDetectionHelper(image, dx, dy);
 }
