@@ -1,12 +1,33 @@
 #include "Utils.h"
-#include <Canvas/Layer.h>
 #include <algorithm>
 #include <cassert>
 #include <omp.h>
 
+template <typename T>
+std::vector<T> Utils::promote(const std::span<const Pixel> pixels) {
+    std::vector<T> result(pixels.size(), T{});
+
+    for (size_t i = 0; i < pixels.size(); ++i)
+        result[i] = static_cast<T>(pixels[i].r);
+
+    return result;
+}
+
+template <typename T>
+void Utils::demote(std::span<const T> data, const std::span<Pixel> pixels) {
+    assert(data.size() == pixels.size());
+
+    constexpr T lo = 0, hi = 255;
+
+    for (size_t i = 0; i < data.size(); ++i) {
+        pixels[i].r = static_cast<uint8_t>(std::clamp(data[i], lo, hi));
+        pixels[i].g = static_cast<uint8_t>(std::clamp(data[i], lo, hi));
+        pixels[i].b = static_cast<uint8_t>(std::clamp(data[i], lo, hi));
+    }
+}
+
 template <typename T, typename U>
-std::vector<T> Utils::convolution(std::mdspan<const T, std::dextents<size_t, 2>> image,
-                                  std::mdspan<const U, std::dextents<size_t, 2>> kernel) {
+std::vector<T> Utils::convolution(std_mdspan<const T> image, std_mdspan<const U> kernel) {
     const auto rows    = static_cast<int32_t>(image.extent(0));
     const auto cols    = static_cast<int32_t>(image.extent(1));
     const auto kHeight = static_cast<int32_t>(kernel.extent(0));
@@ -75,26 +96,39 @@ std::vector<T> Utils::convolution(std::mdspan<const T, std::dextents<size_t, 2>>
     return result;
 }
 
-// explicit instantiation ----------------------------------------------------------------------------------------------
+// explicit instantiation ==============================================================================================
 
 namespace Utils {
 
-#define INSTANTIATE_CONVOLUTION(T, K)                                                          \
-    template std::vector<T> convolution<T, K>(std::mdspan<const T, std::dextents<size_t, 2>>,  \
-                                              std::mdspan<const K, std::dextents<size_t, 2>>); \
+#define INSTANTIATE_CONVOLUTION(T, K)                                                    \
+    template std::vector<T> convolution<T, K>(std_mdspan<const T>, std_mdspan<const K>); \
 
-#define INSTANTIATE_FOR_TYPE(T)         \
-    INSTANTIATE_CONVOLUTION(T, int32_t) \
-    INSTANTIATE_CONVOLUTION(T, float)   \
-    INSTANTIATE_CONVOLUTION(T, double)  \
+#define INSTANTIATE_PROMOTE(T)                                                           \
+    template std::vector<T> promote<T>(std::span<const Pixel>);                          \
 
-INSTANTIATE_FOR_TYPE(Pixel)
-INSTANTIATE_FOR_TYPE(float)
-INSTANTIATE_FOR_TYPE(double)
+#define INSTANTIATE_DEMOTE(T)                                                            \
+    template void demote<T>(std::span<const T>, std::span<Pixel>);                       \
 
-#undef INSTANTIATE_FOR_TYPE
-#undef INSTANTIATE_CONVOLUTION
+#define INSTANTIATE_COMMON(T)                                                            \
+    INSTANTIATE_CONVOLUTION(T, int32_t)                                                  \
+    INSTANTIATE_CONVOLUTION(T, float)                                                    \
+
+#define INSTANTIATE_CONVERSION(T)                                                        \
+    INSTANTIATE_PROMOTE(T)                                                               \
+    INSTANTIATE_DEMOTE(T)                                                                \
+
+// convolution
+INSTANTIATE_COMMON(Pixel)
+INSTANTIATE_COMMON(int32_t)
+INSTANTIATE_COMMON(float)
+
+// promote/demote
+INSTANTIATE_CONVERSION(int32_t)
+INSTANTIATE_CONVERSION(float)
+
+#undef INSTANTIATE_COMMON
+#undef INSTANTIATE_CONVERSION
 
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
+// =====================================================================================================================
