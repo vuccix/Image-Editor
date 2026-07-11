@@ -3,8 +3,9 @@
 #include <Canvas/Canvas.h>
 #include <Canvas/Layer.h>
 #include "Utils.h"
-#include <cassert>
 #include <algorithm>
+#include <cassert>
+#include <cmath>
 #include <array>
 
 void Filters::blur(Layer& image, const int amount) {
@@ -13,8 +14,11 @@ void Filters::blur(Layer& image, const int amount) {
     const size_t kSize = 2 * amount + 1;
     const std::vector kernel(kSize, (1.f / kSize));
 
-    const auto pixels = std::as_const(image).pixels();
-    auto result       = Utils::convolution(pixels, std::mdspan(kernel.data(), 1, kernel.size()));
+    const auto  pixels = std::as_const(image).pixels();
+    std::vector result = Utils::convolution(pixels, std::mdspan(kernel.data(), 1, kernel.size()));
+
+    const auto pixels2 = std::mdspan(std::as_const(result).data(), image.height(), image.width());
+    result             = Utils::convolution(pixels2, std::mdspan(kernel.data(), kernel.size(), 1));
 
     image.setData(std::move(result));
 }
