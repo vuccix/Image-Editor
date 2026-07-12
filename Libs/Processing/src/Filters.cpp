@@ -126,3 +126,33 @@ void Filters::sharpen(Layer& image, const float amount) {
         }
     );
 }
+
+void Filters::pixelate(Layer& image, const int blockSize) {
+    assert(blockSize >= 1);
+
+    const auto pixels = image.pixels();
+    const auto rows   = static_cast<int32_t>(image.height());
+    const auto cols   = static_cast<int32_t>(image.width());
+
+    for (int32_t y = 0; y < rows; y += blockSize) {
+        for (int32_t x = 0; x < cols; x += blockSize) {
+            const int32_t maxY    = std::min(y + blockSize, rows);
+            const int32_t maxX    = std::min(x + blockSize, cols);
+
+            const int32_t centerY = y + (maxY - y) / 2;
+            const int32_t centerX = x + (maxX - x) / 2;
+            const Pixel   p       = pixels[centerY, centerX];
+
+            for (int32_t iy = y; iy < maxY; ++iy) {
+                for (int32_t jx = x; jx < maxX; ++jx) {
+                    pixels[iy, jx] = {
+                        .r = p.r,
+                        .g = p.g,
+                        .b = p.b,
+                        .a = pixels[iy, jx].a
+                    };
+                }
+            }
+        }
+    }
+}

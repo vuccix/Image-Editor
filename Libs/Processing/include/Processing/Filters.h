@@ -17,7 +17,7 @@ namespace Filters {
     void emboss(Layer& image);
     void outline(Layer& image);
     void sharpen(Layer& image, float amount);
-    void pixelate(Layer& image, int amount);
+    void pixelate(Layer& image, int blockSize);
 
     void canny(Layer& image);
     void laplace(Layer& image);

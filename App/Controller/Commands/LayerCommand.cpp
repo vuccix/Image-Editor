@@ -162,6 +162,14 @@ std::unique_ptr<LayerCommand> sharpen(const float amount) {
     );
 }
 
+std::unique_ptr<LayerCommand> pixelate(const int blockSize) {
+    return std::make_unique<LayerCommand>(
+        "Pixelate", [blockSize](Layer& layer) {
+            Filters::pixelate(layer, blockSize);
+        }
+    );
+}
+
 std::unique_ptr<LayerCommand> laplace() {
     return std::make_unique<LayerCommand>(
         "Laplace", [](Layer& layer) {
