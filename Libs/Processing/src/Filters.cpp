@@ -1,11 +1,11 @@
 #include <Processing/Filters.h>
 #include "Utils.h"
 #include <Processing/Effects.h>
-#include <Canvas/Canvas.h>
 #include <Canvas/Layer.h>
 #include <algorithm>
 #include <cassert>
 #include <array>
+#include <cmath>
 
 template <typename T>
 using KernelOp = Utils::KernelOp<std::array<T, 3>, T>;
@@ -62,6 +62,65 @@ void Filters::outline(Layer& image) {
                 .r = static_cast<uint8_t>(std::clamp(sum[0], 0, 255)),
                 .g = static_cast<uint8_t>(std::clamp(sum[1], 0, 255)),
                 .b = static_cast<uint8_t>(std::clamp(sum[2], 0, 255)),
+                .a = dst[y, x].a
+            };
+        }
+    );
+}
+
+namespace {
+
+std::array<float, 25> getSharpenKernel(float amount) {
+    // amount                  = std::clamp((amount * 0.01f), 0.f, 1.f);
+    const float k           = amount * 3.f;
+
+    constexpr int32_t size  = 5;
+    constexpr int32_t r     = size / 2;
+    constexpr float   sigma = 1.f;
+
+    std::array<float, size * size> kernelData{};
+    const std::mdspan kernel{kernelData.data(), size, size};
+
+    float gaussSum = 0.f;
+    for (int32_t y = -r; y <= r; ++y) {
+        for (int32_t x = -r; x <= r; ++x) {
+            const float exponent = -1.f * static_cast<float>(x * x + y * y) / (2.f * sigma * sigma);
+            const float gaussVal = (1.f / (2.f * std::numbers::pi_v<float> * sigma * sigma)) * std::exp(exponent);
+
+            kernel[y + r, x + r] = gaussVal;
+            gaussSum            += gaussVal;
+        }
+    }
+
+    for (int32_t y = 0; y < size; ++y) {
+        for (int32_t x = 0; x < size; ++x) {
+            const float gNorm = kernel[y, x] / gaussSum;
+
+            if (y == r && x == r) kernel[y, x] = (1.f + k) - (k * gNorm);
+            else                  kernel[y, x] = -k * gNorm;
+        }
+    }
+
+    return kernelData;
+}
+
+}
+
+void Filters::sharpen(Layer& image, const float amount) {
+    assert(amount >= 0.f && amount <= 100.f);
+
+    std::array kernel       = ::getSharpenKernel(amount);
+
+    const std::vector clone = image.copyData();
+    const std::mdspan src   = std::mdspan(clone.data(), image.height(), image.width());
+    const std::mdspan dst   = image.pixels();
+
+    Utils::convolution(src, 5, 5, KernelOp<float>{ std::mdspan(kernel.data(), 5, 5) },
+        [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
+            dst[y, x] = {
+                .r = static_cast<uint8_t>(std::clamp(sum[0], 0.f, 255.f)),
+                .g = static_cast<uint8_t>(std::clamp(sum[1], 0.f, 255.f)),
+                .b = static_cast<uint8_t>(std::clamp(sum[2], 0.f, 255.f)),
                 .a = dst[y, x].a
             };
         }

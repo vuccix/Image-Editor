@@ -40,6 +40,8 @@ std::string LayerCommand::getName() const {
     return m_name;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 std::unique_ptr<LayerCommand> flipHoriz() {
     return std::make_unique<LayerCommand>(
         "Flip Horizontally", [](Layer& layer) {
@@ -148,6 +150,14 @@ std::unique_ptr<LayerCommand> outline() {
     return std::make_unique<LayerCommand>(
         "Outline", [](Layer& layer) {
             Filters::outline(layer);
+        }
+    );
+}
+
+std::unique_ptr<LayerCommand> sharpen(const float amount) {
+    return std::make_unique<LayerCommand>(
+        "Sharpen", [amount](Layer& layer) {
+            Filters::sharpen(layer, amount);
         }
     );
 }
