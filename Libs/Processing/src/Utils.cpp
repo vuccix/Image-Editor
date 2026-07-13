@@ -2,6 +2,7 @@
 #include <Canvas/Layer.h>
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 
 template <typename T>
 std::vector<T> Utils::promote(const std::span<const Pixel> pixels) {
@@ -53,3 +54,48 @@ INSTANTIATE_CONVERSION(float)
 }
 
 // =====================================================================================================================
+
+Utils::SobelData Utils::getSobel(const Layer& image) {
+    SobelData result{};
+    auto& magnitude      = result.magnitude;
+    auto& outX           = result.Gx;
+    auto& outY           = result.Gy;
+
+    constexpr float dx[] = { -1.f, 0.f, 1.f, /**/ -2.f, 0.f, 2.f, /**/ -1.f,  0.f,  1.f };
+    constexpr float dy[] = {  1.f, 2.f, 1.f, /**/  0.f, 0.f, 0.f, /**/ -1.f, -2.f, -1.f };
+    const     auto  dxK  = std::mdspan(dx, 3, 3);
+    const     auto  dyK  = std::mdspan(dy, 3, 3);
+
+    magnitude            = Utils::promote<float>(image.data());
+    const auto  src      = image.pixels();
+    const auto  dst      = std::mdspan(magnitude.data(), image.height(), image.width());
+
+    outX.resize(magnitude.size(), 0.f);
+    outY.resize(magnitude.size(), 0.f);
+    const auto dstX = std::mdspan(outX.data(), image.height(), image.width());
+    const auto dstY = std::mdspan(outY.data(), image.height(), image.width());
+
+    struct State { float sumX, sumY; };
+
+    struct GradientOp {
+        const std_mdspan<const float> dx;
+        const std_mdspan<const float> dy;
+
+        State init() { return { 0.f, 0.f }; }
+
+        void accumulate(State& state, const Pixel pixel, const int32_t ki, const int32_t kj) const {
+            state.sumX += pixel.r * dx[ki, kj];
+            state.sumY += pixel.r * dy[ki, kj];
+        }
+    };
+
+    Utils::convolution(src, 3, 3, GradientOp{ dxK, dyK },
+        [&](const int32_t x, const int32_t y, const State& state) {
+            dst[y, x]  = std::hypot(state.sumX, state.sumY); // std::abs(state.sumX) + std::abs(state.sumY);
+            dstX[y, x] = state.sumX;
+            dstY[y, x] = state.sumY;
+        }
+    );
+
+    return result;
+}

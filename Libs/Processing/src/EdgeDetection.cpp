@@ -95,46 +95,6 @@ void Filters::sobel(Layer& image) {
 
 namespace {
 
-std::vector<float> getSobel(const Layer& image, std::vector<float>& outX, std::vector<float>& outY) {
-    constexpr float dx[]  = { -1.f, 0.f, 1.f, /**/ -2.f, 0.f, 2.f, /**/ -1.f,  0.f,  1.f };
-    constexpr float dy[]  = {  1.f, 2.f, 1.f, /**/  0.f, 0.f, 0.f, /**/ -1.f, -2.f, -1.f };
-    const     auto  dxK   = std::mdspan(dx, 3, 3);
-    const     auto  dyK   = std::mdspan(dy, 3, 3);
-
-    std::vector promoted  = Utils::promote<float>(image.data());
-    const auto  src       = image.pixels();
-    const auto  dst       = std::mdspan(promoted.data(), image.height(), image.width());
-
-    outX.resize(promoted.size(), 0.f);
-    outY.resize(promoted.size(), 0.f);
-    const auto dstX = std::mdspan(outX.data(), image.height(), image.width());
-    const auto dstY = std::mdspan(outY.data(), image.height(), image.width());
-
-    struct State { float sumX, sumY; };
-
-    struct GradientOp {
-        const std_mdspan<const float> dx;
-        const std_mdspan<const float> dy;
-
-        State init() { return { 0.f, 0.f }; }
-
-        void accumulate(State& state, const Pixel pixel, const int32_t ki, const int32_t kj) const {
-            state.sumX += pixel.r * dx[ki, kj];
-            state.sumY += pixel.r * dy[ki, kj];
-        }
-    };
-
-    Utils::convolution(src, 3, 3, GradientOp{ dxK, dyK },
-        [&](const int32_t x, const int32_t y, const State& state) {
-            dst[y, x]  = std::hypot(state.sumX, state.sumY); // std::abs(state.sumX) + std::abs(state.sumY)
-            dstX[y, x] = state.sumX;
-            dstY[y, x] = state.sumY;
-        }
-    );
-
-    return promoted;
-}
-
 std::vector<float> nonMaximumSuppression(const std::vector<float>& mag,
                                          const std::vector<float>& gX,
                                          const std::vector<float>& gY,
@@ -223,18 +183,17 @@ std::vector<float> hysteresis(const std::vector<float>& suppressed,
 }
 
 void Filters::canny(Layer& image, const float lowThreshold, const float highThreshold) {
+    assert(0 <= lowThreshold && lowThreshold <= highThreshold && lowThreshold <= 100.f);
+
     Effects::grayscale(image);
     Filters::gaussianBlur(image, 2);
 
     const auto width  = static_cast<int32_t>(image.width());
     const auto height = static_cast<int32_t>(image.height());
 
-    std::vector<float> gradX;
-    std::vector<float> gradY;
-
-    const std::vector  magnitude  = ::getSobel(image, gradX, gradY);
-    const std::vector  suppressed = ::nonMaximumSuppression(magnitude, gradX, gradY, width, height);
-    const std::vector  result     = ::hysteresis(suppressed, width, height, lowThreshold, highThreshold);
+    const auto [magnitude, Gx, Gy] = Utils::getSobel(image);
+    const std::vector suppressed   = ::nonMaximumSuppression(magnitude, Gx, Gy, width, height);
+    const std::vector result       = ::hysteresis(suppressed, width, height, lowThreshold, highThreshold);
 
     Utils::demote(std::span(result), image.data());
 }

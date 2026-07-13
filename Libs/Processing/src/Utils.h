@@ -5,6 +5,7 @@
 #include <mdspan>
 
 struct Pixel;
+class  Layer;
 
 namespace Utils {
 
@@ -37,6 +38,14 @@ namespace Utils {
 
     template <typename T, typename Op, typename Writer>
     void convolution(std_mdspan<const T> image, int32_t kHeight, int32_t kWidth, Op&& op, Writer&& writer);
+
+    struct SobelData {
+        std::vector<float> magnitude;
+        std::vector<float> Gx;
+        std::vector<float> Gy;
+    };
+
+    SobelData getSobel(const Layer& image);
 
 }
 
