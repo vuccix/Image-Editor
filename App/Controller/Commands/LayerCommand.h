@@ -39,6 +39,7 @@ namespace Cmd {
     std::unique_ptr<LayerCommand> sepia();
 
     std::unique_ptr<LayerCommand> blur(int32_t amount);
+    std::unique_ptr<LayerCommand> gaussianBlur(int32_t amount);
 
     std::unique_ptr<LayerCommand> swapChannels(int32_t combination);
     std::unique_ptr<LayerCommand> emboss();

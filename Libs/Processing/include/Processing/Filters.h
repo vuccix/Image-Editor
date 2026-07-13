@@ -10,7 +10,7 @@ namespace Filters {
     void oilPainting(Layer& image);
 
     void blur(Layer& image, int amount);
-    void gaussianBlur(Layer& image);
+    void gaussianBlur(Layer& image, int amount);
     void motionBlur(Layer& image);
 
     void swapChannels(Layer& image, int change);

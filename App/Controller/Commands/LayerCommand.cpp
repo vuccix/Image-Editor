@@ -130,6 +130,14 @@ std::unique_ptr<LayerCommand> blur(const int32_t amount) {
     );
 }
 
+std::unique_ptr<LayerCommand> gaussianBlur(const int32_t amount) {
+    return std::make_unique<LayerCommand>(
+        "Gaussian Blur", [amount](Layer& layer) {
+            Filters::gaussianBlur(layer, amount);
+        }
+    );
+}
+
 std::unique_ptr<LayerCommand> swapChannels(const int32_t combination) {
     return std::make_unique<LayerCommand>(
         "Swap Channels", [combination](Layer& layer) {
