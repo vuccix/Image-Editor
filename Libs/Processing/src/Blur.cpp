@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <complex>
+#include <cmath>
 
 template <typename T>
 using KernelOp = Utils::KernelOp<std::array<T, 3>, T>;
@@ -86,4 +87,63 @@ void Filters::gaussianBlur(Layer& image, const int amount) {
     const int32_t     kSize  = 2 * amount + 1;
 
     ::blurHelper(image, kernel, kSize);
+}
+
+void Filters::motionBlur(Layer& image, int distance, const float angle) {
+    assert(distance > 0);
+
+    if (distance % 2 == 0)
+        distance += 1;
+
+    constexpr float   toRadian = std::numbers::pi_v<float> / 180.f;
+    const     int32_t halfD    = distance / 2;
+    const     float   stepX    = std::cos(angle * toRadian);
+    const     float   stepY    = std::sin(angle * toRadian);
+
+    std::vector<std::pair<int32_t, int32_t>> lineOffsets;
+    lineOffsets.reserve(distance);
+
+    for (int32_t t = -halfD; t <= halfD; ++t) {
+        const auto offsetX = static_cast<int32_t>(std::round(t * stepX));
+        const auto offsetY = static_cast<int32_t>(std::round(t * stepY));
+        lineOffsets.emplace_back(offsetX, offsetY);
+    }
+
+    const std::vector clone = image.copyData();
+    const std::mdspan src   = std::mdspan(clone.data(), image.height(), image.width());
+    const std::mdspan dst   = image.pixels();
+    const float       scale = 1.f / static_cast<float>(lineOffsets.size());
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    const auto rows  = static_cast<int32_t>(image.height());
+    const auto cols  = static_cast<int32_t>(image.width());
+
+    auto index = [](const int32_t id, const int32_t max) -> int32_t {
+        return (id < 0) ? -id - 1 : (id >= max) ? 2 * max - id - 1 : id;
+    };
+
+    #pragma omp parallel for collapse(2)
+    for (int32_t y = 0; y < rows; ++y) {
+        for (int32_t x = 0; x < cols; ++x) {
+            std::array sum = { 0.f, 0.f, 0.f };
+
+            for (const auto& [ox, oy] : lineOffsets) {
+                const int32_t ix  = index(x + ox, cols);
+                const int32_t iy  = index(y + oy, rows);
+
+                const Pixel pixel = src[iy, ix];
+                sum[0] += pixel.r;
+                sum[1] += pixel.g;
+                sum[2] += pixel.b;
+            }
+
+            dst[y, x] = {
+                .r = static_cast<uint8_t>(std::clamp(sum[0] * scale, 0.f, 255.f)),
+                .g = static_cast<uint8_t>(std::clamp(sum[1] * scale, 0.f, 255.f)),
+                .b = static_cast<uint8_t>(std::clamp(sum[2] * scale, 0.f, 255.f)),
+                .a = dst[y, x].a
+            };
+        }
+    }
 }

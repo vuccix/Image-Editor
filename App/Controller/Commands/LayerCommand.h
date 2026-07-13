@@ -40,6 +40,7 @@ namespace Cmd {
 
     std::unique_ptr<LayerCommand> blur(int32_t amount);
     std::unique_ptr<LayerCommand> gaussianBlur(int32_t amount);
+    std::unique_ptr<LayerCommand> motionBlur(int32_t distance, float angle);
 
     std::unique_ptr<LayerCommand> swapChannels(int32_t combination);
     std::unique_ptr<LayerCommand> emboss();

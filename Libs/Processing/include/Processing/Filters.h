@@ -11,7 +11,7 @@ namespace Filters {
 
     void blur(Layer& image, int amount);
     void gaussianBlur(Layer& image, int amount);
-    void motionBlur(Layer& image);
+    void motionBlur(Layer& image, int distance, float angle);
 
     void swapChannels(Layer& image, int change);
     void emboss(Layer& image);

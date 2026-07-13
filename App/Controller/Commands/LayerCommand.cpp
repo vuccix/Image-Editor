@@ -138,6 +138,14 @@ std::unique_ptr<LayerCommand> gaussianBlur(const int32_t amount) {
     );
 }
 
+std::unique_ptr<LayerCommand> motionBlur(const int32_t distance, const float angle) {
+    return std::make_unique<LayerCommand>(
+        "Motion Blur", [distance, angle](Layer& layer) {
+            Filters::motionBlur(layer, distance, angle);
+        }
+    );
+}
+
 std::unique_ptr<LayerCommand> swapChannels(const int32_t combination) {
     return std::make_unique<LayerCommand>(
         "Swap Channels", [combination](Layer& layer) {
