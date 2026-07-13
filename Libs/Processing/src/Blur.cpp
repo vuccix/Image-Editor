@@ -15,7 +15,6 @@ std::vector<float> getGaussianKernel(const int32_t sigma) {
 
     const uint32_t size    = 2 * sigma + 1;
     const int32_t  radius  = static_cast<int32_t>(size / 2);
-    const int32_t  radSQ   = radius * radius;
 
     std::vector kernel(size, 0.f);
 
@@ -25,7 +24,7 @@ std::vector<float> getGaussianKernel(const int32_t sigma) {
     float sum = 0.f;
 
     for (int32_t x = -radius; x <= radius; ++x) {
-        const float exponent = -1.f * static_cast<float>(x * x + radSQ) / twoSigmaSq;
+        const float exponent = -1.f * static_cast<float>(x * x) / twoSigmaSq;
         const float value    = constant * std::exp(exponent);
         kernel[x + radius]   = value;
         sum                 += value;

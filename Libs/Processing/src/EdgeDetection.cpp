@@ -9,7 +9,7 @@
 void Filters::laplace(Layer& image) {
     constexpr int32_t kernel[] = { 1, 4, 1, /**/ 4, -20, 4, /**/ 1, 4, 1 };
 
-    Filters::blur(image, 1);
+    Filters::gaussianBlur(image, 1);
     Effects::grayscale(image);
 
     const std::vector promoted = Utils::promote<int32_t>(image.data());
@@ -35,7 +35,7 @@ template <typename T>
 using std_mdspan = std::mdspan<T, std::dextents<size_t, 2>>;
 
 void edgeDetectionHelper(Layer& image, const std_mdspan<const int32_t> dx, const std_mdspan<const int32_t> dy) {
-    Filters::blur(image, 1);
+    Filters::gaussianBlur(image, 1);
     Effects::grayscale(image);
 
     const std::vector promoted = Utils::promote<int32_t>(image.data());
