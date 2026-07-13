@@ -25,8 +25,14 @@ void Filters::swapChannels(Layer& image, const int change) {
         default: break;
     }
 
-    for (Pixel& pixel : image.data())
-        std::swap(pixel[id[0]], pixel[id[1]]);
+    const auto img = image.pixels();
+    #pragma omp parallel for collapse (2)
+    for (uint32_t y = 0; y < image.height(); ++y) {
+        for (uint32_t x = 0; x < image.width(); ++x) {
+            Pixel& p = img[y,x];
+            std::swap(p[id[0]], p[id[1]]);
+        }
+    }
 }
 
 void Filters::emboss(Layer& image) {
@@ -162,8 +168,8 @@ void Filters::duoTone(Layer& image, const float colorA[3], const float colorB[3]
     const auto pixels = image.pixels();
 
     #pragma omp parallel for collapse (2)
-    for (size_t y = 0; y < image.height(); ++y) {
-        for (size_t x = 0; x < image.width(); ++x) {
+    for (uint32_t y = 0; y < image.height(); ++y) {
+        for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& pixel     = pixels[y, x];
             const float lum  = (pixel.r * 0.2126f + pixel.g * 0.7152f + pixel.b * 0.0722f) / 255.f;
             const auto  r    = static_cast<uint8_t>(std::clamp(colorA[0] + (colorB[0] - colorA[0]) * lum, 0.f, 255.f));

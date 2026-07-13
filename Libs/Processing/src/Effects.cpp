@@ -148,29 +148,41 @@ void Effects::invertAlpha(Layer& image) {
 
 void Effects::grayscale(Layer& image) {
     constexpr std::array arr = { 0.2989f, 0.5870f, 0.1140f };
+    const auto pixels        = image.pixels();
 
-    for (Pixel& pixel : image.data()) {
-        const float value = pixel.r * arr[0]
-                          + pixel.g * arr[1]
-                          + pixel.b * arr[2];
+    #pragma omp parallel for collapse (2)
+    for (uint32_t y = 0; y < image.height(); ++y) {
+        for (uint32_t x = 0; x < image.width(); ++x) {
+            Pixel& pixel      = pixels[y, x];
+            const float value = pixel.r * arr[0] + pixel.g * arr[1] + pixel.b * arr[2];
 
-        pixel.r           = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f));
-        pixel.g           = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f));
-        pixel.b           = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f));
+            pixel = {
+                .r = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
+                .g = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
+                .b = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
+                .a = pixel.a
+            };
+        }
     }
 }
 
 void Effects::luminance(Layer& image) {
     constexpr std::array arr = { 0.2126f, 0.7152f, 0.0722f };
+    const auto pixels        = image.pixels();
 
-    for (Pixel& pixel : image.data()) {
-        const float value = pixel.r * arr[0]
-                          + pixel.g * arr[1]
-                          + pixel.b * arr[2];
+    #pragma omp parallel for collapse (2)
+    for (uint32_t y = 0; y < image.height(); ++y) {
+        for (uint32_t x = 0; x < image.width(); ++x) {
+            Pixel& pixel      = pixels[y, x];
+            const float value = pixel.r * arr[0] + pixel.g * arr[1] + pixel.b * arr[2];
 
-        pixel.r           = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f));
-        pixel.g           = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f));
-        pixel.b           = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f));
+            pixel = {
+                .r = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
+                .g = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
+                .b = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
+                .a = pixel.a
+            };
+        }
     }
 }
 
@@ -181,13 +193,22 @@ void Effects::sepia(Layer& image) {
         0.272f, 0.534f, 0.131f
     };
 
-    for (Pixel& pixel : image.data()) {
-        const float new_r = m[0] * pixel.r + m[1] * pixel.g + m[2] * pixel.b;
-        const float new_g = m[3] * pixel.r + m[4] * pixel.g + m[5] * pixel.b;
-        const float new_b = m[6] * pixel.r + m[7] * pixel.g + m[8] * pixel.b;
+    const auto pixels = image.pixels();
 
-        pixel.r           = static_cast<uint8_t>(std::clamp(new_r, 0.f, 255.f));
-        pixel.g           = static_cast<uint8_t>(std::clamp(new_g, 0.f, 255.f));
-        pixel.b           = static_cast<uint8_t>(std::clamp(new_b, 0.f, 255.f));
+    #pragma omp parallel for collapse (2)
+    for (uint32_t y = 0; y < image.height(); ++y) {
+        for (uint32_t x = 0; x < image.width(); ++x) {
+            Pixel& pixel      = pixels[y, x];
+            const float new_r = m[0] * pixel.r + m[1] * pixel.g + m[2] * pixel.b;
+            const float new_g = m[3] * pixel.r + m[4] * pixel.g + m[5] * pixel.b;
+            const float new_b = m[6] * pixel.r + m[7] * pixel.g + m[8] * pixel.b;
+
+            pixel = {
+                .r = static_cast<uint8_t>(std::clamp(new_r, 0.f, 255.f)),
+                .g = static_cast<uint8_t>(std::clamp(new_g, 0.f, 255.f)),
+                .b = static_cast<uint8_t>(std::clamp(new_b, 0.f, 255.f)),
+                .a = pixel.a
+            };
+        }
     }
 }
