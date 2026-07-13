@@ -1,3 +1,5 @@
+#pragma once
+
 #include <omp.h>
 
 template <typename T, typename Op, typename Writer>

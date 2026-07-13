@@ -95,6 +95,8 @@ void Filters::motionBlur(Layer& image, int distance, const float angle) {
     if (distance % 2 == 0)
         distance += 1;
 
+    // -----------------------------------------------------------------------------------------------------------------
+
     constexpr float   toRadian = std::numbers::pi_v<float> / 180.f;
     const     int32_t halfD    = distance / 2;
     const     float   stepX    = std::cos(angle * toRadian);
@@ -108,6 +110,8 @@ void Filters::motionBlur(Layer& image, int distance, const float angle) {
         const auto offsetY = static_cast<int32_t>(std::round(t * stepY));
         lineOffsets.emplace_back(offsetX, offsetY);
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
 
     const std::vector clone = image.copyData();
     const std::mdspan src   = std::mdspan(clone.data(), image.height(), image.width());
