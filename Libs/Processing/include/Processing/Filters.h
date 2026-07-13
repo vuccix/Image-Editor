@@ -19,7 +19,7 @@ namespace Filters {
     void sharpen(Layer& image, float amount);
     void pixelate(Layer& image, int blockSize);
 
-    void canny(Layer& image);
+    void canny(Layer& image, float lowThreshold, float highThreshold);
     void laplace(Layer& image);
     void prewitt(Layer& image);
     void scharr(Layer& image);

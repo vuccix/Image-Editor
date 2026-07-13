@@ -186,6 +186,14 @@ std::unique_ptr<LayerCommand> pixelate(const int blockSize) {
     );
 }
 
+std::unique_ptr<LayerCommand> canny(const float lowThreshold, const float highThreshold) {
+    return std::make_unique<LayerCommand>(
+        "Canny", [lowThreshold, highThreshold](Layer& layer) {
+            Filters::canny(layer, lowThreshold, highThreshold);
+        }
+    );
+}
+
 std::unique_ptr<LayerCommand> laplace() {
     return std::make_unique<LayerCommand>(
         "Laplace", [](Layer& layer) {
