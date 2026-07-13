@@ -442,7 +442,11 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.separator();
 
             ui.menu("Artistic", [&] {
-                ui.item("Duo Tone...", [&] {});
+                ui.item("Duo Tone...", [&] {
+                    constexpr float colorA[3] = { 255.f,   0.f, 127.f };
+                    constexpr float colorB[3] = {   0.f, 210.f, 255.f };
+                    exec(Cmd::duoTone(colorA, colorB));
+                });
                 ui.item("Water Color...", [&] {});
                 ui.item("Oil Painting...", [&] {});
             });

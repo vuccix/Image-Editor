@@ -5,7 +5,7 @@ class Canvas;
 
 namespace Filters {
 
-    void duoTone(Layer& image);
+    void duoTone(Layer& image, const float colorA[3], const float colorB[3]);
     void waterColor(Layer& image);
     void oilPainting(Layer& image);
 

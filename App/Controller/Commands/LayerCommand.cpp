@@ -122,6 +122,14 @@ std::unique_ptr<LayerCommand> sepia() {
     );
 }
 
+std::unique_ptr<LayerCommand> duoTone(const float colorA[3], const float colorB[3]) {
+    return std::make_unique<LayerCommand>(
+        "Duo tone", [colorA, colorB](Layer& layer) {
+            Filters::duoTone(layer, colorA, colorB);
+        }
+    );
+}
+
 std::unique_ptr<LayerCommand> blur(const int32_t amount) {
     return std::make_unique<LayerCommand>(
         "Blur", [amount](Layer& layer) {

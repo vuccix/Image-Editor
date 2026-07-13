@@ -38,6 +38,8 @@ namespace Cmd {
     std::unique_ptr<LayerCommand> luminance();
     std::unique_ptr<LayerCommand> sepia();
 
+    std::unique_ptr<LayerCommand> duoTone(const float colorA[3], const float colorB[3]);
+
     std::unique_ptr<LayerCommand> blur(int32_t amount);
     std::unique_ptr<LayerCommand> gaussianBlur(int32_t amount);
     std::unique_ptr<LayerCommand> motionBlur(int32_t distance, float angle);

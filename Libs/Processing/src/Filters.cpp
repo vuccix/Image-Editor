@@ -6,6 +6,7 @@
 #include <cassert>
 #include <array>
 #include <cmath>
+#include <omp.h>
 
 template <typename T>
 using KernelOp = Utils::KernelOp<std::array<T, 3>, T>;
@@ -153,6 +154,28 @@ void Filters::pixelate(Layer& image, const int blockSize) {
                     };
                 }
             }
+        }
+    }
+}
+
+void Filters::duoTone(Layer& image, const float colorA[3], const float colorB[3]) {
+    const auto pixels = image.pixels();
+
+    #pragma omp parallel for collapse (2)
+    for (size_t y = 0; y < image.height(); ++y) {
+        for (size_t x = 0; x < image.width(); ++x) {
+            Pixel& pixel     = pixels[y, x];
+            const float lum  = (pixel.r * 0.2126f + pixel.g * 0.7152f + pixel.b * 0.0722f) / 255.f;
+            const auto  r    = static_cast<uint8_t>(std::clamp(colorA[0] + (colorB[0] - colorA[0]) * lum, 0.f, 255.f));
+            const auto  g    = static_cast<uint8_t>(std::clamp(colorA[1] + (colorB[1] - colorA[1]) * lum, 0.f, 255.f));
+            const auto  b    = static_cast<uint8_t>(std::clamp(colorA[2] + (colorB[2] - colorA[2]) * lum, 0.f, 255.f));
+
+            pixel = {
+                .r = r,
+                .g = g,
+                .b = b,
+                .a = pixel.a,
+            };
         }
     }
 }
