@@ -5,13 +5,19 @@
 #include <cmath>
 
 template <typename T>
-std::vector<T> Utils::promote(const std::span<const Pixel> pixels) {
+std::vector<T> Utils::promote(const std::span<const Pixel> pixels, const bool normalize) {
     assert(pixels.empty() == false);
 
     std::vector<T> result(pixels.size(), T{});
 
-    for (size_t i = 0; i < pixels.size(); ++i)
-        result[i] = static_cast<T>(pixels[i].r);
+    if (normalize) {
+        for (size_t i = 0; i < pixels.size(); ++i)
+            result[i] = static_cast<T>(pixels[i].r) / 255.f;
+    }
+    else {
+        for (size_t i = 0; i < pixels.size(); ++i)
+            result[i] = static_cast<T>(pixels[i].r);
+    }
 
     return result;
 }
@@ -33,15 +39,15 @@ void Utils::demote(const std::span<const T> data, const std::span<Pixel> pixels)
 
 namespace Utils {
 
-#define INSTANTIATE_PROMOTE(T)                                     \
-    template std::vector<T> promote<T>(std::span<const Pixel>);    \
+#define INSTANTIATE_PROMOTE(T)                                        \
+    template std::vector<T> promote<T>(std::span<const Pixel>, bool); \
 
-#define INSTANTIATE_DEMOTE(T)                                      \
-    template void demote<T>(std::span<const T>, std::span<Pixel>); \
+#define INSTANTIATE_DEMOTE(T)                                         \
+    template void demote<T>(std::span<const T>, std::span<Pixel>);    \
 
-#define INSTANTIATE_CONVERSION(T)                                  \
-    INSTANTIATE_PROMOTE(T)                                         \
-    INSTANTIATE_DEMOTE(T)                                          \
+#define INSTANTIATE_CONVERSION(T)                                     \
+    INSTANTIATE_PROMOTE(T)                                            \
+    INSTANTIATE_DEMOTE(T)                                             \
 
 // promote/demote
 INSTANTIATE_CONVERSION(int32_t)

@@ -191,7 +191,7 @@ void Filters::canny(Layer& image, const float lowThreshold, const float highThre
     const auto width  = static_cast<int32_t>(image.width());
     const auto height = static_cast<int32_t>(image.height());
 
-    const auto [magnitude, Gx, Gy] = Utils::getSobel(image);
+    const auto& [magnitude, Gx, Gy] = Utils::getSobel(image);
     const std::vector suppressed   = ::nonMaximumSuppression(magnitude, Gx, Gy, width, height);
     const std::vector result       = ::hysteresis(suppressed, width, height, lowThreshold, highThreshold);
 

@@ -10,7 +10,7 @@ class  Layer;
 namespace Utils {
 
     template <typename T>
-    std::vector<T> promote(std::span<const Pixel> pixels);
+    std::vector<T> promote(std::span<const Pixel> pixels, bool normalize = false);
 
     template <typename T>
     void demote(std::span<const T> data, std::span<Pixel> pixels);

@@ -468,7 +468,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.separator();
 
             ui.menu("Edge Detection", [&] {
-                ui.item("Canny",   [&] { exec(Cmd::canny(20.f, 50.f));   });
+                ui.item("Canny",   [&] { exec(Cmd::canny(20.f, 50.f)); });
                 ui.item("Laplace", [&] { exec(Cmd::laplace()); });
                 ui.item("Prewitt", [&] { exec(Cmd::prewitt()); });
                 ui.item("Scharr",  [&] { exec(Cmd::scharr());  });
@@ -477,7 +477,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
 
             ui.menu("Smart", [&] {
                 ui.item("Fourier Transform", [&] {});
-                ui.item("Normal Map", [&] {});
+                ui.item("Normal Map", [&] { exec(Cmd::normalMap(1.f, false)); });
                 ui.item("Seam Carving...", [&] {});
             });
         });
