@@ -1,6 +1,8 @@
 #include "CanvasCommand.h"
 #include <Processing/Filters.h>
 #include <Processing/Effects.h>
+#include <iostream>
+#include <chrono>
 
 namespace Cmd {
 
@@ -8,6 +10,10 @@ CanvasCommand::CanvasCommand(std::string name, std::move_only_function<void(Canv
     : m_name(std::move(name)), m_effectFunc(std::move(effectFunc)) {}
 
 void CanvasCommand::execute(EditorState& state) {
+    using clock = std::chrono::steady_clock;
+    const auto start = clock::now();
+
+    // --------------------------------------------------------------
     Canvas& canvas = state.canvas;
     m_width        = canvas.width();
     m_height       = canvas.height();
@@ -18,6 +24,11 @@ void CanvasCommand::execute(EditorState& state) {
 
     m_effectFunc(canvas);
     ++state.version;
+    // --------------------------------------------------------------
+
+    const auto end = clock::now();
+    const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << m_name << " took " << dur.count() << " ms\n";
 }
 
 void CanvasCommand::undo(EditorState& state) {
