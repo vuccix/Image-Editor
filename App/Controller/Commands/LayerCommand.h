@@ -56,4 +56,6 @@ namespace Cmd {
     std::unique_ptr<LayerCommand> scharr();
     std::unique_ptr<LayerCommand> sobel();
 
+    std::unique_ptr<LayerCommand> normalMap(float strength, bool flipY);
+
 }

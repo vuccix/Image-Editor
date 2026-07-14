@@ -4,7 +4,6 @@
 #include <Canvas/Layer.h>
 #include <algorithm>
 #include <cassert>
-#include <array>
 #include <cmath>
 #include <omp.h>
 
@@ -181,6 +180,55 @@ void Filters::duoTone(Layer& image, const float colorA[3], const float colorB[3]
                 .g = g,
                 .b = b,
                 .a = pixel.a,
+            };
+        }
+    }
+}
+
+void Filters::normalMap(Layer& image, const float strength, const bool flipY) {
+    Effects::grayscale(image);
+
+    const Utils::SobelData sobel = Utils::getSobel(image);
+
+    auto normalize = [](float& x, float& y, float& z) {
+        const float sum = x * x + y * y + z * z;
+        if (sum <= 1e-8f) {
+            x = y = 0.f;
+            z = 1.f;
+            return;
+        }
+
+        const float invLen = 1.f / std::sqrt(sum);
+        x *= invLen;
+        y *= invLen;
+        z *= invLen;
+    };
+
+    const auto pixels = image.pixels();
+    const auto rows   = static_cast<int32_t>(image.height());
+    const auto cols   = static_cast<int32_t>(image.width());
+    const float sign  = flipY ? -1.f : 1.f;
+
+    #pragma omp parallel for collapse (2)
+    for (int32_t y = 0; y < rows; ++y) {
+        for (int32_t x = 0; x < cols; ++x) {
+            const int32_t id = y * cols + x;
+            const float   dx = sobel.Gx[id] * (1.f / 255.f) * strength;
+            const float   dy = sobel.Gy[id] * (1.f / 255.f) * strength;
+
+            // OpenGL-style normal
+            float nx = -dx;
+            float ny = -dy * sign;
+            float nz = 1.f;
+
+            normalize(nx, ny, nz);
+
+            // [-1,1] -> [0,255]
+            pixels[y, x] = {
+                .r = static_cast<uint8_t>((nx * 0.5f + 0.5f) * 255.f),
+                .g = static_cast<uint8_t>((ny * 0.5f + 0.5f) * 255.f),
+                .b = static_cast<uint8_t>((nz * 0.5f + 0.5f) * 255.f),
+                .a = pixels[y, x].a
             };
         }
     }

@@ -26,7 +26,7 @@ namespace Filters {
     void sobel(Layer& image);
 
     void fourierTransform(Canvas& image);
-    void normalMap(Layer& image);
+    void normalMap(Layer& image, float strength, bool flipY);
     void seamCarving(Canvas& image);
 
 }

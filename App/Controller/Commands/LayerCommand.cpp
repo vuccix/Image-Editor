@@ -234,4 +234,12 @@ std::unique_ptr<LayerCommand> sobel() {
     );
 }
 
+std::unique_ptr<LayerCommand> normalMap(const float strength, const bool flipY) {
+    return std::make_unique<LayerCommand>(
+        "Normal Map", [strength, flipY](Layer& layer) {
+            Filters::normalMap(layer, strength, flipY);
+        }
+    );
+}
+
 }
