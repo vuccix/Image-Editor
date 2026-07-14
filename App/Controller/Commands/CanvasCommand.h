@@ -35,4 +35,5 @@ namespace Cmd {
     std::unique_ptr<CanvasCommand> resize(uint32_t width, uint32_t height);
     std::unique_ptr<CanvasCommand> scale(uint32_t width, uint32_t height);
 
+    std::unique_ptr<CanvasCommand> seamCarving(uint32_t width, uint32_t height);
 }

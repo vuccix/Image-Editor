@@ -478,7 +478,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.menu("Smart", [&] {
                 ui.item("Fourier Transform", [&] {});
                 ui.item("Normal Map", [&] { exec(Cmd::normalMap(1.f, false)); });
-                ui.item("Seam Carving...", [&] {});
+                ui.item("Seam Carving...", [&] { exec(Cmd::seamCarving(1'000, 900)); });
             });
         });
 

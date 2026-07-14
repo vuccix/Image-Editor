@@ -27,6 +27,6 @@ namespace Filters {
 
     void fourierTransform(Canvas& image);
     void normalMap(Layer& image, float strength, bool flipY);
-    void seamCarving(Canvas& image);
+    void seamCarving(Canvas& canvas, unsigned width, unsigned height);
 
 }
