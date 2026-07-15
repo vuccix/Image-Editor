@@ -13,5 +13,8 @@ void AssetManager::load(const uint32_t w, const uint32_t h, const std::span<cons
 }
 
 uint32_t AssetManager::get(const Asset name) const {
+    assert(m_textures.empty() == false);
+    assert(name != Asset::Count);
+
     return m_textures[static_cast<int32_t>(name)].id();
 }

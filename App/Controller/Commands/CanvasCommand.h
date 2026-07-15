@@ -7,7 +7,7 @@
 
 namespace Cmd {
 
-    class CanvasCommand : public Command {
+    class CanvasCommand final : public Command {
     public:
         CanvasCommand(std::string name, std::move_only_function<void(Canvas&)> effectFunc);
 

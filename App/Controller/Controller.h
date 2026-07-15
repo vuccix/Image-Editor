@@ -15,8 +15,8 @@ public:
     void setHistoryLength(size_t length);
     size_t getHistoryLength() const noexcept;
 
-    bool hasUndo() const;
-    bool hasRedo() const;
+    bool hasUndo() const noexcept;
+    bool hasRedo() const noexcept;
 
 private:
     std::vector<std::unique_ptr<Command>> m_undoStack;

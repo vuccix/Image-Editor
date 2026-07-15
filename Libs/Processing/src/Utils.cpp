@@ -12,7 +12,7 @@ std::vector<T> Utils::promote(const std::span<const Pixel> pixels, const bool no
 
     if (normalize) {
         for (size_t i = 0; i < pixels.size(); ++i)
-            result[i] = static_cast<T>(pixels[i].r) / 255.f;
+            result[i] = static_cast<T>(pixels[i].r) * (1.f / 255.f);
     }
     else {
         for (size_t i = 0; i < pixels.size(); ++i)
@@ -29,9 +29,10 @@ void Utils::demote(const std::span<const T> data, const std::span<Pixel> pixels)
     constexpr T lo = 0, hi = 255;
 
     for (size_t i = 0; i < data.size(); ++i) {
-        pixels[i].r = static_cast<uint8_t>(std::clamp(data[i], lo, hi));
-        pixels[i].g = static_cast<uint8_t>(std::clamp(data[i], lo, hi));
-        pixels[i].b = static_cast<uint8_t>(std::clamp(data[i], lo, hi));
+        const auto val = static_cast<uint8_t>(std::clamp(data[i], lo, hi));
+        pixels[i].r    = val;
+        pixels[i].g    = val;
+        pixels[i].b    = val;
     }
 }
 

@@ -7,7 +7,7 @@
 
 namespace Cmd {
 
-    class LayerCommand : public Command {
+    class LayerCommand final : public Command {
     public:
         LayerCommand(std::string name, std::move_only_function<void(Layer&)> effectFunc);
 

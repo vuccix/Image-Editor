@@ -40,5 +40,5 @@ size_t Controller::getHistoryLength() const noexcept {
     return m_historyLength;
 }
 
-bool Controller::hasUndo() const { return !m_undoStack.empty(); }
-bool Controller::hasRedo() const { return !m_redoStack.empty(); }
+bool Controller::hasUndo() const noexcept { return !m_undoStack.empty(); }
+bool Controller::hasRedo() const noexcept { return !m_redoStack.empty(); }
