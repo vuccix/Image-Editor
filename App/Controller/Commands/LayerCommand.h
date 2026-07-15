@@ -2,21 +2,18 @@
 
 #include <Controller/Command.h>
 #include <functional>
-#include <string>
 #include <vector>
 
 namespace Cmd {
 
     class LayerCommand final : public Command {
     public:
-        LayerCommand(std::string name, std::move_only_function<void(Layer&)> effectFunc);
+        LayerCommand(CommandNames name, std::move_only_function<void(Layer&)> effectFunc);
 
         void execute(EditorState& state) override;
         void undo(EditorState& state)    override;
-        std::string getName() const      override;
 
     private:
-        std::string                           m_name;
         std::move_only_function<void(Layer&)> m_effectFunc;
         std::vector<Pixel>                    m_backup;
         size_t                                m_layerID = SIZE_MAX;

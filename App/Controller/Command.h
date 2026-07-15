@@ -1,15 +1,21 @@
 #pragma once
 
+#include "Commands/Names.h"
 #include <Model/EditorState.h>
 #include <memory>
 #include <string>
 
 class Command {
 public:
+    explicit Command(CommandNames name);
+
     virtual ~Command() = default;
 
     virtual void execute(EditorState& state) = 0;
     virtual void undo(EditorState& state)    = 0;
 
-    virtual std::string getName() const      = 0;
+    std::string_view getName() const;
+
+protected:
+    CommandNames m_name;
 };

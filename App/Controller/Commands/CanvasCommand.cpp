@@ -4,12 +4,10 @@
 #include <iostream>
 #include <chrono>
 
-namespace Cmd {
+Cmd::CanvasCommand::CanvasCommand(const CommandNames name, std::move_only_function<void(Canvas&)> effectFunc)
+    : Command(name), m_effectFunc(std::move(effectFunc)) {}
 
-CanvasCommand::CanvasCommand(std::string name, std::move_only_function<void(Canvas&)> effectFunc)
-    : m_name(std::move(name)), m_effectFunc(std::move(effectFunc)) {}
-
-void CanvasCommand::execute(EditorState& state) {
+void Cmd::CanvasCommand::execute(EditorState& state) {
     using clock = std::chrono::steady_clock;
     const auto start = clock::now();
 
@@ -28,10 +26,10 @@ void CanvasCommand::execute(EditorState& state) {
 
     const auto end = clock::now();
     const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << m_name << " took " << dur.count() << " ms\n";
+    std::cout << getName() << " took " << dur.count() << " ms\n";
 }
 
-void CanvasCommand::undo(EditorState& state) {
+void Cmd::CanvasCommand::undo(EditorState& state) {
     assert(m_backup.empty() == false);
     assert(m_width > 0 && m_height > 0);
 
@@ -44,13 +42,16 @@ void CanvasCommand::undo(EditorState& state) {
     ++state.version;
 }
 
-std::string CanvasCommand::getName() const {
-    return m_name;
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace Cmd {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
 
 std::unique_ptr<CanvasCommand> rotateLeft() {
     return std::make_unique<CanvasCommand>(
-        "Rotate 90° Left", [](Canvas& canvas) {
+        CommandNames::RotateLeft, [](Canvas& canvas) {
             Effects::rotateLeft(canvas);
         }
     );
@@ -58,7 +59,7 @@ std::unique_ptr<CanvasCommand> rotateLeft() {
 
 std::unique_ptr<CanvasCommand> rotateRight() {
     return std::make_unique<CanvasCommand>(
-        "Rotate 90° Right", [](Canvas& canvas) {
+        CommandNames::RotateRight, [](Canvas& canvas) {
             Effects::rotateRight(canvas);
         }
     );
@@ -66,7 +67,7 @@ std::unique_ptr<CanvasCommand> rotateRight() {
 
 std::unique_ptr<CanvasCommand> rotate180() {
     return std::make_unique<CanvasCommand>(
-        "Rotate 180°", [](Canvas& canvas) {
+        CommandNames::Rotate180, [](Canvas& canvas) {
             Effects::rotate180(canvas);
         }
     );
@@ -74,7 +75,7 @@ std::unique_ptr<CanvasCommand> rotate180() {
 
 std::unique_ptr<CanvasCommand> flipHorizCanvas() {
     return std::make_unique<CanvasCommand>(
-        "Flip Horizontally", [](Canvas& canvas) {
+        CommandNames::FlipHorizontally, [](Canvas& canvas) {
             Effects::flipHorizontally(canvas);
         }
     );
@@ -82,7 +83,7 @@ std::unique_ptr<CanvasCommand> flipHorizCanvas() {
 
 std::unique_ptr<CanvasCommand> flipVertCanvas() {
     return std::make_unique<CanvasCommand>(
-        "Flip Vertically", [](Canvas& canvas) {
+        CommandNames::FlipVertically, [](Canvas& canvas) {
             Effects::flipVertically(canvas);
         }
     );
@@ -90,7 +91,7 @@ std::unique_ptr<CanvasCommand> flipVertCanvas() {
 
 std::unique_ptr<CanvasCommand> resize(const uint32_t width, const uint32_t height) {
     return std::make_unique<CanvasCommand>(
-        "Resize", [width, height](Canvas& canvas) {
+        CommandNames::Resize, [width, height](Canvas& canvas) {
             canvas.resize(width, height);
         }
     );
@@ -98,7 +99,7 @@ std::unique_ptr<CanvasCommand> resize(const uint32_t width, const uint32_t heigh
 
 std::unique_ptr<CanvasCommand> scale(const uint32_t width, const uint32_t height) {
     return std::make_unique<CanvasCommand>(
-        "Scale", [width, height](Canvas& canvas) {
+        CommandNames::CanvasSize, [width, height](Canvas& canvas) {
             canvas.scale(width, height);
         }
     );
@@ -106,10 +107,12 @@ std::unique_ptr<CanvasCommand> scale(const uint32_t width, const uint32_t height
 
 std::unique_ptr<CanvasCommand> seamCarving(uint32_t width, uint32_t height) {
     return std::make_unique<CanvasCommand>(
-        "Seam Carving", [width, height](Canvas& canvas) {
+        CommandNames::SeamCarving, [width, height](Canvas& canvas) {
             Filters::seamCarving(canvas, width, height);
         }
     );
 }
+
+#pragma GCC diagnostic pop
 
 }
