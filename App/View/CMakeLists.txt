@@ -1,4 +1,4 @@
-add_library(AppView OBJECT UIManager.cpp Utils.cpp UI/EditorThemes.cpp UI/UI.cpp)
+add_library(AppView OBJECT UIManager.cpp UIMenuBar.cpp Utils.cpp UI/EditorThemes.cpp UI/UI.cpp)
 
 target_link_libraries(AppView
         PRIVATE
