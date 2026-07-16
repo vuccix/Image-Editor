@@ -3,28 +3,33 @@
 #include <format>
 
 Canvas::Canvas(const uint32_t w, const uint32_t h) : m_width(w), m_height(h) {
+    assert(w > 0 && h > 0);
     m_layers.emplace_back(m_width, m_height, "Background");
 }
 
 void Canvas::resize(const uint32_t w, const uint32_t h) {
+    assert(w > 0 && h > 0);
+
     if (m_width == w && m_height == h)
         return;
 
     m_width  = w;
     m_height = h;
 
-    for (auto& layer : m_layers)
+    for (Layer& layer : m_layers)
         layer.resize(w, h);
 }
 
 void Canvas::scale(const uint32_t w, const uint32_t h) {
+    assert(w > 0 && h > 0);
+
     if (m_width == w && m_height == h)
         return;
 
     m_width  = w;
     m_height = h;
 
-    for (auto& layer : m_layers)
+    for (Layer& layer : m_layers)
         layer.scale(w, h);
 }
 

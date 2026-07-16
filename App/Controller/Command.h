@@ -8,7 +8,6 @@
 class Command {
 public:
     explicit Command(CommandNames name);
-
     virtual ~Command() = default;
 
     virtual void execute(EditorState& state) = 0;

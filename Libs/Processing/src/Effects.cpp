@@ -42,8 +42,8 @@ void Effects::rotateLeft(Canvas& canvas) {
     auto rotate = [](Layer& layer) -> std::vector<Pixel> {
         std::vector result(layer.width() * layer.height(), Pixel{});
 
-        const auto newPixels = std::mdspan(result.data(), layer.width(), layer.height());
-        const auto pixels    = layer.pixels();
+        const std::mdspan newPixels(result.data(), layer.width(), layer.height());
+        const std::mdspan pixels = layer.pixels();
 
         #pragma omp parallel for collapse(2)
         for (uint32_t y = 0; y < layer.height(); ++y)
@@ -66,8 +66,8 @@ void Effects::rotateRight(Canvas& canvas) {
     auto rotate = [](Layer& layer) -> std::vector<Pixel> {
         std::vector result(layer.width() * layer.height(), Pixel{});
 
-        const auto newPixels = std::mdspan(result.data(), layer.width(), layer.height());
-        const auto pixels    = layer.pixels();
+        const std::mdspan newPixels(result.data(), layer.width(), layer.height());
+        const std::mdspan pixels = layer.pixels();
 
         #pragma omp parallel for collapse(2)
         for (uint32_t y = 0; y < layer.height(); ++y)
