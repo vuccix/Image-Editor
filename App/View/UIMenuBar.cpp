@@ -11,6 +11,14 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
         controller.execute(state, std::move(func));
     };
 
+    auto openModal = [this](const std::string_view title, std::function<void()> drawContent, std::function<void()> onApply) {
+        m_activePopup = ActivePopup{
+            .title       = title,
+            .drawContent = std::move(drawContent),
+            .onApply     = std::move(onApply)
+        };
+    };
+
     ui.menuBar([&] {
         ui.menu("File", [&] {
             ui.item("New...", "Ctrl+N", [&] {});
@@ -142,7 +150,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
         ui.menu("Settings", [&] {
             ui.item("Configure Paint++...", [&] {});
             ui.separator();
-            ui.menu("Themes", [&] {
+            ui.menu("Themes", [this] {
                 ui.item("Classic ImGui", (m_theme ==  0), [&] { setTheme(0);  });
                 ui.item("Dark ImGui",    (m_theme ==  1), [&] { setTheme(1);  });
                 ui.item("Light ImGui",   (m_theme ==  2), [&] { setTheme(2);  });
@@ -157,7 +165,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             });
         });
 
-        ui.menu("Help", [&] {
+        ui.menu("Help", [] {
             ui.item("Documentation...", [&] {
                 Utils::openURL("https://github.com/vuccix/Image-Editor/wiki");
             });
