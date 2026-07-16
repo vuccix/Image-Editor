@@ -17,8 +17,8 @@ void Cmd::CanvasCommand::execute(EditorState& state) {
     m_height       = canvas.height();
 
     m_backup.reserve(canvas.layerCount());
-    for (size_t i = 0; i < canvas.layerCount(); ++i)
-        m_backup.emplace_back(canvas[i].copyData());
+    for (const Layer& l : canvas)
+        m_backup.emplace_back(l.data().begin(), l.data().end());
 
     m_effectFunc(canvas);
     ++state.version;

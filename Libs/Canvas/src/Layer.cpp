@@ -103,9 +103,9 @@ std::span<const Pixel> Layer::data() const { return m_data; }
 std::span<Pixel>       Layer::data()       { return m_data; }
 
 void Layer::setData(std::vector<Pixel>&& data, const uint32_t w, const uint32_t h) {
-    assert((w >= 1 && h >= 1) || (w == 0 && h == 0));
+    assert((w == 0 && h == 0) || (w >= 1 && h >= 1));
 
-    if (w != 0 || h != 0) {
+    if (w != 0 && h != 0) {
         m_width  = w;
         m_height = h;
     }
@@ -113,6 +113,5 @@ void Layer::setData(std::vector<Pixel>&& data, const uint32_t w, const uint32_t 
     m_data = std::move(data);
 }
 
-std::vector<Pixel> Layer::copyData() const { return m_data;   }
-uint32_t           Layer::width()    const { return m_width;  }
-uint32_t           Layer::height()   const { return m_height; }
+uint32_t Layer::width()  const { return m_width;  }
+uint32_t Layer::height() const { return m_height; }

@@ -151,7 +151,7 @@ void Filters::seamCarving(Canvas& canvas, const unsigned inputWidth, const unsig
     canvas.mergeAllLayers();
     Layer& layer = canvas[0];
 
-    std::vector<Pixel> image = layer.copyData();
+    std::vector<Pixel> image(layer.data().begin(), layer.data().end());
     Effects::grayscale(layer);
     Filters::gaussianBlur(layer, 1);
 

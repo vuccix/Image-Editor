@@ -32,6 +32,11 @@ public:
     const Layer& operator[](size_t layerID) const;
           Layer& operator[](size_t layerID);
 
+    auto begin()       noexcept { return m_layers.begin(); }
+    auto begin() const noexcept { return m_layers.begin(); }
+    auto end()         noexcept { return m_layers.end(); }
+    auto end()   const noexcept { return m_layers.end(); }
+
     uint32_t width()      const noexcept;
     uint32_t height()     const noexcept;
     size_t   layerCount() const noexcept;

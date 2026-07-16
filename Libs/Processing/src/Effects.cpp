@@ -29,13 +29,13 @@ void Effects::flipVertically(Layer& image) {
 }
 
 void Effects::flipHorizontally(Canvas& canvas) {
-    for (size_t i = 0; i < canvas.layerCount(); ++i)
-        flipHorizontally(canvas[i]);
+    for (Layer& layer : canvas)
+        flipHorizontally(layer);
 }
 
 void Effects::flipVertically(Canvas& canvas) {
-    for (size_t i = 0; i < canvas.layerCount(); ++i)
-        flipVertically(canvas[i]);
+    for (Layer& layer : canvas)
+        flipVertically(layer);
 }
 
 void Effects::rotateLeft(Canvas& canvas) {
@@ -53,9 +53,9 @@ void Effects::rotateLeft(Canvas& canvas) {
         return result;
     };
 
-    for (size_t i = 0; i < canvas.layerCount(); ++i) {
-        std::vector<Pixel> layer = rotate(canvas[i]);
-        canvas[i].setData(std::move(layer), canvas[i].height(), canvas[i].width());
+    for (Layer& layer : canvas) {
+        std::vector<Pixel> data = rotate(layer);
+        layer.setData(std::move(data), layer.height(), layer.width());
     }
 
     // goofy ahh solution
@@ -77,9 +77,9 @@ void Effects::rotateRight(Canvas& canvas) {
         return result;
     };
 
-    for (size_t i = 0; i < canvas.layerCount(); ++i) {
-        std::vector<Pixel> layer = rotate(canvas[i]);
-        canvas[i].setData(std::move(layer), canvas[i].height(), canvas[i].width());
+    for (Layer& layer : canvas) {
+        std::vector<Pixel> data = rotate(layer);
+        layer.setData(std::move(data), layer.height(), layer.width());
     }
 
     // goofy ahh solution
@@ -87,9 +87,9 @@ void Effects::rotateRight(Canvas& canvas) {
 }
 
 void Effects::rotate180(Canvas& canvas) {
-    for (size_t i = 0; i < canvas.layerCount(); ++i) {
-        flipHorizontally(canvas[i]);
-        flipVertically(canvas[i]);
+    for (Layer& layer : canvas) {
+        flipHorizontally(layer);
+        flipVertically(layer);
     }
 }
 

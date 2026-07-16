@@ -31,7 +31,6 @@ public:
     std::span<Pixel>       data();
 
     void setData(std::vector<Pixel>&& data, uint32_t width = 0, uint32_t height = 0);
-    std::vector<Pixel> copyData() const;
 
     uint32_t width()  const;
     uint32_t height() const;

@@ -24,7 +24,7 @@ void Filters::swapChannels(Layer& image, const int change) {
         default: break;
     }
 
-    const auto img = image.pixels();
+    const std::mdspan img = image.pixels();
     #pragma omp parallel for collapse (2)
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
@@ -37,9 +37,9 @@ void Filters::swapChannels(Layer& image, const int change) {
 void Filters::emboss(Layer& image) {
     constexpr int32_t kernel[] = { -2, -1, 0, /**/ -1,  1, 1, /**/ 0,  1, 2 };
 
-    const std::vector clone    = image.copyData();
-    const std::mdspan src      = std::mdspan(clone.data(), image.height(), image.width());
-    const std::mdspan dst      = image.pixels();
+    const std::vector clone(image.data().begin(), image.data().end());
+    const std::mdspan src(clone.data(), image.height(), image.width());
+    const std::mdspan dst = image.pixels();
 
     Utils::convolution(src, 3, 3, KernelOp{ std::mdspan(kernel, 3, 3) },
         [&](const int32_t x, const int32_t y, const std::array<int32_t, 3> sum) {
@@ -58,9 +58,9 @@ void Filters::outline(Layer& image) {
 
     Effects::grayscale(image);
 
-    const std::vector clone = image.copyData();
-    const std::mdspan src   = std::mdspan(clone.data(), image.height(), image.width());
-    const std::mdspan dst   = image.pixels();
+    const std::vector clone(image.data().begin(), image.data().end());
+    const std::mdspan src(clone.data(), image.height(), image.width());
+    const std::mdspan dst = image.pixels();
 
     Utils::convolution(src, 3, 3, KernelOp{ std::mdspan(kernel, 3, 3) },
         [&](const int32_t x, const int32_t y, const std::array<int32_t, 3> sum) {
@@ -115,13 +115,13 @@ std::array<float, 25> getSharpenKernel(float amount) {
 void Filters::sharpen(Layer& image, const float amount) {
     assert(amount >= 0.f && amount <= 100.f);
 
-    std::array kernel       = ::getSharpenKernel(amount);
+    const std::vector clone(image.data().begin(), image.data().end());
+    const std::mdspan src(clone.data(), image.height(), image.width());
+    const std::mdspan dst    = image.pixels();
 
-    const std::vector clone = image.copyData();
-    const std::mdspan src   = std::mdspan(clone.data(), image.height(), image.width());
-    const std::mdspan dst   = image.pixels();
+    const std::array  kernel = ::getSharpenKernel(amount);
 
-    Utils::convolution(src, 5, 5, KernelOp<float>{ std::mdspan(kernel.data(), 5, 5) },
+    Utils::convolution(src, 5, 5, KernelOp{ std::mdspan(kernel.data(), 5, 5) },
         [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
             dst[y, x] = {
                 .r = static_cast<uint8_t>(std::clamp(sum[0], 0.f, 255.f)),
@@ -164,7 +164,7 @@ void Filters::pixelate(Layer& image, const int blockSize) {
 }
 
 void Filters::duoTone(Layer& image, const float colorA[3], const float colorB[3]) {
-    const auto pixels = image.pixels();
+    const std::mdspan pixels = image.pixels();
 
     #pragma omp parallel for collapse (2)
     for (uint32_t y = 0; y < image.height(); ++y) {

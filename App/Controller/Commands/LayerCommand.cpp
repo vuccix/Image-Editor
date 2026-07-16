@@ -14,7 +14,7 @@ void Cmd::LayerCommand::execute(EditorState& state) {
     // --------------------------------------------------------------
     m_layerID    = state.selectedLayerID;
     Layer& layer = state.canvas[m_layerID];
-    m_backup     = layer.copyData();
+    m_backup     = std::vector(layer.data().begin(), layer.data().end());
 
     m_effectFunc(layer);
     ++state.version;

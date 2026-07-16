@@ -39,9 +39,9 @@ std::vector<float> getGaussianKernel(const int32_t sigma) {
 }
 
 void blurHelper(Layer& image, const std::vector<float>& kernel, const int32_t kSize) {
-    std::vector clone = image.copyData();
-    std::mdspan src   = std::as_const(image).pixels();
-    std::mdspan dst   = std::mdspan(clone.data(), image.height(), image.width());
+    std::vector clone(image.data().begin(), image.data().end());
+    std::mdspan src = std::as_const(image).pixels();
+    std::mdspan dst(clone.data(), image.height(), image.width());
 
     Utils::convolution(src, kSize, 1, KernelOp{ std::mdspan(kernel.data(), kSize, 1) },
         [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
@@ -113,8 +113,8 @@ void Filters::motionBlur(Layer& image, int distance, const float angle) {
 
     // -----------------------------------------------------------------------------------------------------------------
 
-    const std::vector clone = image.copyData();
-    const std::mdspan src   = std::mdspan(clone.data(), image.height(), image.width());
+    const std::vector clone(image.data().begin(), image.data().end());
+    const std::mdspan src(clone.data(), image.height(), image.width());
     const std::mdspan dst   = image.pixels();
     const float       scale = 1.f / static_cast<float>(lineOffsets.size());
 
