@@ -21,6 +21,7 @@ void UIManager::render(EditorState& state, Controller& controller, const std::fu
     drawToolbar(state);
     drawPropertiesPanel(state);
     drawCanvas(state);
+    drawPendingPopups();
 
     ui.endFrame();
 }
@@ -45,7 +46,7 @@ void UIManager::drawCanvas(EditorState& state) {
                                           canvasCenter.y - scaledHeight * 0.5f);
         const auto pMax          = ImVec2(pMin.x + scaledWidth, pMin.y + scaledHeight);
 
-        // handle inputs (zoom, pan, and touchpad)
+        // handle inputs (zoom, pan, and touchpad) ---------------------------------------------------------------------
         if (ImGui::IsWindowHovered()) {
             const bool isCtrlDown  = ImGui::IsKeyDown(ImGuiKey_LeftCtrl)  || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
             const bool isShiftDown = ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift);
@@ -93,19 +94,19 @@ void UIManager::drawCanvas(EditorState& state) {
             }
         }
 
-        // draw checkerboard background
+        // draw checkerboard background --------------------------------------------------------------------------------
         constexpr float checkerSize = 16.f;
         const     auto  uvMax       = ImVec2(scaledWidth / checkerSize, scaledHeight / checkerSize);
         drawList->AddImage(static_cast<ImTextureID>(static_cast<intptr_t>(m_assets.get(Asset::Checkerboard))),
                            pMin, pMax, ImVec2(0, 0), uvMax);
 
-        // draw canvas composite
+        // draw canvas composite ---------------------------------------------------------------------------------------
         drawList->AddImage(static_cast<ImTextureID>(static_cast<intptr_t>(m_renderer.textureID())),
                            pMin, pMax);
 
-        // draw canvas border
+        // draw canvas border ------------------------------------------------------------------------------------------
         const ImU32 borderColor = ImGui::GetColorU32(ImGuiCol_Border);
-        drawList->AddRect(pMin, pMax, borderColor, 0.f, 0, 2.f);
+        drawList->AddRect(pMin, pMax, borderColor, 0.f, ImDrawFlags_None, 2.f);
 
         // status bar --------------------------------------------------------------------------------------------------
         {
@@ -342,6 +343,51 @@ void UIManager::drawPropertiesPanel(EditorState& state) {
     ui.window("History", [&] {
         // TODO
     });
+}
+
+void UIManager::drawPendingPopups() {
+    if (!m_activePopup.has_value())
+        return;
+
+    ImGui::OpenPopup(m_activePopup->title.data());
+
+    // center modal
+    const ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+
+    if (ImGui::BeginPopupModal(m_activePopup->title.data(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        m_activePopup->drawContent();
+
+        ui.spacing();
+        ui.separator();
+
+        constexpr float   buttonWidth = 120.f;
+        constexpr int32_t buttonCount = 2;
+        const     float   itemSpacing = ImGui::GetStyle().ItemSpacing.x;
+
+        const float totalButtonsWidth = (buttonWidth * buttonCount) + itemSpacing;
+        const float availWidth        = ImGui::GetContentRegionAvail().x;
+
+        if (const float startPosX = (availWidth - totalButtonsWidth) * 0.5f; startPosX > 0.f)
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + startPosX);
+
+        // control buttons
+        if (ImGui::Button("Cancel", ImVec2(buttonWidth, 0.f))) {
+            ImGui::CloseCurrentPopup();
+            m_activePopup.reset(); // clear state
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Apply", ImVec2(buttonWidth, 0.f))) {
+            m_activePopup->onApply();
+            ImGui::CloseCurrentPopup();
+            m_activePopup.reset(); // clear state
+        }
+
+        ImGui::EndPopup();
+    }
+
+    ImGui::PopStyleColor();
 }
 
 void UIManager::setTheme(const uint8_t theme) {
