@@ -3,28 +3,6 @@
 #include <cassert>
 #include <cmath>
 
-uint8_t Pixel::operator[](const uint32_t channel) const {
-    assert(channel <= 3);
-
-    switch (channel) {
-        case 0:  return r;
-        case 1:  return g;
-        case 2:  return b;
-        default: return a;
-    }
-}
-
-uint8_t& Pixel::operator[](const uint32_t channel) {
-    assert(channel <= 3);
-
-    switch (channel) {
-        case 0:  return r;
-        case 1:  return g;
-        case 2:  return b;
-        default: return a;
-    }
-}
-
 Layer::Layer(const uint32_t w, const uint32_t h, std::string n) : name(std::move(n)),
                                                                   m_width(w),
                                                                   m_height(h) {
@@ -38,17 +16,17 @@ void Layer::resize(const uint32_t w, const uint32_t h) {
         return;
 
     std::vector newData(w * h, Pixel{ 0, 0, 0, 0 });
-    const auto  oldSpan   = std::mdspan(m_data.data(), m_height, m_width);
-    const auto  newSpan   = std::mdspan(newData.data(), h, w);
+    const auto oldSpan = std::mdspan(m_data.data(), m_height, m_width);
+    const auto newSpan = std::mdspan(newData.data(), h, w);
 
-    const int32_t wOffset = (static_cast<int32_t>(w) - static_cast<int32_t>(m_width))  / 2;
-    const int32_t hOffset = (static_cast<int32_t>(h) - static_cast<int32_t>(m_height)) / 2;
+    const auto wOffset = (static_cast<int32_t>(w) - static_cast<int32_t>(m_width))  / 2;
+    const auto hOffset = (static_cast<int32_t>(h) - static_cast<int32_t>(m_height)) / 2;
 
     for (uint32_t y = 0; y < m_height; ++y) {
-        const int32_t newY = static_cast<int32_t>(y) + hOffset;
+        const auto newY = static_cast<int32_t>(y) + hOffset;
 
         for (uint32_t x = 0; x < m_width; ++x) {
-            const int32_t newX = static_cast<int32_t>(x) + wOffset;
+            const auto newX = static_cast<int32_t>(x) + wOffset;
 
             if (newX >= 0 && static_cast<uint32_t>(newX) < w && newY >= 0 && static_cast<uint32_t>(newY) < h)
                 newSpan[newY, newX] = oldSpan[y, x];

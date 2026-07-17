@@ -1,8 +1,11 @@
 #pragma once
 
 #include <Controller/Command.h>
+#include <Canvas/Pixel.h>
 #include <functional>
 #include <vector>
+
+class Layer;
 
 namespace Cmd {
 

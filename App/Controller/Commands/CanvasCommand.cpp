@@ -1,4 +1,5 @@
 #include "CanvasCommand.h"
+#include <Model/EditorState.h>
 #include <Processing/Filters.h>
 #include <Processing/Effects.h>
 #include <iostream>

@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Commands/Names.h"
-#include <Model/EditorState.h>
 #include <memory>
 #include <string>
+
+struct EditorState;
 
 class Command {
 public:
