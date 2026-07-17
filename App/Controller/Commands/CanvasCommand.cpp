@@ -52,7 +52,7 @@ namespace Cmd {
 std::unique_ptr<CanvasCommand> rotateLeft() {
     return std::make_unique<CanvasCommand>(
         CommandNames::RotateLeft, [](Canvas& canvas) {
-            Effects::rotateLeft(canvas);
+            canvas.rotateLeft();
         }
     );
 }
@@ -60,7 +60,7 @@ std::unique_ptr<CanvasCommand> rotateLeft() {
 std::unique_ptr<CanvasCommand> rotateRight() {
     return std::make_unique<CanvasCommand>(
         CommandNames::RotateRight, [](Canvas& canvas) {
-            Effects::rotateRight(canvas);
+            canvas.rotateRight();
         }
     );
 }

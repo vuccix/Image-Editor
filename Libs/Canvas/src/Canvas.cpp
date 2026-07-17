@@ -1,6 +1,7 @@
 #include <Canvas/Canvas.h>
 #include <cassert>
 #include <format>
+#include <omp.h>
 
 Canvas::Canvas(const uint32_t w, const uint32_t h) : m_width(w), m_height(h) {
     assert(w > 0 && h > 0);
@@ -33,7 +34,50 @@ void Canvas::scale(const uint32_t w, const uint32_t h) {
         layer.scale(w, h);
 }
 
-void Canvas::flipDimensions() {
+namespace {
+
+std::vector<Pixel> rotate(Layer& layer, auto&& mapCoords) {
+    std::vector result(layer.width() * layer.height(), Pixel{});
+
+    const std::mdspan newPixels(result.data(), layer.width(), layer.height());
+    const std::mdspan pixels = layer.pixels();
+
+    #pragma omp parallel for collapse(2)
+    for (uint32_t y = 0; y < layer.height(); ++y) {
+        for (uint32_t x = 0; x < layer.width(); ++x) {
+            const auto [targetX, targetY] = mapCoords(x, y, layer.width(), layer.height());
+            newPixels[targetX, targetY]   = pixels[y, x];
+        }
+    }
+
+    return result;
+}
+
+}
+
+void Canvas::rotateLeft() {
+    auto mapCoords = [](const uint32_t x, const uint32_t y, const uint32_t w, const uint32_t h) {
+        return std::make_pair(w - 1 - x, y);
+    };
+
+    for (Layer& layer : m_layers) {
+        std::vector<Pixel> data = ::rotate(layer, mapCoords);
+        layer.setData(std::move(data), layer.height(), layer.width());
+    }
+
+    std::swap(m_width, m_height);
+}
+
+void Canvas::rotateRight() {
+    auto mapCoords = [](const uint32_t x, const uint32_t y, const uint32_t w, const uint32_t h) {
+        return std::make_pair(x, h - 1 - y);
+    };
+
+    for (Layer& layer : m_layers) {
+        std::vector<Pixel> data = ::rotate(layer, mapCoords);
+        layer.setData(std::move(data), layer.height(), layer.width());
+    }
+
     std::swap(m_width, m_height);
 }
 

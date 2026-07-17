@@ -10,8 +10,6 @@ namespace Effects {
     void flipHorizontally(Canvas& canvas);
     void flipVertically(Canvas& canvas);
 
-    void rotateLeft(Canvas& canvas);
-    void rotateRight(Canvas& canvas);
     void rotate180(Canvas& canvas);
 
     void brightness(Layer& image, int value);

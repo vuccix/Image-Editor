@@ -38,54 +38,6 @@ void Effects::flipVertically(Canvas& canvas) {
         flipVertically(layer);
 }
 
-void Effects::rotateLeft(Canvas& canvas) {
-    auto rotate = [](Layer& layer) -> std::vector<Pixel> {
-        std::vector result(layer.width() * layer.height(), Pixel{});
-
-        const std::mdspan newPixels(result.data(), layer.width(), layer.height());
-        const std::mdspan pixels = layer.pixels();
-
-        #pragma omp parallel for collapse(2)
-        for (uint32_t y = 0; y < layer.height(); ++y)
-            for (uint32_t x = 0; x < layer.width(); ++x)
-                newPixels[layer.width() - 1 - x, y] = pixels[y, x];
-
-        return result;
-    };
-
-    for (Layer& layer : canvas) {
-        std::vector<Pixel> data = rotate(layer);
-        layer.setData(std::move(data), layer.height(), layer.width());
-    }
-
-    // goofy ahh solution
-    canvas.flipDimensions(); // TODO: think of something better
-}
-
-void Effects::rotateRight(Canvas& canvas) {
-    auto rotate = [](Layer& layer) -> std::vector<Pixel> {
-        std::vector result(layer.width() * layer.height(), Pixel{});
-
-        const std::mdspan newPixels(result.data(), layer.width(), layer.height());
-        const std::mdspan pixels = layer.pixels();
-
-        #pragma omp parallel for collapse(2)
-        for (uint32_t y = 0; y < layer.height(); ++y)
-            for (uint32_t x = 0; x < layer.width(); ++x)
-                newPixels[x, layer.height() - 1 - y] = pixels[y, x];
-
-        return result;
-    };
-
-    for (Layer& layer : canvas) {
-        std::vector<Pixel> data = rotate(layer);
-        layer.setData(std::move(data), layer.height(), layer.width());
-    }
-
-    // goofy ahh solution
-    canvas.flipDimensions(); // TODO: think of something better
-}
-
 void Effects::rotate180(Canvas& canvas) {
     for (Layer& layer : canvas) {
         flipHorizontally(layer);
