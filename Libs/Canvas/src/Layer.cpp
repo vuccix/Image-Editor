@@ -91,5 +91,7 @@ void Layer::setData(std::vector<Pixel>&& data, const uint32_t w, const uint32_t 
     m_data = std::move(data);
 }
 
-uint32_t Layer::width()  const { return m_width;  }
-uint32_t Layer::height() const { return m_height; }
+uint32_t Layer::width()  const noexcept { return m_width;  }
+uint32_t Layer::height() const noexcept { return m_height; }
+
+void Layer::toggleActive() { isActive = !isActive; }

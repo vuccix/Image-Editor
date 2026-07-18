@@ -60,12 +60,32 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             }); // <----------------------------------------------------------------------------------------------------
         });
 
-        ui.menu("Image", [&exec] {
+        ui.menu("Image", [&exec, &openModal, &state] {
             ui.item("Resize...", "Ctrl+R", [&] {
-                exec(Cmd::scale(800, 1800));
+                struct State { uint32_t width, height; };
+                auto popupState = std::make_shared<State>(state.canvas.width(), state.canvas.height());
+
+                openModal("Resize",
+                    [popupState] {
+                        constexpr uint32_t min = 1;
+                        ImGui::DragScalar("Width",  ImGuiDataType_U32, &popupState->width,  1, &min);
+                        ImGui::DragScalar("Height", ImGuiDataType_U32, &popupState->height, 1, &min);
+                    },
+                    [popupState, exec] { exec(Cmd::scale(popupState->width, popupState->height)); }
+                );
             });
             ui.item("Canvas Size...", "Ctrl+Shift+R", [&] {
-                exec(Cmd::resize(1500, 1000));
+                struct State { uint32_t width, height; };
+                auto popupState = std::make_shared<State>(state.canvas.width(), state.canvas.height());
+
+                openModal("Canvas Size",
+                    [popupState] {
+                        constexpr uint32_t min = 1;
+                        ImGui::DragScalar("Width",  ImGuiDataType_U32, &popupState->width,  1, &min);
+                        ImGui::DragScalar("Height", ImGuiDataType_U32, &popupState->height, 1, &min);
+                    },
+                    [popupState, exec] { exec(Cmd::resize(popupState->width, popupState->height)); }
+                );
             });
 
             ui.disabled(true, [] {
@@ -81,14 +101,22 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.item("Rotate 180°",       [&] { exec(Cmd::rotate180());       });
         });
 
-        ui.menu("Layers", [&exec] {
-            ui.item("Add New Layer", "Ctrl+Shift+N", [&] {});
-            ui.item("Delete Layer", "Shift+Del", [&] {});
-            ui.item("Duplicate Layer", "Ctrl+Shift+D", [&] {});
-            ui.item("Merge with Layer Below", "Ctrl+E", [&] {});
-            ui.item("Toggle Layer Visibility", "Ctrl+,", [&] {});
+        ui.menu("Layers", [&exec, &state] {
+            const uint32_t selectedID = state.selectedLayerID;
+
+            ui.item("Add New Layer",   "Ctrl+Shift+N", [&] { exec(Cmd::addLayer());                 });
+            ui.item("Delete Layer",    "Shift+Del",    [&] { exec(Cmd::deleteLayer(selectedID));    });
+            ui.item("Duplicate Layer", "Ctrl+Shift+D", [&] { exec(Cmd::duplicateLayer(selectedID)); });
+            ui.disabled(selectedID == 0, [&] {
+                ui.item("Merge with Layer Below", "Ctrl+E", [&] { exec(Cmd::mergeWithLayerBelow(selectedID)); });
+            });
+            ui.item("Toggle Layer Visibility", "Ctrl+,", [&] {
+                state.canvas[selectedID].toggleActive();
+                state.canvas.updateComposite();
+                ++state.version;
+            });
             ui.separator();
-            ui.item("Flatten Image", "Ctrl+Shift+F", [&] {});
+            ui.item("Flatten Image", "Ctrl+Shift+F", [&] { exec(Cmd::mergeAllLayers()); });
             ui.separator();
             ui.item("Flip Horizontally", [&] { exec(Cmd::flipHoriz()); });
             ui.item("Flip Vertically",   [&] { exec(Cmd::flipVert());  });

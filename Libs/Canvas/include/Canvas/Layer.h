@@ -21,8 +21,10 @@ public:
 
     void setData(std::vector<Pixel>&& data, uint32_t width = 0, uint32_t height = 0);
 
-    uint32_t width()  const;
-    uint32_t height() const;
+    uint32_t width()  const noexcept;
+    uint32_t height() const noexcept;
+
+    void toggleActive();
 
 public:
     std::string        name;

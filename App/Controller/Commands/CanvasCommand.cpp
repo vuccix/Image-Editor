@@ -50,6 +50,46 @@ namespace Cmd {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
 
+std::unique_ptr<CanvasCommand> addLayer() {
+    return std::make_unique<CanvasCommand>(
+        CommandNames::AddLayer, [](Canvas& canvas) {
+            canvas.addLayer();
+        }
+    );
+}
+
+std::unique_ptr<CanvasCommand> deleteLayer(const size_t layerID) {
+    return std::make_unique<CanvasCommand>(
+        CommandNames::DeleteLayer, [layerID](Canvas& canvas) {
+            canvas.deleteLayer(layerID);
+        }
+    );
+}
+
+std::unique_ptr<CanvasCommand> duplicateLayer(size_t layerID) {
+    return std::make_unique<CanvasCommand>(
+        CommandNames::DuplicateLayer, [layerID](Canvas& canvas) {
+            canvas.duplicateLayer(layerID);
+        }
+    );
+}
+
+std::unique_ptr<CanvasCommand> mergeWithLayerBelow(size_t layerID) {
+    return std::make_unique<CanvasCommand>(
+        CommandNames::MergeLayer, [layerID](Canvas& canvas) {
+            canvas.mergeWithLayerBelow(layerID);
+        }
+    );
+}
+
+std::unique_ptr<CanvasCommand> mergeAllLayers() {
+    return std::make_unique<CanvasCommand>(
+        CommandNames::Flatten, [](Canvas& canvas) {
+            canvas.mergeAllLayers();
+        }
+    );
+}
+
 std::unique_ptr<CanvasCommand> rotateLeft() {
     return std::make_unique<CanvasCommand>(
         CommandNames::RotateLeft, [](Canvas& canvas) {
