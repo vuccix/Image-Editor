@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 class Layer;
 class Canvas;
 
@@ -12,7 +14,7 @@ namespace Effects {
 
     void rotate180(Canvas& canvas);
 
-    void brightness(Layer& image, int value);
+    void brightness(Layer& image, int32_t value);
     void contrast(Layer& image, float factor);
     void saturation(Layer& image, float factor);
 

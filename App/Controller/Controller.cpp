@@ -1,5 +1,6 @@
 #include <Controller/Controller.h>
 #include <cstdint>
+#include <cassert>
 
 Controller::Controller() {
     setHistoryLength(m_historyLength);
@@ -20,19 +21,19 @@ void Controller::execute(EditorState& state, std::unique_ptr<Command> command) {
 }
 
 void Controller::undo(EditorState& state) {
-    if (!hasUndo()) return;
+    assert(hasUndo());
 
     m_history[--m_currentIndex]->undo(state);
 }
 
 void Controller::redo(EditorState& state) {
-    if (!hasRedo()) return;
+    assert(hasRedo());
 
     m_history[m_currentIndex++]->execute(state);
 }
 
 void Controller::jumpToHistoryIndex(EditorState& state, const size_t target) {
-    if (target > m_history.size()) return;
+    assert(target > m_history.size());
 
     while (m_currentIndex < target)
         redo(state);
@@ -42,8 +43,8 @@ void Controller::jumpToHistoryIndex(EditorState& state, const size_t target) {
 }
 
 void Controller::setHistoryLength(const size_t length) {
-    m_history.clear();
     m_history.resize(length);
+    m_history.clear();
     m_historyLength = length;
 }
 

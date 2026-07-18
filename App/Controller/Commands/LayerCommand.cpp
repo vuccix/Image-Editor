@@ -186,7 +186,7 @@ std::unique_ptr<LayerCommand> sharpen(const float amount) {
     );
 }
 
-std::unique_ptr<LayerCommand> pixelate(const int blockSize) {
+std::unique_ptr<LayerCommand> pixelate(const int32_t blockSize) {
     return std::make_unique<LayerCommand>(
         CommandNames::Pixelate, [blockSize](Layer& layer) {
             Filters::pixelate(layer, blockSize);

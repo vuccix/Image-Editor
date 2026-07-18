@@ -71,7 +71,7 @@ void blurHelper(Layer& image, const std::vector<float>& kernel, const int32_t kS
 
 }
 
-void Filters::blur(Layer& image, const int amount) {
+void Filters::blur(Layer& image, const int32_t amount) {
     assert(amount > 0);
 
     const int32_t     kSize = 2 * amount + 1;
@@ -80,7 +80,7 @@ void Filters::blur(Layer& image, const int amount) {
     ::blurHelper(image, kernel, kSize);
 }
 
-void Filters::gaussianBlur(Layer& image, const int amount) {
+void Filters::gaussianBlur(Layer& image, const int32_t amount) {
     assert(amount > 0);
 
     const std::vector kernel = ::getGaussianKernel(amount);
@@ -89,7 +89,7 @@ void Filters::gaussianBlur(Layer& image, const int amount) {
     ::blurHelper(image, kernel, kSize);
 }
 
-void Filters::motionBlur(Layer& image, int distance, const float angle) {
+void Filters::motionBlur(Layer& image, int32_t distance, const float angle) {
     assert(distance > 0);
 
     if (distance % 2 == 0)

@@ -106,7 +106,7 @@ std::unique_ptr<CanvasCommand> scale(const uint32_t width, const uint32_t height
     );
 }
 
-std::unique_ptr<CanvasCommand> seamCarving(uint32_t width, uint32_t height) {
+std::unique_ptr<CanvasCommand> seamCarving(const uint32_t width, const uint32_t height) {
     return std::make_unique<CanvasCommand>(
         CommandNames::SeamCarving, [width, height](Canvas& canvas) {
             Filters::seamCarving(canvas, width, height);

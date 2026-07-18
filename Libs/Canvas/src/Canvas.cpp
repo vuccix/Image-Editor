@@ -98,16 +98,18 @@ void Canvas::duplicateLayer(const size_t layerID) {
 
 namespace {
 
-Pixel mergePixels(const Pixel bot, const Pixel top, const float opacity, const float fill) {
-    const float botR =  bot.r / 255.f;
-    const float botG =  bot.g / 255.f;
-    const float botB =  bot.b / 255.f;
-    const float botA =  bot.a / 255.f;
+constexpr float norm = 1.f / 255.f;
 
-    const float topR =  top.r / 255.f;
-    const float topG =  top.g / 255.f;
-    const float topB =  top.b / 255.f;
-    const float topA = (top.a / 255.f) * opacity * fill;
+Pixel mergePixels(const Pixel bot, const Pixel top, const float opacity, const float fill) {
+    const float botR =  bot.r * ::norm;
+    const float botG =  bot.g * ::norm;
+    const float botB =  bot.b * ::norm;
+    const float botA =  bot.a * ::norm;
+
+    const float topR =  top.r * ::norm;
+    const float topG =  top.g * ::norm;
+    const float topB =  top.b * ::norm;
+    const float topA = (top.a * ::norm) * opacity * fill;
 
     const float outA = topA + botA  * (1.f - topA);
     const float invA = (outA > 0.f) ? (1.f / outA) : 0.f;

@@ -10,7 +10,7 @@
 template <typename T>
 using KernelOp = Utils::KernelOp<std::array<T, 3>, T>;
 
-void Filters::swapChannels(Layer& image, const int change) {
+void Filters::swapChannels(Layer& image, const int32_t change) {
     assert(change >= 0 && change < 6);
 
     std::array id = { 0, 0 };
@@ -76,13 +76,11 @@ void Filters::outline(Layer& image) {
 
 namespace {
 
-std::array<float, 25> getSharpenKernel(float amount) {
-    // amount                  = std::clamp((amount * 0.01f), 0.f, 1.f);
-    const float k           = amount * 3.f;
-
+std::array<float, 25> getSharpenKernel(const float amount) {
     constexpr int32_t size  = 5;
     constexpr int32_t r     = size / 2;
     constexpr float   sigma = 1.f;
+    const     float   k     = amount * 3.f;
 
     std::array<float, size * size> kernelData{};
     const std::mdspan kernel{kernelData.data(), size, size};
@@ -133,7 +131,7 @@ void Filters::sharpen(Layer& image, const float amount) {
     );
 }
 
-void Filters::pixelate(Layer& image, const int blockSize) {
+void Filters::pixelate(Layer& image, const int32_t blockSize) {
     assert(blockSize >= 1);
 
     const auto pixels = image.pixels();
@@ -170,7 +168,7 @@ void Filters::duoTone(Layer& image, const float colorA[3], const float colorB[3]
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& pixel     = pixels[y, x];
-            const float lum  = (pixel.r * 0.2126f + pixel.g * 0.7152f + pixel.b * 0.0722f) / 255.f;
+            const float lum  = (pixel.r * 0.2126f + pixel.g * 0.7152f + pixel.b * 0.0722f) / (1.f / 255.f);
             const auto  r    = static_cast<uint8_t>(std::clamp(colorA[0] + (colorB[0] - colorA[0]) * lum, 0.f, 255.f));
             const auto  g    = static_cast<uint8_t>(std::clamp(colorA[1] + (colorB[1] - colorA[1]) * lum, 0.f, 255.f));
             const auto  b    = static_cast<uint8_t>(std::clamp(colorA[2] + (colorB[2] - colorA[2]) * lum, 0.f, 255.f));

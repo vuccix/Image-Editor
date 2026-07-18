@@ -6,7 +6,7 @@
 #include <omp.h>
 
 void Effects::flipHorizontally(Layer& image) {
-    const auto pixels = image.pixels();
+    const std::mdspan pixels = image.pixels();
 
     #pragma omp parallel for
     for (uint32_t y = 0; y < image.height(); ++y) {
@@ -16,8 +16,8 @@ void Effects::flipHorizontally(Layer& image) {
 }
 
 void Effects::flipVertically(Layer& image) {
-    const auto pixels     = image.pixels();
-    const uint32_t height = image.height();
+    const std::mdspan pixels = image.pixels();
+    const uint32_t    height = image.height();
 
     #pragma omp parallel for collapse(2)
     for (uint32_t y = 0; y < height / 2; ++y) {
@@ -45,7 +45,7 @@ void Effects::rotate180(Canvas& canvas) {
     }
 }
 
-void Effects::brightness(Layer& image, const int value) {
+void Effects::brightness(Layer& image, const int32_t value) {
     for (Pixel& pixel : image.data()) {
         pixel.r = static_cast<uint8_t>(std::clamp(pixel.r + value, 0, 255));
         pixel.g = static_cast<uint8_t>(std::clamp(pixel.g + value, 0, 255));

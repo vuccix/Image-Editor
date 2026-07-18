@@ -48,7 +48,7 @@ namespace Cmd {
     std::unique_ptr<LayerCommand> emboss();
     std::unique_ptr<LayerCommand> outline();
     std::unique_ptr<LayerCommand> sharpen(float amount);
-    std::unique_ptr<LayerCommand> pixelate(int blockSize);
+    std::unique_ptr<LayerCommand> pixelate(int32_t blockSize);
 
     std::unique_ptr<LayerCommand> canny(float lowThreshold, float highThreshold);
     std::unique_ptr<LayerCommand> laplace();
