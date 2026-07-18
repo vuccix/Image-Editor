@@ -1,6 +1,7 @@
 #include <View/UIManager.h>
 #include "UI/UI.h"
 #include "Utils.h"
+#include <Model/EditorState.h>
 #include <Controller/Controller.h>
 #include <Controller/Commands/CanvasCommand.h>
 #include <Controller/Commands/LayerCommand.h>
@@ -59,9 +60,13 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             }); // <----------------------------------------------------------------------------------------------------
         });
 
-        ui.menu("Image", [&] {
-            ui.item("Resize...",      "Ctrl+R",       [&] { exec(Cmd::scale(800, 1800));   });
-            ui.item("Canvas Size...", "Ctrl+Shift+R", [&] { exec(Cmd::resize(1500, 1000)); });
+        ui.menu("Image", [&exec] {
+            ui.item("Resize...", "Ctrl+R", [&] {
+                exec(Cmd::scale(800, 1800));
+            });
+            ui.item("Canvas Size...", "Ctrl+Shift+R", [&] {
+                exec(Cmd::resize(1500, 1000));
+            });
 
             ui.disabled(true, [] {
                 ui.item("Crop to Selection", "Ctrl+Shift+X", [&] {});
@@ -71,12 +76,12 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.item("Flip Horizontally", [&] { exec(Cmd::flipHorizCanvas()); });
             ui.item("Flip Vertically",   [&] { exec(Cmd::flipVertCanvas());  });
             ui.separator();
-            ui.item("Rotate 90° Left",  [&] { exec(Cmd::rotateLeft());  });
-            ui.item("Rotate 90° Right", [&] { exec(Cmd::rotateRight()); });
-            ui.item("Rotate 180°",      [&] { exec(Cmd::rotate180());   });
+            ui.item("Rotate 90° Left",   [&] { exec(Cmd::rotateLeft());      });
+            ui.item("Rotate 90° Right",  [&] { exec(Cmd::rotateRight());     });
+            ui.item("Rotate 180°",       [&] { exec(Cmd::rotate180());       });
         });
 
-        ui.menu("Layers", [&] {
+        ui.menu("Layers", [&exec] {
             ui.item("Add New Layer", "Ctrl+Shift+N", [&] {});
             ui.item("Delete Layer", "Shift+Del", [&] {});
             ui.item("Duplicate Layer", "Ctrl+Shift+D", [&] {});
@@ -89,11 +94,35 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.item("Flip Vertically",   [&] { exec(Cmd::flipVert());  });
         });
 
-        ui.menu("Filters", [&] {
+        ui.menu("Filters", [&exec, &openModal, &state] {
             ui.menu("Adjust", [&] {
-                ui.item("Brightness...", [&] { exec(Cmd::brightness(25));   });
-                ui.item("Contrast...",   [&] { exec(Cmd::contrast(5.f));    });
-                ui.item("Saturation...", [&] { exec(Cmd::saturation(-5.f)); });
+                ui.item("Brightness...", [&] {
+                    struct State { int value = 0; };
+                    auto popupState = std::make_shared<State>();
+
+                    openModal("Brightness Adjust",
+                        [popupState] { ImGui::SliderInt("Brightness", &popupState->value, -255, 255); },
+                        [popupState, exec] { exec(Cmd::brightness(popupState->value)); }
+                    );
+                });
+                ui.item("Contrast...",   [&] {
+                    struct State { float value = 1.f; };
+                    auto popupState = std::make_shared<State>();
+
+                    openModal("Contrast Adjust",
+                        [popupState] { ImGui::SliderFloat("Contrast", &popupState->value, 0.f, 10.f, "%.2f"); },
+                        [popupState, exec] { exec(Cmd::contrast(popupState->value)); }
+                    );
+                });
+                ui.item("Saturation...", [&] {
+                    struct State { float value = 1.f; };
+                    auto popupState = std::make_shared<State>();
+
+                    openModal("Saturation Adjust",
+                        [popupState] { ImGui::SliderFloat("Saturation", &popupState->value, -10.f, 10.f, "%.2f"); },
+                        [popupState, exec] { exec(Cmd::saturation(popupState->value)); }
+                    );
+                });
             });
 
             ui.menu("Color", [&] {
@@ -108,32 +137,120 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
 
             ui.menu("Artistic", [&] {
                 ui.item("Duo Tone...", [&] {
-                    constexpr float colorA[3] = { 255.f,   0.f, 127.f };
-                    constexpr float colorB[3] = {   0.f, 210.f, 255.f };
-                    exec(Cmd::duoTone(colorA, colorB));
+                    struct State {
+                        float colorA[3] = { 1.f, 1.f, 1.f };
+                        float colorB[3] = { 0.f, 0.f, 0.f };
+                    };
+                    auto popupState = std::make_shared<State>();
+
+                    openModal("Duo Tone",
+                        [popupState] {
+                            ImGui::ColorEdit3("Color A", &popupState->colorA[0]);
+                            ImGui::ColorEdit3("Color B", &popupState->colorB[0]);
+                        },
+                        [popupState, exec] {
+                            for (size_t i = 0; i < 3; ++i) {
+                                popupState->colorA[i] *= 255.f;
+                                popupState->colorB[i] *= 255.f;
+                            }
+                            exec(Cmd::duoTone(popupState->colorA, popupState->colorB));
+                        }
+                    );
                 });
-                ui.item("Water Color...", [&] {});
-                ui.item("Oil Painting...", [&] {});
+                ui.disabled(true, [] {
+                    ui.item("Water Color...", [&] {});
+                    ui.item("Oil Painting...", [&] {});
+                });
             });
 
             ui.menu("Blur", [&] {
-                ui.item("Blur...", [&] { exec(Cmd::blur(1)); });
-                ui.item("Gaussian Blur...", [&] { exec(Cmd::gaussianBlur(1)); });
-                ui.item("Motion Blur...", [&] { exec(Cmd::motionBlur(150, -25.f)); });
+                ui.item("Blur...", [&] {
+                    struct State { int amount = 0; };
+                    auto popupState = std::make_shared<State>();
+                    openModal("Mean Blur",
+                        [popupState] { ImGui::SliderInt("Amount", &popupState->amount, 0, 100); },
+                        [popupState, exec] { exec(Cmd::blur(popupState->amount)); }
+                    );
+                });
+                ui.item("Gaussian Blur...", [&] {
+                    struct State { int amount = 0; };
+                    auto popupState = std::make_shared<State>();
+
+                    openModal("Gaussian Blur",
+                        [popupState] { ImGui::SliderInt("Amount", &popupState->amount, 0, 100); },
+                        [popupState, exec] { exec(Cmd::gaussianBlur(popupState->amount)); }
+                    );
+                });
+                ui.item("Motion Blur...", [&] {
+                    struct State {
+                        int distance = 0;
+                        float angle  = 0.f;
+                    };
+                    auto popupState = std::make_shared<State>();
+
+                    openModal("Gaussian Blur",
+                        [popupState] {
+                            ImGui::SliderInt("Distance", &popupState->distance, 0, 1'000);
+                            ImGui::SliderFloat("Angle", &popupState->angle, -360.f, 360.f, "%.0f");
+                        },
+                        [popupState, exec] { exec(Cmd::motionBlur(popupState->distance, popupState->angle)); }
+                    );
+                });
             });
 
             ui.menu("Effects", [&] {
-                ui.item("Swap Channels...", [&] { exec(Cmd::swapChannels(1)); });
+                ui.item("Swap Channels...", [&] {
+                    struct State { int combination = 0; };
+                    auto popupState = std::make_shared<State>();
+                    openModal("Swap Channels",
+                        [popupState] {
+                            ImGui::RadioButton("Swap Red & Green Channels",   &popupState->combination, 0);
+                            ImGui::RadioButton("Swap Red & Blue Channels",    &popupState->combination, 1);
+                            ImGui::RadioButton("Swap Green & Blue Channels",  &popupState->combination, 3);
+                            ui.separator();
+                            ImGui::RadioButton("Swap Red & Alpha Channels",   &popupState->combination, 2);
+                            ImGui::RadioButton("Swap Green & Alpha Channels", &popupState->combination, 4);
+                            ImGui::RadioButton("Swap Blue & Alpha Channels",  &popupState->combination, 5);
+                        },
+                        [popupState, exec] { exec(Cmd::swapChannels(popupState->combination)); });
+                });
                 ui.item("Emboss",  [&] { exec(Cmd::emboss());  });
                 ui.item("Outline", [&] { exec(Cmd::outline()); });
-                ui.item("Sharpen...", [&] { exec(Cmd::sharpen(100.f)); });
-                ui.item("Pixelate...", [&] { exec(Cmd::pixelate(13)); });
+                ui.item("Sharpen...", [&] {
+                    struct State { float amount = 0.f; };
+                    auto popupState = std::make_shared<State>();
+                    openModal("Sharpen",
+                        [popupState] { ImGui::SliderFloat("Amount", &popupState->amount, 0.f, 10.f); },
+                        [popupState, exec] { exec(Cmd::sharpen(popupState->amount)); }
+                    );
+                });
+                ui.item("Pixelate...", [&] {
+                    struct State { int blockSize = 1; };
+                    auto popupState = std::make_shared<State>();
+                    openModal("Pixelate",
+                        [popupState] { ImGui::SliderInt("Block Size", &popupState->blockSize, 0, 100); },
+                        [popupState, exec] { exec(Cmd::pixelate(popupState->blockSize)); }
+                    );
+                });
             });
 
             ui.separator();
 
             ui.menu("Edge Detection", [&] {
-                ui.item("Canny",   [&] { exec(Cmd::canny(20.f, 50.f)); });
+                ui.item("Canny...",   [&] {
+                    struct State {
+                        float lo = 20.f;
+                        float hi = 50.f;
+                    };
+                    auto popupState = std::make_shared<State>();
+                    openModal("Canny",
+                        [popupState] {
+                            ImGui::SliderFloat("lo", &popupState->lo, 0.f, popupState->hi, "%.0f");
+                            ImGui::SliderFloat("hi", &popupState->hi, popupState->lo, 100.f, "%.0f");
+                        },
+                        [popupState, exec] { exec(Cmd::canny(popupState->lo, popupState->hi)); }
+                    );
+                });
                 ui.item("Laplace", [&] { exec(Cmd::laplace()); });
                 ui.item("Prewitt", [&] { exec(Cmd::prewitt()); });
                 ui.item("Scharr",  [&] { exec(Cmd::scharr());  });
@@ -141,9 +258,38 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             });
 
             ui.menu("Smart", [&] {
-                ui.item("Fourier Transform", [&] {});
-                ui.item("Normal Map", [&] { exec(Cmd::normalMap(1.f, false)); });
-                ui.item("Seam Carving...", [&] { exec(Cmd::seamCarving(1'000, 900)); });
+                ui.disabled(true, [] {
+                    ui.item("Fourier Transform", [&] {});
+                });
+                ui.item("Normal Map...", [&] {
+                    struct State {
+                        float strength = 1.f;
+                        bool  invertY  = false;
+                    };
+                    auto popupState = std::make_shared<State>();
+
+                    openModal("Normal Map Generator",
+                        [popupState] {
+                            ImGui::SliderFloat("Strength", &popupState->strength, 0.f, 10.f);
+                            ImGui::Checkbox("Invert Y-Axis", &popupState->invertY);
+                        },
+                        [popupState, exec] { exec(Cmd::normalMap(popupState->strength, popupState->invertY)); }
+                    );
+                });
+                ui.item("Seam Carving...", [&] {
+                    struct State { unsigned w, h; };
+                    auto popupState = std::make_shared<State>(state.canvas.width(), state.canvas.height());
+                    openModal("Seam Carving",
+                        [popupState, &state] {
+                            constexpr unsigned min  = 1;
+                            const     unsigned maxW = state.canvas.width();
+                            const     unsigned maxH = state.canvas.height();
+                            ImGui::SliderScalar("Width",  ImGuiDataType_U32, &popupState->w, &min, &maxW);
+                            ImGui::SliderScalar("Height", ImGuiDataType_U32, &popupState->h, &min, &maxH);
+                        },
+                        [popupState, exec] { exec(Cmd::seamCarving(popupState->w, popupState->h)); }
+                    );
+                });
             });
         });
 

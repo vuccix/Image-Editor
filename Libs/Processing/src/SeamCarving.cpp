@@ -146,7 +146,7 @@ void removeSeam(const std::span<const int32_t> seam, std::span<float> energy, st
 }
 
 void Filters::seamCarving(Canvas& canvas, const unsigned inputWidth, const unsigned inputHeight) {
-    assert(inputWidth > 0 && canvas.width() > inputWidth && inputHeight > 0 && canvas.height() > inputHeight);
+    assert(inputWidth > 0 && inputHeight > 0);
 
     canvas.mergeAllLayers();
     Layer& layer = canvas[0];
