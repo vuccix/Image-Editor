@@ -63,6 +63,10 @@ INSTANTIATE_CONVERSION(float)
 // =====================================================================================================================
 
 Utils::SobelData Utils::getSobel(const Layer& image) {
+    return getSobel(image.data(), image.width(), image.height());
+}
+
+Utils::SobelData Utils::getSobel(const std::span<const Pixel> image, const uint32_t width, const uint32_t height) {
     SobelData result{};
     auto& magnitude      = result.magnitude;
     auto& outX           = result.Gx;
@@ -73,14 +77,14 @@ Utils::SobelData Utils::getSobel(const Layer& image) {
     const     auto  dxK  = std::mdspan(dx, 3, 3);
     const     auto  dyK  = std::mdspan(dy, 3, 3);
 
-    magnitude            = Utils::promote<float>(image.data());
-    const auto  src      = image.pixels();
-    const auto  dst      = std::mdspan(magnitude.data(), image.height(), image.width());
+    magnitude            = Utils::promote<float>(image);
+    const auto  src      = std::mdspan(image.data(), height, width);
+    const auto  dst      = std::mdspan(magnitude.data(), height, width);
 
     outX.resize(magnitude.size(), 0.f);
     outY.resize(magnitude.size(), 0.f);
-    const auto dstX = std::mdspan(outX.data(), image.height(), image.width());
-    const auto dstY = std::mdspan(outY.data(), image.height(), image.width());
+    const auto dstX = std::mdspan(outX.data(), height, width);
+    const auto dstY = std::mdspan(outY.data(), height, width);
 
     struct State { float sumX, sumY; };
 

@@ -46,6 +46,7 @@ namespace Utils {
     };
 
     SobelData getSobel(const Layer& image);
+    SobelData getSobel(std::span<const Pixel> image, uint32_t width, uint32_t height);
 
 }
 
