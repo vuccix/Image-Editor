@@ -46,6 +46,7 @@ CommandToString::CommandToString() {
     m_commands[CommandNames::MergeLayer]       = "Merge Layers";
     m_commands[CommandNames::Flatten]          = "Flatten Image";
     m_commands[CommandNames::ToggleVisibility] = "Toggle Layer Visibility";
+    m_commands[CommandNames::Reorder]          = "Change Layer Order";
     m_commands[CommandNames::Crop]             = "Crop to Selection";
 }
 

@@ -20,7 +20,7 @@ enum class CommandNames {
     // Canvas
     Resize, CanvasSize,
     AddLayer, DeleteLayer, DuplicateLayer,
-    MergeLayer, Flatten, ToggleVisibility,
+    MergeLayer, Flatten, ToggleVisibility, Reorder,
     Crop,
 
     Count

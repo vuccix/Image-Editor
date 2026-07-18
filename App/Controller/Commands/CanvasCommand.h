@@ -32,6 +32,8 @@ namespace Cmd {
     std::unique_ptr<CanvasCommand> mergeWithLayerBelow(size_t layerID);
     std::unique_ptr<CanvasCommand> mergeAllLayers();
 
+    std::unique_ptr<CanvasCommand> moveLayerToIndex(size_t layerID, size_t index);
+
     std::unique_ptr<CanvasCommand> rotateLeft();
     std::unique_ptr<CanvasCommand> rotateRight();
     std::unique_ptr<CanvasCommand> rotate180();

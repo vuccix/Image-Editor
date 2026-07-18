@@ -90,6 +90,14 @@ std::unique_ptr<CanvasCommand> mergeAllLayers() {
     );
 }
 
+std::unique_ptr<CanvasCommand> moveLayerToIndex(size_t layerID, size_t index) {
+    return std::make_unique<CanvasCommand>(
+        CommandNames::Reorder, [layerID, index](Canvas& canvas) {
+            canvas.moveLayerToIndex(layerID, index);
+        }
+    );
+}
+
 std::unique_ptr<CanvasCommand> rotateLeft() {
     return std::make_unique<CanvasCommand>(
         CommandNames::RotateLeft, [](Canvas& canvas) {
