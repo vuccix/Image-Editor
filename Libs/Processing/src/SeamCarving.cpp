@@ -17,6 +17,25 @@ struct ImageSize {
     int32_t stride = 0;
 };
 
+void transpose(std::vector<Pixel>& image, ImageSize& size) {
+    std::vector<Pixel> transposed(size.width * size.height);
+
+    const std::layout_stride::mapping src_mapping(
+        std::extents<int32_t, std::dynamic_extent, std::dynamic_extent>{size.height, size.width},
+        std::array{size.stride, 1}
+    );
+    const auto src = std::mdspan(image.data(), src_mapping);
+    const auto dst = std::mdspan(transposed.data(), size.width, size.height);
+
+    for (int32_t y = 0; y < size.height; ++y)
+        for (int32_t x = 0; x < size.width; ++x)
+            dst[x, y] = src[y, x];
+
+    std::swap(size.height, size.width);
+    size.stride = size.width;
+    image       = std::move(transposed);
+}
+
 float computeLocalEnergy(const std::span<const Pixel> image, const int32_t x, const int32_t y, const ImageSize size) {
     auto getLuminance = [](const Pixel p) -> float {
         return 0.2989f * p.r + 0.5870f * p.g + 0.1140f * p.b;
@@ -145,7 +164,7 @@ void removeSeam(const std::span<const int32_t> seam, std::span<float> energy, st
 
 }
 
-void Filters::seamCarving(Canvas& canvas, const unsigned inputWidth, const unsigned inputHeight) {
+void Filters::seamCarving(Canvas& canvas, const uint32_t inputWidth, const uint32_t inputHeight) {
     assert(inputWidth > 0 && inputHeight > 0);
 
     canvas.mergeAllLayers();
@@ -155,32 +174,43 @@ void Filters::seamCarving(Canvas& canvas, const unsigned inputWidth, const unsig
     Effects::grayscale(layer);
     Filters::gaussianBlur(layer, 1);
 
-    std::vector energy = Utils::getSobel(layer).magnitude;
-    std::vector cumulative(layer.width() * layer.height(), 0.f);
-    std::vector seam(layer.height(), 0);
-
-    const uint32_t wIter = layer.width()  - inputWidth;
-    // const uint32_t hIter = layer.height() - inputHeight;
-
     ImageSize imgSize = {
         .width  = static_cast<int32_t>(layer.width()),
         .height = static_cast<int32_t>(layer.height()),
         .stride = static_cast<int32_t>(layer.width())
     };
 
-    for (uint32_t i = 0; i < wIter; ++i) {
-        ::getCumulative(cumulative, energy, imgSize);
-        ::findSeam(seam, cumulative, imgSize);
-        ::removeSeam(seam, energy, image, imgSize);
+    auto carve = [&image, &imgSize](const uint32_t iterCnt) {
+        std::vector energy = Utils::getSobel(image, imgSize.width, imgSize.height).magnitude;
+        std::vector cumulative(imgSize.width * imgSize.height, 0.f);
+        std::vector seam(imgSize.height, 0);
 
-        --imgSize.width;
+        for (uint32_t i = 0; i < iterCnt; ++i) {
+            ::getCumulative(cumulative, energy, imgSize);
+            ::findSeam(seam, cumulative, imgSize);
+            ::removeSeam(seam, energy, image, imgSize);
+
+            --imgSize.width;
+        }
+    };
+
+    // horizontal seam carving
+    if (const uint32_t wIter = layer.width() - inputWidth; /**/ wIter != 0)
+        carve(wIter);
+
+    // vertical seam carving
+    if (const uint32_t hIter = layer.height() - inputHeight; /**/ hIter != 0) {
+        ::transpose(image, imgSize);
+
+        carve(hIter);
+
+        ::transpose(image, imgSize);
     }
 
     canvas.resize(imgSize.width, imgSize.height);
     const auto dst = layer.pixels();
 
-    for (int32_t y = 0; y < imgSize.height; ++y) {
+    for (int32_t y = 0; y < imgSize.height; ++y)
         for (int32_t x = 0; x < imgSize.width; ++x)
             dst[y, x] = image[y * imgSize.stride + x];
-    }
 }
