@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <omp.h>
 
 void Filters::laplace(Layer& image) {
     constexpr int32_t kernel[] = { 1, 4, 1, /**/ 4, -20, 4, /**/ 1, 4, 1 };
@@ -95,19 +96,21 @@ void Filters::sobel(Layer& image) {
 
 namespace {
 
-std::vector<float> nonMaximumSuppression(const std::vector<float>& mag,
-                                         const std::vector<float>& gX,
-                                         const std::vector<float>& gY,
+std::vector<float> nonMaximumSuppression(const std::span<const float> mag,
+                                         const std::span<const float> gX,
+                                         const std::span<const float> gY,
                                          const int32_t width, const int32_t height) {
+
     std::vector suppressed(width * height, 0.f);
-    const auto dst       = std::mdspan(suppressed.data(), height, width);
-    const auto magnitude = std::mdspan(mag.data(), height, width);
-    const auto gradY     = std::mdspan(gY.data(), height, width);
-    const auto gradX     = std::mdspan(gX.data(), height, width);
+    const std::mdspan dst(suppressed.data(), height, width);
+    const std::mdspan magnitude(mag.data(), height, width);
+    const std::mdspan gradY(gY.data(), height, width);
+    const std::mdspan gradX(gX.data(), height, width);
 
     constexpr float PI    = std::numbers::pi_v<float>;
     constexpr float toDeg = 180.f / PI;
 
+    #pragma omp parallel for collapse(2)
     for (int32_t y = 1; y < height - 1; ++y) {
         for (int32_t x = 1; x < width - 1; ++x) {
             float angle = std::atan2(gradY[y, x], gradX[y, x]) * toDeg;
@@ -138,20 +141,23 @@ std::vector<float> nonMaximumSuppression(const std::vector<float>& mag,
             dst[y, x] = (magnitude[y, x] >= q && magnitude[y, x] >= r) ? magnitude[y, x] : 0.f;
         }
     }
+
     return suppressed;
 }
 
-std::vector<float> hysteresis(const std::vector<float>& suppressed,
+std::vector<float> hysteresis(const std::span<const float> suppressed,
                               const int32_t width,        const int32_t height,
                               const float   lowThreshold, const float   highThreshold) {
+
     std::vector result(width * height, 0.f);
-    const auto src = std::mdspan(suppressed.data(), height, width);
-    const auto dst = std::mdspan(result.data(), height, width);
+    const std::mdspan src(suppressed.data(), height, width);
+    const std::mdspan dst(result.data(), height, width);
 
     constexpr float WEAK   = 100.f;
     constexpr float STRONG = 255.f;
 
     // double thresholding
+    #pragma omp parallel for collapse(2)
     for (int32_t y = 0; y < height; ++y) {
         for (int32_t x = 0; x < width; ++x) {
             const float val = src[y, x];
@@ -163,6 +169,7 @@ std::vector<float> hysteresis(const std::vector<float>& suppressed,
     }
 
     // hysteresis
+    #pragma omp parallel for collapse(2)
     for (int32_t y = 1; y < height - 1; ++y) {
         for (int32_t x = 1; x < width - 1; ++x) {
             if (dst[y, x] == WEAK) {
@@ -192,8 +199,8 @@ void Filters::canny(Layer& image, const float lowThreshold, const float highThre
     const auto height = static_cast<int32_t>(image.height());
 
     const auto& [magnitude, Gx, Gy] = Utils::getSobel(image);
-    const std::vector suppressed   = ::nonMaximumSuppression(magnitude, Gx, Gy, width, height);
-    const std::vector result       = ::hysteresis(suppressed, width, height, lowThreshold, highThreshold);
+    const std::vector suppressed    = ::nonMaximumSuppression(magnitude, Gx, Gy, width, height);
+    const std::vector result        = ::hysteresis(suppressed, width, height, lowThreshold, highThreshold);
 
     Utils::demote(std::span(result), image.data());
 }
