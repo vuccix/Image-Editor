@@ -8,6 +8,7 @@ target_link_libraries(AppView
         Renderer
         AppModel
         AppController
+        Serialization
         PUBLIC
         Assets
 )

@@ -5,6 +5,7 @@
 #include <Controller/Controller.h>
 #include <Controller/Commands/CanvasCommand.h>
 #include <Controller/Commands/LayerCommand.h>
+#include <Serialization/Serialize.h>
 #include <algorithm>
 
 void UIManager::drawMenuBar(EditorState& state, Controller& controller, const std::function<void()>& onQuitRequest) {
@@ -22,10 +23,31 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
 
     ui.menuBar([&] {
         ui.menu("File", [&] {
-            ui.item("New...", "Ctrl+N", [&] {});
-            ui.item("Open...", "Ctrl+O", [&] {});
+            ui.item("New...", "Ctrl+N", [&] {
+                struct State { uint32_t width, height; };
+                auto popupState = std::make_shared<State>(state.canvas.width(), state.canvas.height());
+                openModal("New",
+                    [popupState] {
+                        constexpr uint32_t min = 1;
+                        ImGui::DragScalar("Width",  ImGuiDataType_U32, &popupState->width,  1, &min);
+                        ImGui::DragScalar("Height", ImGuiDataType_U32, &popupState->height, 1, &min);
+                    },
+                    [popupState, &state] { state.canvas = { popupState->width, popupState->height }; }
+                );
+                state.zoomLevel       = 1.f;
+                state.panOffset       = { 0.f, 0.f };
+                state.selectedLayerID = 0;
+                state.version++;
+            });
+            ui.item("Open...", "Ctrl+O", [&] {
+                Serialize::loadImage(state.canvas);
+                state.selectedLayerID = 0;
+                ++state.version;
+            });
             ui.separator();
-            ui.item("Save", "Ctrl+S", [&] {});
+            ui.item("Save", "Ctrl+S", [&] {
+                Serialize::saveImage(state.canvas);
+            });
             ui.item("Save As...", "Ctrl+Shift+S", [&] {});
             ui.item("Save All...", "Ctrl+Shift+All", [&] {});
             ui.separator();
