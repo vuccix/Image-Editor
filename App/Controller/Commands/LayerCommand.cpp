@@ -42,204 +42,116 @@ namespace Cmd {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
 
-std::unique_ptr<LayerCommand> flipHoriz() {
+template <typename F, typename... Args>
+auto makeCmd(CommandNames name, F&& f, Args&&... args) {
     return std::make_unique<LayerCommand>(
-        CommandNames::FlipHorizontally, [](Layer& layer) {
-            Effects::flipHorizontally(layer);
+        name, [f = std::forward<F>(f), ...args = std::forward<Args>(args)](Layer& layer) mutable {
+            std::invoke(f, layer, args...);
         }
     );
+}
+
+#define DEFINE_COMMAND(name, func, ...) \
+    return makeCmd(CommandNames::name, func __VA_OPT__(,) __VA_ARGS__)
+
+std::unique_ptr<LayerCommand> flipHoriz() {
+    DEFINE_COMMAND(FlipHorizontally, Effects::flipHorizontally);
 }
 
 std::unique_ptr<LayerCommand> flipVert() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::FlipVertically, [](Layer& layer) {
-            Effects::flipVertically(layer);
-        }
-    );
+    DEFINE_COMMAND(FlipVertically, Effects::flipVertically);
 }
 
 std::unique_ptr<LayerCommand> invert() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::InvertColors, [](Layer& layer) {
-            Effects::invert(layer);
-        }
-    );
+    DEFINE_COMMAND(InvertColors, Effects::invert);
 }
 
 std::unique_ptr<LayerCommand> invertAlpha() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::InvertAlpha, [](Layer& layer) {
-            Effects::invertAlpha(layer);
-        }
-    );
+    DEFINE_COMMAND(InvertAlpha, Effects::invertAlpha);
 }
 
 std::unique_ptr<LayerCommand> brightness(const int32_t value) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Brightness, [value](Layer& layer) {
-            Effects::brightness(layer, value);
-        }
-    );
+    DEFINE_COMMAND(Brightness, Effects::brightness, value);
 }
 
 std::unique_ptr<LayerCommand> contrast(const float factor) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Contrast, [factor](Layer& layer) {
-            Effects::contrast(layer, factor);
-        }
-    );
+    DEFINE_COMMAND(Contrast, Effects::contrast, factor);
 }
 
 std::unique_ptr<LayerCommand> saturation(const float factor) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Saturation, [factor](Layer& layer) {
-            Effects::saturation(layer, factor);
-        }
-    );
+    DEFINE_COMMAND(Saturation, Effects::saturation, factor);
 }
 
 std::unique_ptr<LayerCommand> grayscale() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Grayscale, [](Layer& layer) {
-            Effects::grayscale(layer);
-        }
-    );
+    DEFINE_COMMAND(Grayscale, Effects::grayscale);
 }
 
 std::unique_ptr<LayerCommand> luminance() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Luminance, [](Layer& layer) {
-            Effects::luminance(layer);
-        }
-    );
+    DEFINE_COMMAND(Luminance, Effects::luminance);
 }
 
 std::unique_ptr<LayerCommand> sepia() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Sepia, [](Layer& layer) {
-            Effects::sepia(layer);
-        }
-    );
+    DEFINE_COMMAND(Sepia, Effects::sepia);
 }
 
 std::unique_ptr<LayerCommand> duoTone(const float colorA[3], const float colorB[3]) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::DuoTone, [colorA, colorB](Layer& layer) {
-            Filters::duoTone(layer, colorA, colorB);
-        }
-    );
+    DEFINE_COMMAND(DuoTone, Filters::duoTone, colorA, colorB);
 }
 
 std::unique_ptr<LayerCommand> blur(const int32_t amount) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Blur, [amount](Layer& layer) {
-            Filters::blur(layer, amount);
-        }
-    );
+    DEFINE_COMMAND(Blur, Filters::blur, amount);
 }
 
 std::unique_ptr<LayerCommand> gaussianBlur(const int32_t amount) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::GaussianBlur, [amount](Layer& layer) {
-            Filters::gaussianBlur(layer, amount);
-        }
-    );
+    DEFINE_COMMAND(GaussianBlur, Filters::gaussianBlur, amount);
 }
 
 std::unique_ptr<LayerCommand> motionBlur(const int32_t distance, const float angle) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::MotionBlur, [distance, angle](Layer& layer) {
-            Filters::motionBlur(layer, distance, angle);
-        }
-    );
+    DEFINE_COMMAND(MotionBlur, Filters::motionBlur, distance, angle);
 }
 
 std::unique_ptr<LayerCommand> swapChannels(const int32_t combination) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::SwapChannels, [combination](Layer& layer) {
-            Filters::swapChannels(layer, combination);
-        }
-    );
+    DEFINE_COMMAND(SwapChannels, Filters::swapChannels, combination);
 }
 
 std::unique_ptr<LayerCommand> emboss() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Emboss, [](Layer& layer) {
-            Filters::emboss(layer);
-        }
-    );
+    DEFINE_COMMAND(Emboss, Filters::emboss);
 }
 
 std::unique_ptr<LayerCommand> outline() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Outline, [](Layer& layer) {
-            Filters::outline(layer);
-        }
-    );
+    DEFINE_COMMAND(Outline, Filters::outline);
 }
 
 std::unique_ptr<LayerCommand> sharpen(const float amount) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Sharpen, [amount](Layer& layer) {
-            Filters::sharpen(layer, amount);
-        }
-    );
+    DEFINE_COMMAND(Sharpen, Filters::sharpen, amount);
 }
 
 std::unique_ptr<LayerCommand> pixelate(const int32_t blockSize) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Pixelate, [blockSize](Layer& layer) {
-            Filters::pixelate(layer, blockSize);
-        }
-    );
+    DEFINE_COMMAND(Pixelate, Filters::pixelate, blockSize);
 }
 
 std::unique_ptr<LayerCommand> canny(const float lowThreshold, const float highThreshold) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Canny, [lowThreshold, highThreshold](Layer& layer) {
-            Filters::canny(layer, lowThreshold, highThreshold);
-        }
-    );
+    DEFINE_COMMAND(Canny, Filters::canny, lowThreshold, highThreshold);
 }
 
 std::unique_ptr<LayerCommand> laplace() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Laplace, [](Layer& layer) {
-            Filters::laplace(layer);
-        }
-    );
+    DEFINE_COMMAND(Laplace, Filters::laplace);
 }
 
 std::unique_ptr<LayerCommand> prewitt() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Prewitt, [](Layer& layer) {
-            Filters::prewitt(layer);
-        }
-    );
+    DEFINE_COMMAND(Prewitt, Filters::prewitt);
 }
 
 std::unique_ptr<LayerCommand> scharr() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Scharr, [](Layer& layer) {
-            Filters::scharr(layer);
-        }
-    );
+    DEFINE_COMMAND(Scharr, Filters::scharr);
 }
 
 std::unique_ptr<LayerCommand> sobel() {
-    return std::make_unique<LayerCommand>(
-        CommandNames::Sobel, [](Layer& layer) {
-            Filters::sobel(layer);
-        }
-    );
+    DEFINE_COMMAND(Sobel, Filters::sobel);
 }
 
 std::unique_ptr<LayerCommand> normalMap(const float strength, const bool flipY) {
-    return std::make_unique<LayerCommand>(
-        CommandNames::NormalMap, [strength, flipY](Layer& layer) {
-            Filters::normalMap(layer, strength, flipY);
-        }
-    );
+    DEFINE_COMMAND(NormalMap, Filters::normalMap, strength, flipY);
 }
 
 #pragma GCC diagnostic pop

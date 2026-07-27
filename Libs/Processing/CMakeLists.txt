@@ -6,6 +6,5 @@ target_include_directories(Processing PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 target_link_libraries(Processing
         PRIVATE
         Canvas
-        PUBLIC
         OpenMP::OpenMP_CXX
 )

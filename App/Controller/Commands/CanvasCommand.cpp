@@ -50,6 +50,18 @@ namespace Cmd {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
 
+template <typename F, typename... Args>
+auto makeCmd(CommandNames name, F&& f, Args&&... args) {
+    return std::make_unique<CanvasCommand>(
+        name, [f = std::forward<F>(f), ...args = std::forward<Args>(args)](Canvas& canvas) mutable {
+            std::invoke(f, canvas, args...);
+        }
+    );
+}
+
+#define DEFINE_COMMAND(name, func, ...) \
+    return makeCmd(CommandNames::name, func __VA_OPT__(,) __VA_ARGS__)
+
 std::unique_ptr<CanvasCommand> addLayer() {
     return std::make_unique<CanvasCommand>(
         CommandNames::AddLayer, [](Canvas& canvas) {
@@ -115,27 +127,15 @@ std::unique_ptr<CanvasCommand> rotateRight() {
 }
 
 std::unique_ptr<CanvasCommand> rotate180() {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::Rotate180, [](Canvas& canvas) {
-            Effects::rotate180(canvas);
-        }
-    );
+    DEFINE_COMMAND(Rotate180, Effects::rotate180);
 }
 
 std::unique_ptr<CanvasCommand> flipHorizCanvas() {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::FlipHorizontally, [](Canvas& canvas) {
-            Effects::flipHorizontally(canvas);
-        }
-    );
+    DEFINE_COMMAND(FlipHorizontally, Effects::flipHorizontallyCanvas);
 }
 
 std::unique_ptr<CanvasCommand> flipVertCanvas() {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::FlipVertically, [](Canvas& canvas) {
-            Effects::flipVertically(canvas);
-        }
-    );
+    DEFINE_COMMAND(FlipVertically, Effects::flipHorizontallyCanvas);
 }
 
 std::unique_ptr<CanvasCommand> resize(const uint32_t width, const uint32_t height) {
@@ -155,11 +155,7 @@ std::unique_ptr<CanvasCommand> scale(const uint32_t width, const uint32_t height
 }
 
 std::unique_ptr<CanvasCommand> seamCarving(const uint32_t width, const uint32_t height) {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::SeamCarving, [width, height](Canvas& canvas) {
-            Filters::seamCarving(canvas, width, height);
-        }
-    );
+    DEFINE_COMMAND(SeamCarving, Filters::seamCarving, width, height);
 }
 
 #pragma GCC diagnostic pop

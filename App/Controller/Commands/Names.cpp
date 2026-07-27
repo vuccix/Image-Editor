@@ -2,6 +2,7 @@
 #include <cassert>
 
 CommandToString::CommandToString() {
+    // Filters
     m_commands[CommandNames::DuoTone]          = "Duo Tone";
     m_commands[CommandNames::WaterColor]       = "Water Color";
     m_commands[CommandNames::OilPainting]      = "Oil Painting";
@@ -51,7 +52,8 @@ CommandToString::CommandToString() {
 }
 
 void CommandToString::add(const CommandNames name, std::string value) {
-    assert(name != CommandNames::Count);
+    assert(name                   != CommandNames::Count);
+    assert(value.empty()          == false);
     assert(m_commands.count(name) == false);
 
     m_commands[name] = std::move(value);
