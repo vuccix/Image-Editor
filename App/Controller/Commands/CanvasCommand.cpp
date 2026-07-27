@@ -62,26 +62,10 @@ auto makeCmd(CommandNames name, F&& f, Args&&... args) {
 #define DEFINE_COMMAND(name, func, ...) \
     return makeCmd(CommandNames::name, func __VA_OPT__(,) __VA_ARGS__)
 
-std::unique_ptr<CanvasCommand> addLayer() {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::AddLayer, [](Canvas& canvas) {
-            canvas.addLayer();
-        }
-    );
-}
-
 std::unique_ptr<CanvasCommand> deleteLayer(const size_t layerID) {
     return std::make_unique<CanvasCommand>(
         CommandNames::DeleteLayer, [layerID](Canvas& canvas) {
             canvas.deleteLayer(layerID);
-        }
-    );
-}
-
-std::unique_ptr<CanvasCommand> duplicateLayer(size_t layerID) {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::DuplicateLayer, [layerID](Canvas& canvas) {
-            canvas.duplicateLayer(layerID);
         }
     );
 }
@@ -100,42 +84,6 @@ std::unique_ptr<CanvasCommand> mergeAllLayers() {
             canvas.mergeAllLayers();
         }
     );
-}
-
-std::unique_ptr<CanvasCommand> moveLayerToIndex(size_t layerID, size_t index) {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::Reorder, [layerID, index](Canvas& canvas) {
-            canvas.moveLayerToIndex(layerID, index);
-        }
-    );
-}
-
-std::unique_ptr<CanvasCommand> rotateLeft() {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::RotateLeft, [](Canvas& canvas) {
-            canvas.rotateLeft();
-        }
-    );
-}
-
-std::unique_ptr<CanvasCommand> rotateRight() {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::RotateRight, [](Canvas& canvas) {
-            canvas.rotateRight();
-        }
-    );
-}
-
-std::unique_ptr<CanvasCommand> rotate180() {
-    DEFINE_COMMAND(Rotate180, Effects::rotate180);
-}
-
-std::unique_ptr<CanvasCommand> flipHorizCanvas() {
-    DEFINE_COMMAND(FlipHorizontally, Effects::flipHorizontallyCanvas);
-}
-
-std::unique_ptr<CanvasCommand> flipVertCanvas() {
-    DEFINE_COMMAND(FlipVertically, Effects::flipHorizontallyCanvas);
 }
 
 std::unique_ptr<CanvasCommand> resize(const uint32_t width, const uint32_t height) {

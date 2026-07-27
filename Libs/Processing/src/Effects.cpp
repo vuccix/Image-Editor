@@ -28,12 +28,12 @@ void Effects::flipVertically(Layer& image) {
     }
 }
 
-void Effects::flipHorizontallyCanvas(Canvas& canvas) {
+void Effects::flipHorizontally(Canvas& canvas) {
     for (Layer& layer : canvas)
         flipHorizontally(layer);
 }
 
-void Effects::flipVerticallyCanvas(Canvas& canvas) {
+void Effects::flipVertically(Canvas& canvas) {
     for (Layer& layer : canvas)
         flipVertically(layer);
 }

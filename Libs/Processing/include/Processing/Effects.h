@@ -9,8 +9,8 @@ namespace Effects {
 
     void flipHorizontally(Layer& image);
     void flipVertically(Layer& image);
-    void flipHorizontallyCanvas(Canvas& canvas);
-    void flipVerticallyCanvas(Canvas& canvas);
+    void flipHorizontally(Canvas& canvas);
+    void flipVertically(Canvas& canvas);
 
     void rotate180(Canvas& canvas);
 

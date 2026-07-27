@@ -3,6 +3,7 @@ add_library(AppController OBJECT
         Commands/Names.cpp
         Commands/LayerCommand.cpp
         Commands/CanvasCommand.cpp
+        Commands/InvertibleCommand.cpp
 )
 
 target_link_libraries(AppController

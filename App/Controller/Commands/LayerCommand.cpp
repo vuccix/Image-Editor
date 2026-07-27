@@ -54,22 +54,6 @@ auto makeCmd(CommandNames name, F&& f, Args&&... args) {
 #define DEFINE_COMMAND(name, func, ...) \
     return makeCmd(CommandNames::name, func __VA_OPT__(,) __VA_ARGS__)
 
-std::unique_ptr<LayerCommand> flipHoriz() {
-    DEFINE_COMMAND(FlipHorizontally, Effects::flipHorizontally);
-}
-
-std::unique_ptr<LayerCommand> flipVert() {
-    DEFINE_COMMAND(FlipVertically, Effects::flipVertically);
-}
-
-std::unique_ptr<LayerCommand> invert() {
-    DEFINE_COMMAND(InvertColors, Effects::invert);
-}
-
-std::unique_ptr<LayerCommand> invertAlpha() {
-    DEFINE_COMMAND(InvertAlpha, Effects::invertAlpha);
-}
-
 std::unique_ptr<LayerCommand> brightness(const int32_t value) {
     DEFINE_COMMAND(Brightness, Effects::brightness, value);
 }
