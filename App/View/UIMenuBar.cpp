@@ -5,6 +5,7 @@
 #include <Controller/Controller.h>
 #include <Controller/Commands/CanvasCommand.h>
 #include <Controller/Commands/LayerCommand.h>
+#include <Controller/Commands/InvertibleCommand.h>
 #include <Serialization/Serialize.h>
 #include <algorithm>
 
@@ -19,6 +20,27 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             .drawContent = std::move(drawContent),
             .onApply     = std::move(onApply)
         };
+    };
+
+    auto openParamModal = [&]<typename T0>(const char* title, T0 initialVal, auto widgetFunc, auto makeCmd) {
+        auto popupState = std::make_shared<T0>(initialVal);
+        openModal(title,
+            [popupState, widgetFunc] { widgetFunc(*popupState); },
+            [popupState, exec, makeCmd] { exec(makeCmd(*popupState)); }
+        );
+    };
+
+    auto openSizeModal = [&](const char* title, auto makeCmd) {
+        struct SizeState { uint32_t width, height; };
+        auto popupState = std::make_shared<SizeState>(state.canvas.width(), state.canvas.height());
+        openModal(title,
+            [popupState] {
+                constexpr uint32_t min = 1;
+                ImGui::DragScalar("Width",  ImGuiDataType_U32, &popupState->width,  1, &min);
+                ImGui::DragScalar("Height", ImGuiDataType_U32, &popupState->height, 1, &min);
+            },
+            [popupState, exec, makeCmd] { exec(makeCmd(popupState->width, popupState->height)); }
+        );
     };
 
     ui.menuBar([&] {
@@ -45,17 +67,13 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                 ++state.version;
             });
             ui.separator();
-            ui.item("Save", "Ctrl+S", [&] {
-                Serialize::saveImage(state.canvas);
-            });
+            ui.item("Save", "Ctrl+S", [&] { Serialize::saveImage(state.canvas); });
             ui.item("Save As...", "Ctrl+Shift+S", [&] {});
             ui.item("Save All...", "Ctrl+Shift+All", [&] {});
             ui.separator();
             ui.item("Close", "Ctrl+W", [&] {});
             ui.separator();
-            ui.item("Quit", "Ctrl+Q", [&] {
-                onQuitRequest();
-            });
+            ui.item("Quit", "Ctrl+Q", [&] { onQuitRequest(); });
         });
 
         ui.menu("Edit", [&] {
@@ -63,7 +81,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                 ui.item("Undo", "Ctrl+Z", [&] { controller.undo(state); });
             });
             ui.disabled(!controller.hasRedo(), [&] {
-                ui.item("Redo", "Ctrl+R", [&] { controller.redo(state); });
+                ui.item("Redo", "Ctrl+Y", [&] { controller.redo(state); });
             });
             ui.separator();
 
@@ -82,48 +100,24 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             }); // <----------------------------------------------------------------------------------------------------
         });
 
-        ui.menu("Image", [&exec, &openModal, &state] {
-            ui.item("Resize...", "Ctrl+R", [&] {
-                struct State { uint32_t width, height; };
-                auto popupState = std::make_shared<State>(state.canvas.width(), state.canvas.height());
-
-                openModal("Resize",
-                    [popupState] {
-                        constexpr uint32_t min = 1;
-                        ImGui::DragScalar("Width",  ImGuiDataType_U32, &popupState->width,  1, &min);
-                        ImGui::DragScalar("Height", ImGuiDataType_U32, &popupState->height, 1, &min);
-                    },
-                    [popupState, exec] { exec(Cmd::scale(popupState->width, popupState->height)); }
-                );
-            });
-            ui.item("Canvas Size...", "Ctrl+Shift+R", [&] {
-                struct State { uint32_t width, height; };
-                auto popupState = std::make_shared<State>(state.canvas.width(), state.canvas.height());
-
-                openModal("Canvas Size",
-                    [popupState] {
-                        constexpr uint32_t min = 1;
-                        ImGui::DragScalar("Width",  ImGuiDataType_U32, &popupState->width,  1, &min);
-                        ImGui::DragScalar("Height", ImGuiDataType_U32, &popupState->height, 1, &min);
-                    },
-                    [popupState, exec] { exec(Cmd::resize(popupState->width, popupState->height)); }
-                );
-            });
+        ui.menu("Image", [&] {
+            ui.item("Resize...",      "Ctrl+R",       [&] { openSizeModal("Resize", Cmd::scale);       });
+            ui.item("Canvas Size...", "Ctrl+Shift+R", [&] { openSizeModal("Canvas Size", Cmd::resize); });
 
             ui.disabled(true, [] {
                 ui.item("Crop to Selection", "Ctrl+Shift+X", [&] {});
             });
 
             ui.separator();
-            ui.item("Flip Horizontally", [&] { exec(Cmd::flipHorizCanvas()); });
-            ui.item("Flip Vertically",   [&] { exec(Cmd::flipVertCanvas());  });
+            ui.item("Flip Horizontally", [&] { exec(Cmd::flipCanvasHoriz()); });
+            ui.item("Flip Vertically",   [&] { exec(Cmd::flipCanvasVert());  });
             ui.separator();
             ui.item("Rotate 90° Left",   [&] { exec(Cmd::rotateLeft());      });
             ui.item("Rotate 90° Right",  [&] { exec(Cmd::rotateRight());     });
             ui.item("Rotate 180°",       [&] { exec(Cmd::rotate180());       });
         });
 
-        ui.menu("Layers", [&exec, &state] {
+        ui.menu("Layers", [&] {
             const uint32_t selectedID = state.selectedLayerID;
 
             ui.item("Add New Layer",   "Ctrl+Shift+N", [&] { exec(Cmd::addLayer());                 });
@@ -135,42 +129,33 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.item("Toggle Layer Visibility", "Ctrl+,", [&] {
                 state.canvas[selectedID].toggleActive();
                 state.canvas.updateComposite();
-                ++state.version;
+                state.version++;
             });
             ui.separator();
             ui.item("Flatten Image", "Ctrl+Shift+F", [&] { exec(Cmd::mergeAllLayers()); });
             ui.separator();
-            ui.item("Flip Horizontally", [&] { exec(Cmd::flipHoriz()); });
-            ui.item("Flip Vertically",   [&] { exec(Cmd::flipVert());  });
+            ui.item("Flip Horizontally", [&] { exec(Cmd::flipLayerHoriz()); });
+            ui.item("Flip Vertically",   [&] { exec(Cmd::flipLayerVert());  });
         });
 
-        ui.menu("Filters", [&exec, &openModal, &state] {
+        ui.menu("Filters", [&] {
             ui.menu("Adjust", [&] {
                 ui.item("Brightness...", [&] {
-                    struct State { int value = 0; };
-                    auto popupState = std::make_shared<State>();
-
-                    openModal("Brightness Adjust",
-                        [popupState] { ImGui::DragInt("Brightness", &popupState->value, 1, -255, 255); },
-                        [popupState, exec] { exec(Cmd::brightness(popupState->value)); }
+                    openParamModal("Brightness Adjust", 0,
+                        [](int& val) { ImGui::DragInt("Brightness", &val, 1, -255, 255); },
+                        Cmd::brightness
                     );
                 });
                 ui.item("Contrast...",   [&] {
-                    struct State { float value = 1.f; };
-                    auto popupState = std::make_shared<State>();
-
-                    openModal("Contrast Adjust",
-                        [popupState] { ImGui::DragFloat("Contrast", &popupState->value, 0.1f, 0.f, 10.f, "%.2f"); },
-                        [popupState, exec] { exec(Cmd::contrast(popupState->value)); }
+                    openParamModal("Contrast Adjust", 1.f,
+                        [](float& val) { ImGui::DragFloat("Contrast", &val, 0.1f, 0.f, 10.f, "%.2f"); },
+                        Cmd::contrast
                     );
                 });
                 ui.item("Saturation...", [&] {
-                    struct State { float value = 1.f; };
-                    auto popupState = std::make_shared<State>();
-
-                    openModal("Saturation Adjust",
-                        [popupState] { ImGui::DragFloat("Saturation", &popupState->value, 0.1f, -10.f, 10.f, "%.2f"); },
-                        [popupState, exec] { exec(Cmd::saturation(popupState->value)); }
+                    openParamModal("Saturation Adjust", 1.f,
+                        [](float& val) { ImGui::DragFloat("Saturation", &val, 0.1f, -10.f, 10.f, "%.2f"); },
+                        Cmd::saturation
                     );
                 });
             });
@@ -214,36 +199,23 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             });
 
             ui.menu("Blur", [&] {
-                ui.item("Blur...", [&] {
-                    struct State { int amount = 0; };
-                    auto popupState = std::make_shared<State>();
-                    openModal("Mean Blur",
-                        [popupState] { ImGui::DragInt("Amount", &popupState->amount, 1, 0, 100); },
-                        [popupState, exec] { exec(Cmd::blur(popupState->amount)); }
+                auto openBlurModal = [&](const char* name, auto makeCmd) {
+                    openParamModal(name, 0,
+                        [](int& amt) { ImGui::DragInt("Amount", &amt, 1, 0, 100); },
+                        makeCmd
                     );
-                });
-                ui.item("Gaussian Blur...", [&] {
-                    struct State { int amount = 0; };
-                    auto popupState = std::make_shared<State>();
+                };
 
-                    openModal("Gaussian Blur",
-                        [popupState] { ImGui::DragInt("Amount", &popupState->amount, 1, 0, 100); },
-                        [popupState, exec] { exec(Cmd::gaussianBlur(popupState->amount)); }
-                    );
-                });
+                ui.item("Blur...",          [&] { openBlurModal("Mean Blur", Cmd::blur);             });
+                ui.item("Gaussian Blur...", [&] { openBlurModal("Gaussian Blur", Cmd::gaussianBlur); });
                 ui.item("Motion Blur...", [&] {
-                    struct State {
-                        int distance = 0;
-                        float angle  = 0.f;
-                    };
-                    auto popupState = std::make_shared<State>();
-
-                    openModal("Gaussian Blur",
-                        [popupState] {
-                            ImGui::DragInt("Distance", &popupState->distance, 1, 0, 1'000);
-                            ImGui::DragFloat("Angle", &popupState->angle, 1.f, -360.f, 360.f, "%.0f");
+                    struct MotionState { int distance = 0; float angle = 0.f; };
+                    openParamModal("Motion Blur", MotionState{},
+                        [](MotionState& s) {
+                            ImGui::DragInt("Distance", &s.distance, 1, 0, 1'000);
+                            ImGui::DragFloat("Angle", &s.angle, 1.f, -360.f, 360.f, "%.0f");
                         },
-                        [popupState, exec] { exec(Cmd::motionBlur(popupState->distance, popupState->angle)); }
+                        [](const MotionState& s) { return Cmd::motionBlur(s.distance, s.angle); }
                     );
                 });
             });
@@ -267,20 +239,18 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                 ui.item("Emboss",  [&] { exec(Cmd::emboss());  });
                 ui.item("Outline", [&] { exec(Cmd::outline()); });
                 ui.item("Sharpen...", [&] {
-                    struct State { float amount = 0.f; };
-                    auto popupState = std::make_shared<State>();
-                    openModal("Sharpen",
-                        [popupState] { ImGui::DragFloat("Amount", &popupState->amount, 0.1f, 0.f, 10.f, "%.2f"); },
-                        [popupState, exec] { exec(Cmd::sharpen(popupState->amount)); }
+                    openParamModal("Sharpen", 0.f,
+                        [](float& val) { ImGui::DragFloat("Amount", &val, 0.1f, 0.f, 10.f, "%.2f"); },
+                        Cmd::sharpen
                     );
                 });
                 ui.item("Pixelate...", [&] {
-                    struct State { int blockSize = 1; };
-                    auto popupState = std::make_shared<State>();
-                    openModal("Pixelate",
-                        [popupState] { ImGui::DragInt("Block Size", &popupState->blockSize, 1, 1, 100); },
-                        [popupState, exec] { exec(Cmd::pixelate(popupState->blockSize)); }
-                    );
+                    ui.item("Pixelate...", [&] {
+                        openParamModal("Pixelate", 1,
+                            [](int& val) { ImGui::DragInt("Block Size", &val, 1, 1, 100); },
+                            Cmd::pixelate
+                        );
+                    });
                 });
             });
 
@@ -288,11 +258,9 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
 
             ui.menu("Edge Detection", [&] {
                 ui.item("Canny...",   [&] {
-                    struct State {
-                        float lo = 20.f;
-                        float hi = 50.f;
-                    };
+                    struct State { float lo = 20.f, hi = 50.f; };
                     auto popupState = std::make_shared<State>();
+
                     openModal("Canny",
                         [popupState] {
                             ImGui::TextUnformatted("Select thresholds:");
@@ -313,10 +281,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                     ui.item("Fourier Transform", [&] {});
                 });
                 ui.item("Normal Map...", [&] {
-                    struct State {
-                        float strength = 1.f;
-                        bool  invertY  = false;
-                    };
+                    struct State { float strength = 1.f; bool invertY = false; };
                     auto popupState = std::make_shared<State>();
 
                     openModal("Normal Map Generator",
@@ -330,6 +295,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                 ui.item("Seam Carving...", [&] {
                     struct State { unsigned w, h; };
                     auto popupState = std::make_shared<State>(state.canvas.width(), state.canvas.height());
+
                     openModal("Seam Carving",
                         [popupState, &state] {
                             constexpr unsigned min  = 1;
