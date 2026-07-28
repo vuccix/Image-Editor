@@ -18,7 +18,6 @@ void Cmd::LayerCommand::execute(EditorState& state) {
     m_backup     = std::vector(layer.data().begin(), layer.data().end());
 
     m_effectFunc(layer);
-    ++state.version;
     // --------------------------------------------------------------
 
     const auto end = clock::now();
@@ -32,7 +31,6 @@ void Cmd::LayerCommand::undo(EditorState& state) {
 
     Layer& layer = state.canvas[m_layerID];
     layer.setData(std::move(m_backup));
-    ++state.version;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,10 +92,6 @@ std::unique_ptr<LayerCommand> motionBlur(const int32_t distance, const float ang
     DEFINE_COMMAND(MotionBlur, Filters::motionBlur, distance, angle);
 }
 
-std::unique_ptr<LayerCommand> swapChannels(const int32_t combination) {
-    DEFINE_COMMAND(SwapChannels, Filters::swapChannels, combination);
-}
-
 std::unique_ptr<LayerCommand> emboss() {
     DEFINE_COMMAND(Emboss, Filters::emboss);
 }
@@ -138,6 +132,7 @@ std::unique_ptr<LayerCommand> normalMap(const float strength, const bool flipY) 
     DEFINE_COMMAND(NormalMap, Filters::normalMap, strength, flipY);
 }
 
+#undef DEFINE_COMMAND
 #pragma GCC diagnostic pop
 
 }

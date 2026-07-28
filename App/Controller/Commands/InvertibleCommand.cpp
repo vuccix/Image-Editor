@@ -104,6 +104,14 @@ std::unique_ptr<InvertibleCommand> invertAlpha() {
     );
 }
 
+std::unique_ptr<InvertibleCommand> swapChannels(const int32_t comb) {
+    return std::make_unique<InvertibleCommand>(
+        CommandNames::SwapChannels,
+        [comb](EditorState& state) { Filters::swapChannels(state.canvas[state.selectedLayerID], comb); },
+        [comb](EditorState& state) { Filters::swapChannels(state.canvas[state.selectedLayerID], comb); }
+    );
+}
+
 std::unique_ptr<InvertibleCommand> addLayer() {
     return std::make_unique<InvertibleCommand>(
         CommandNames::AddLayer,

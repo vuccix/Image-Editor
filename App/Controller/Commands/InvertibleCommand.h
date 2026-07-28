@@ -2,6 +2,7 @@
 
 #include <Controller/Command.h>
 #include <functional>
+#include <cstdint>
 
 struct EditorState;
 
@@ -34,7 +35,7 @@ namespace Cmd {
 
     std::unique_ptr<InvertibleCommand> invert();
     std::unique_ptr<InvertibleCommand> invertAlpha();
-    // std::unique_ptr<InvertibleCommand> swapChannels();
+    std::unique_ptr<InvertibleCommand> swapChannels(int32_t combination);
 
     std::unique_ptr<InvertibleCommand> addLayer();
     std::unique_ptr<InvertibleCommand> duplicateLayer(size_t layerID);

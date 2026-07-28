@@ -1,4 +1,5 @@
 #include <Controller/Controller.h>
+#include <Model/EditorState.h>
 #include <cstdint>
 #include <cassert>
 
@@ -11,6 +12,8 @@ void Controller::execute(EditorState& state, std::unique_ptr<Command> command) {
         m_history.erase(m_history.begin() + static_cast<int64_t>(m_currentIndex), m_history.end());
 
     command->execute(state);
+    ++state.version;
+
     m_history.emplace_back(std::move(command));
     m_currentIndex = m_history.size();
 
@@ -24,6 +27,7 @@ void Controller::undo(EditorState& state) {
     assert(hasUndo());
 
     m_history[--m_currentIndex]->undo(state);
+    ++state.version;
 }
 
 void Controller::redo(EditorState& state) {

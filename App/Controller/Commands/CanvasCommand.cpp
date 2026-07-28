@@ -1,7 +1,6 @@
 #include "CanvasCommand.h"
 #include <Model/EditorState.h>
 #include <Processing/Filters.h>
-#include <Processing/Effects.h>
 #include <iostream>
 #include <chrono>
 
@@ -22,7 +21,6 @@ void Cmd::CanvasCommand::execute(EditorState& state) {
         m_backup.emplace_back(l.data().begin(), l.data().end());
 
     m_effectFunc(canvas);
-    ++state.version;
     // --------------------------------------------------------------
 
     const auto end = clock::now();
@@ -39,8 +37,6 @@ void Cmd::CanvasCommand::undo(EditorState& state) {
 
     for (size_t i = 0; i < canvas.layerCount(); ++i)
         canvas[i].setData(std::move(m_backup[i]));
-
-    ++state.version;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,18 +45,6 @@ namespace Cmd {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
-
-template <typename F, typename... Args>
-auto makeCmd(CommandNames name, F&& f, Args&&... args) {
-    return std::make_unique<CanvasCommand>(
-        name, [f = std::forward<F>(f), ...args = std::forward<Args>(args)](Canvas& canvas) mutable {
-            std::invoke(f, canvas, args...);
-        }
-    );
-}
-
-#define DEFINE_COMMAND(name, func, ...) \
-    return makeCmd(CommandNames::name, func __VA_OPT__(,) __VA_ARGS__)
 
 std::unique_ptr<CanvasCommand> deleteLayer(const size_t layerID) {
     return std::make_unique<CanvasCommand>(
@@ -103,7 +87,11 @@ std::unique_ptr<CanvasCommand> scale(const uint32_t width, const uint32_t height
 }
 
 std::unique_ptr<CanvasCommand> seamCarving(const uint32_t width, const uint32_t height) {
-    DEFINE_COMMAND(SeamCarving, Filters::seamCarving, width, height);
+    return std::make_unique<CanvasCommand>(
+        CommandNames::SeamCarving, [width, height](Canvas& canvas) {
+            Filters::seamCarving(canvas, width, height);
+        }
+    );
 }
 
 #pragma GCC diagnostic pop
