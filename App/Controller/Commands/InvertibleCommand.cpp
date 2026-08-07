@@ -123,8 +123,8 @@ std::unique_ptr<InvertibleCommand> addLayer() {
 std::unique_ptr<InvertibleCommand> duplicateLayer(size_t layerID) {
     return std::make_unique<InvertibleCommand>(
         CommandNames::DuplicateLayer,
-        [layerID](EditorState& state) { state.canvas.duplicateLayer(layerID); },
-        [](EditorState& state) { state.canvas.deleteLayer(state.canvas.layerCount() - 1); }
+        [layerID](EditorState& state) { state.canvas.duplicateLayer(layerID);  },
+        [layerID](EditorState& state) { state.canvas.deleteLayer(layerID + 1); }
     );
 }
 

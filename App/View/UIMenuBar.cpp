@@ -120,7 +120,10 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
         ui.menu("Layers", [&] {
             const uint32_t selectedID = state.selectedLayerID;
 
-            ui.item("Add New Layer", "Ctrl+Shift+N", [&] { exec(Cmd::addLayer()); });
+            ui.item("Add New Layer", "Ctrl+Shift+N", [&] {
+                exec(Cmd::addLayer());
+                state.selectedLayerID = static_cast<uint32_t>(state.canvas.layerCount() - 1);
+            });
             ui.disabled(state.canvas.layerCount() == 1, [&] {
                 ui.item("Delete Layer", "Shift+Del", [&] { exec(Cmd::deleteLayer(selectedID)); });
             });
