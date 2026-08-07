@@ -120,8 +120,10 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
         ui.menu("Layers", [&] {
             const uint32_t selectedID = state.selectedLayerID;
 
-            ui.item("Add New Layer",   "Ctrl+Shift+N", [&] { exec(Cmd::addLayer());                 });
-            ui.item("Delete Layer",    "Shift+Del",    [&] { exec(Cmd::deleteLayer(selectedID));    });
+            ui.item("Add New Layer", "Ctrl+Shift+N", [&] { exec(Cmd::addLayer()); });
+            ui.disabled(state.canvas.layerCount() == 1, [&] {
+                ui.item("Delete Layer", "Shift+Del", [&] { exec(Cmd::deleteLayer(selectedID)); });
+            });
             ui.item("Duplicate Layer", "Ctrl+Shift+D", [&] { exec(Cmd::duplicateLayer(selectedID)); });
             ui.disabled(selectedID == 0, [&] {
                 ui.item("Merge with Layer Below", "Ctrl+E", [&] { exec(Cmd::mergeWithLayerBelow(selectedID)); });
@@ -335,6 +337,12 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
 
             ui.item("Report a Bug...", [&] {
                 Utils::openURL("https://github.com/vuccix/Image-Editor/issues/new");
+            });
+
+            ui.separator();
+
+            ui.item("Also Try Algorithm Visualizer", [&] {
+                Utils::openURL("https://vuccix.github.io/Algorithm-Visualizer/");
             });
 
             ui.separator();

@@ -83,7 +83,7 @@ void getCumulative(std::span<float> cumulativeData, std::span<const float> energ
             const float c    = cumulative[y - 1, x];
             const float r    = cumulative[y - 1, x + 1];
 
-            cumulative[y, x] = energy[y, x] + std::min({ l, c, r });
+            cumulative[y, x] = energy[y, x] + std::min(l, std::min(c, r));
         }
 
         // right boundary (x = cols - 1)
