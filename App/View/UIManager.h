@@ -32,7 +32,7 @@ private:
 
 private:
     void drawToolbar(EditorState& state);
-    void drawPropertiesPanel(EditorState& state);
+    void drawPropertiesPanel(EditorState& state, Controller& controller);
     void drawMenuBar(EditorState& state, Controller& controller, const std::function<void()>& onQuitRequest);
     void drawCanvas(EditorState& state);
     void drawPendingPopups();

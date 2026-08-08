@@ -120,7 +120,7 @@ std::unique_ptr<InvertibleCommand> addLayer() {
     );
 }
 
-std::unique_ptr<InvertibleCommand> duplicateLayer(size_t layerID) {
+std::unique_ptr<InvertibleCommand> duplicateLayer(const size_t layerID) {
     return std::make_unique<InvertibleCommand>(
         CommandNames::DuplicateLayer,
         [layerID](EditorState& state) { state.canvas.duplicateLayer(layerID);  },
@@ -128,11 +128,27 @@ std::unique_ptr<InvertibleCommand> duplicateLayer(size_t layerID) {
     );
 }
 
-std::unique_ptr<InvertibleCommand> moveLayerToIndex(size_t layerID, size_t index) {
+std::unique_ptr<InvertibleCommand> moveLayerToIndex(const size_t layerID, const size_t index) {
     return std::make_unique<InvertibleCommand>(
         CommandNames::Reorder,
         [layerID, index](EditorState& state) { state.canvas.moveLayerToIndex(layerID, index); },
         [layerID, index](EditorState& state) { state.canvas.moveLayerToIndex(index, layerID); }
+    );
+}
+
+std::unique_ptr<InvertibleCommand> changeOpacity(const float oldOpacity, const float newOpacity) {
+    return std::make_unique<InvertibleCommand>(
+        CommandNames::ChangeOpacity,
+        [newOpacity](EditorState& s) { s.canvas[s.selectedLayerID].opacity = newOpacity; },
+        [oldOpacity](EditorState& s) { s.canvas[s.selectedLayerID].opacity = oldOpacity; }
+    );
+}
+
+std::unique_ptr<InvertibleCommand> changeFill(const float oldFill, const float newFill) {
+    return std::make_unique<InvertibleCommand>(
+        CommandNames::ChangeOpacity,
+        [newFill](EditorState& s) { s.canvas[s.selectedLayerID].fill = newFill; },
+        [oldFill](EditorState& s) { s.canvas[s.selectedLayerID].fill = oldFill; }
     );
 }
 

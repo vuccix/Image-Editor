@@ -42,4 +42,8 @@ namespace Cmd {
 
     std::unique_ptr<InvertibleCommand> moveLayerToIndex(size_t layerID, size_t index);
 
+    std::unique_ptr<InvertibleCommand> changeOpacity(float oldOpacity, float newOpacity);
+    std::unique_ptr<InvertibleCommand> changeFill(float oldFill, float newFill);
+    // std::unique_ptr<InvertibleCommand> changeBlendMode();
+
 }

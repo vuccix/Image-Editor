@@ -46,9 +46,14 @@ CommandToString::CommandToString() {
     m_commands[CommandNames::DuplicateLayer]   = "Duplicate Layer";
     m_commands[CommandNames::MergeLayer]       = "Merge Layers";
     m_commands[CommandNames::Flatten]          = "Flatten Image";
-    m_commands[CommandNames::ToggleVisibility] = "Toggle Layer Visibility";
     m_commands[CommandNames::Reorder]          = "Change Layer Order";
     m_commands[CommandNames::Crop]             = "Crop to Selection";
+
+    // Layer
+    m_commands[CommandNames::ToggleVisibility] = "Toggle Layer Visibility";
+    m_commands[CommandNames::ChangeOpacity]    = "Change Opacity";
+    m_commands[CommandNames::ChangeFill]       = "Change Fill";
+    m_commands[CommandNames::ChangeBlendMode]  = "Change Blend Mode";
 }
 
 void CommandToString::add(const CommandNames name, std::string value) {
