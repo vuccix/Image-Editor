@@ -1,13 +1,21 @@
 #include <Controller/Controller.h>
 #include <Model/EditorState.h>
+#include <iostream>
 #include <cstdint>
 #include <cassert>
+#include <chrono>
 
 Controller::Controller() {
     setHistoryLength(m_historyLength);
 }
 
 void Controller::execute(EditorState& state, std::unique_ptr<Command> command) {
+#ifndef NDEBUG
+    using clock      = std::chrono::steady_clock;
+    const auto start = clock::now();
+    const auto name  = command->getName();
+#endif
+
     if (m_currentIndex < m_history.size())
         m_history.erase(m_history.begin() + static_cast<int64_t>(m_currentIndex), m_history.end());
 
@@ -21,6 +29,12 @@ void Controller::execute(EditorState& state, std::unique_ptr<Command> command) {
         m_history.pop_front();
         m_currentIndex = m_history.size();
     }
+
+#ifndef NDEBUG
+    const auto end = clock::now();
+    const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << name << " took " << dur.count() << " ms\n";
+#endif
 }
 
 void Controller::undo(EditorState& state) {
@@ -34,6 +48,7 @@ void Controller::redo(EditorState& state) {
     assert(hasRedo());
 
     m_history[m_currentIndex++]->execute(state);
+    ++state.version;
 }
 
 void Controller::jumpToHistoryIndex(EditorState& state, const size_t target) {

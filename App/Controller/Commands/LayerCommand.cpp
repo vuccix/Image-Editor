@@ -2,27 +2,17 @@
 #include <Model/EditorState.h>
 #include <Processing/Filters.h>
 #include <Processing/Effects.h>
-#include <iostream>
-#include <chrono>
+#include <cstdint>
 
 Cmd::LayerCommand::LayerCommand(const CommandNames name, std::move_only_function<void(Layer&)> effectFunc)
     : Command(name), m_effectFunc(std::move(effectFunc)) {}
 
 void Cmd::LayerCommand::execute(EditorState& state) {
-    using clock = std::chrono::steady_clock;
-    const auto start = clock::now();
-
-    // --------------------------------------------------------------
     m_layerID    = state.selectedLayerID;
     Layer& layer = state.canvas[m_layerID];
     m_backup     = std::vector(layer.data().begin(), layer.data().end());
 
     m_effectFunc(layer);
-    // --------------------------------------------------------------
-
-    const auto end = clock::now();
-    const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << getName() << " took " << dur.count() << " ms\n";
 }
 
 void Cmd::LayerCommand::undo(EditorState& state) {

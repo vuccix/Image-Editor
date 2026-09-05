@@ -1,17 +1,11 @@
 #include "CanvasCommand.h"
 #include <Model/EditorState.h>
 #include <Processing/Filters.h>
-#include <iostream>
-#include <chrono>
 
 Cmd::CanvasCommand::CanvasCommand(const CommandNames name, std::move_only_function<void(Canvas&)> effectFunc)
     : Command(name), m_effectFunc(std::move(effectFunc)) {}
 
 void Cmd::CanvasCommand::execute(EditorState& state) {
-    using clock = std::chrono::steady_clock;
-    const auto start = clock::now();
-
-    // --------------------------------------------------------------
     Canvas& canvas = state.canvas;
     m_width        = canvas.width();
     m_height       = canvas.height();
@@ -21,11 +15,6 @@ void Cmd::CanvasCommand::execute(EditorState& state) {
         m_backup.emplace_back(l.data().begin(), l.data().end());
 
     m_effectFunc(canvas);
-    // --------------------------------------------------------------
-
-    const auto end = clock::now();
-    const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << getName() << " took " << dur.count() << " ms\n";
 }
 
 void Cmd::CanvasCommand::undo(EditorState& state) {

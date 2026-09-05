@@ -2,31 +2,13 @@
 #include <Model/EditorState.h>
 #include <Processing/Filters.h>
 #include <Processing/Effects.h>
-#include <iostream>
-#include <chrono>
 
 Cmd::InvertibleCommand::InvertibleCommand(const CommandNames name, std::move_only_function<void(EditorState&)> effectFunc,
                                                                    std::move_only_function<void(EditorState&)> invertFunc)
     : Command(name), m_effectFunc(std::move(effectFunc)), m_invertFunc(std::move(invertFunc)) {}
 
-void Cmd::InvertibleCommand::execute(EditorState& state) {
-    using clock = std::chrono::steady_clock;
-    const auto start = clock::now();
-
-    // --------------------------------------------------------------
-    m_effectFunc(state);
-    ++state.version;
-    // --------------------------------------------------------------
-
-    const auto end = clock::now();
-    const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << getName() << " took " << dur.count() << " ms\n";
-}
-
-void Cmd::InvertibleCommand::undo(EditorState& state) {
-    m_invertFunc(state);
-    ++state.version;
-}
+void Cmd::InvertibleCommand::execute(EditorState& state) { m_effectFunc(state); }
+void Cmd::InvertibleCommand::undo(EditorState& state)    { m_invertFunc(state); }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
