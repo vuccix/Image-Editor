@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Commands/Names.h"
+#include <string_view>
 #include <memory>
-#include <string>
 
 struct EditorState;
 

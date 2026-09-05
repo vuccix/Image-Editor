@@ -5,9 +5,9 @@
 #include <optional>
 #include <string>
 
-class Renderer;
-class EditorState;
-class Controller;
+class  Renderer;
+struct EditorState;
+class  Controller;
 
 struct ActivePopup {
     std::string_view      title;

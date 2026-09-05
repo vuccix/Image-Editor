@@ -4,8 +4,6 @@
 #include <functional>
 #include <cstdint>
 
-struct EditorState;
-
 namespace Cmd {
 
     class InvertibleCommand final : public Command {
