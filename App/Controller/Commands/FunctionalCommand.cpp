@@ -3,12 +3,11 @@
 #include <Processing/Filters.h>
 #include <Processing/Effects.h>
 
-Cmd::FunctionalCommand::FunctionalCommand(const CommandNames name, std::move_only_function<void(EditorState&)> effectFunc,
-                                                                   std::move_only_function<void(EditorState&)> invertFunc)
-    : Command(name), m_effectFunc(std::move(effectFunc)), m_invertFunc(std::move(invertFunc)) {}
+Cmd::FunctionalCommand::FunctionalCommand(const CommandNames name, Function execute, Function undo)
+    : Command(name), m_execute(std::move(execute)), m_undo(std::move(undo)) {}
 
-void Cmd::FunctionalCommand::execute(EditorState& state) { m_effectFunc(state); }
-void Cmd::FunctionalCommand::undo(EditorState& state)    { m_invertFunc(state); }
+void Cmd::FunctionalCommand::execute(EditorState& state) { m_execute(state); }
+void Cmd::FunctionalCommand::undo(EditorState& state)    { m_undo(state);    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

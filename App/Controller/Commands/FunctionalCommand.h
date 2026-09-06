@@ -8,15 +8,16 @@ namespace Cmd {
 
     class FunctionalCommand final : public Command {
     public:
-        FunctionalCommand(CommandNames name, std::move_only_function<void(EditorState&)> effectFunc,
-                                             std::move_only_function<void(EditorState&)> invertFunc);
+        using Function = std::move_only_function<void(EditorState&)>;
+
+        FunctionalCommand(CommandNames name, Function execute, Function undo);
 
         void execute(EditorState& state) override;
         void undo(EditorState& state)    override;
 
     private:
-        std::move_only_function<void(EditorState&)> m_effectFunc;
-        std::move_only_function<void(EditorState&)> m_invertFunc;
+        Function m_execute;
+        Function m_undo;
     };
 
     // -----------------------------------------------------------------------------------------------------------------
