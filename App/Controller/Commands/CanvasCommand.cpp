@@ -22,10 +22,26 @@ void Cmd::CanvasCommand::undo(EditorState& state) {
     assert(m_width > 0 && m_height > 0);
 
     Canvas& canvas = state.canvas;
-    canvas.resize(m_width, m_height);
+
+    if (canvas.width() != m_width || canvas.height() != m_height)
+        canvas.resize(m_width, m_height);
+
+    const size_t oldCount = m_backup.size();
+    size_t       newCount = canvas.layerCount();
+
+    if (newCount < oldCount) {
+        while (newCount++ < oldCount)
+            canvas.addLayer();
+    }
+    else if (newCount > oldCount) {
+        while (newCount-- > oldCount)
+            canvas.deleteLayer(canvas.layerCount() - 1);
+    }
 
     for (size_t i = 0; i < canvas.layerCount(); ++i)
         canvas[i].setData(std::move(m_backup[i]));
+
+    m_backup.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
