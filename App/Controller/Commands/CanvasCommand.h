@@ -23,14 +23,14 @@ namespace Cmd {
 
     // -----------------------------------------------------------------------------------------------------------------
 
-    std::unique_ptr<CanvasCommand> deleteLayer(size_t layerID);
+    std::unique_ptr<Command> deleteLayer(size_t layerID);
 
-    std::unique_ptr<CanvasCommand> mergeWithLayerBelow(size_t layerID);
-    std::unique_ptr<CanvasCommand> mergeAllLayers();
+    std::unique_ptr<Command> mergeWithLayerBelow(size_t layerID);
+    std::unique_ptr<Command> mergeAllLayers();
 
-    std::unique_ptr<CanvasCommand> resize(uint32_t width, uint32_t height);
-    std::unique_ptr<CanvasCommand> scale(uint32_t width, uint32_t height);
+    std::unique_ptr<Command> resize(uint32_t width, uint32_t height);
+    std::unique_ptr<Command> scale(uint32_t width, uint32_t height);
 
-    std::unique_ptr<CanvasCommand> seamCarving(uint32_t width, uint32_t height);
+    std::unique_ptr<Command> seamCarving(uint32_t width, uint32_t height);
 
 }

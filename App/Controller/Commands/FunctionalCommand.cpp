@@ -14,7 +14,7 @@ void Cmd::FunctionalCommand::undo(EditorState& state)    { m_invertFunc(state); 
 
 namespace Cmd {
 
-std::unique_ptr<FunctionalCommand> flipLayerHoriz() {
+std::unique_ptr<Command> flipLayerHoriz() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::FlipHorizontally,
         [](EditorState& state) { Effects::flipHorizontally(state.canvas[state.selectedLayerID]); },
@@ -22,7 +22,7 @@ std::unique_ptr<FunctionalCommand> flipLayerHoriz() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> flipLayerVert() {
+std::unique_ptr<Command> flipLayerVert() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::FlipVertically,
         [](EditorState& state) { Effects::flipVertically(state.canvas[state.selectedLayerID]); },
@@ -30,7 +30,7 @@ std::unique_ptr<FunctionalCommand> flipLayerVert() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> flipCanvasHoriz() {
+std::unique_ptr<Command> flipCanvasHoriz() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::FlipHorizontally,
         [](EditorState& state) { Effects::flipHorizontally(state.canvas); },
@@ -38,7 +38,7 @@ std::unique_ptr<FunctionalCommand> flipCanvasHoriz() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> flipCanvasVert() {
+std::unique_ptr<Command> flipCanvasVert() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::FlipVertically,
         [](EditorState& state) { Effects::flipVertically(state.canvas); },
@@ -46,7 +46,7 @@ std::unique_ptr<FunctionalCommand> flipCanvasVert() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> rotateLeft() {
+std::unique_ptr<Command> rotateLeft() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::RotateLeft,
         [](EditorState& state) { state.canvas.rotateLeft();  },
@@ -54,7 +54,7 @@ std::unique_ptr<FunctionalCommand> rotateLeft() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> rotateRight() {
+std::unique_ptr<Command> rotateRight() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::RotateRight,
         [](EditorState& state) { state.canvas.rotateRight(); },
@@ -62,7 +62,7 @@ std::unique_ptr<FunctionalCommand> rotateRight() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> rotate180() {
+std::unique_ptr<Command> rotate180() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::Rotate180,
         [](EditorState& state) { Effects::rotate180(state.canvas); },
@@ -70,7 +70,7 @@ std::unique_ptr<FunctionalCommand> rotate180() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> invert() {
+std::unique_ptr<Command> invert() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::InvertColors,
         [](EditorState& state) { Effects::invert(state.canvas[state.selectedLayerID]); },
@@ -78,7 +78,7 @@ std::unique_ptr<FunctionalCommand> invert() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> invertAlpha() {
+std::unique_ptr<Command> invertAlpha() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::InvertAlpha,
         [](EditorState& state) { Effects::invertAlpha(state.canvas[state.selectedLayerID]); },
@@ -86,7 +86,7 @@ std::unique_ptr<FunctionalCommand> invertAlpha() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> swapChannels(const int32_t comb) {
+std::unique_ptr<Command> swapChannels(const int32_t comb) {
     return std::make_unique<FunctionalCommand>(
         CommandNames::SwapChannels,
         [comb](EditorState& state) { Filters::swapChannels(state.canvas[state.selectedLayerID], comb); },
@@ -94,7 +94,7 @@ std::unique_ptr<FunctionalCommand> swapChannels(const int32_t comb) {
     );
 }
 
-std::unique_ptr<FunctionalCommand> addLayer() {
+std::unique_ptr<Command> addLayer() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::AddLayer,
         [](EditorState& state) { state.canvas.addLayer(); },
@@ -102,7 +102,7 @@ std::unique_ptr<FunctionalCommand> addLayer() {
     );
 }
 
-std::unique_ptr<FunctionalCommand> duplicateLayer(const size_t layerID) {
+std::unique_ptr<Command> duplicateLayer(const size_t layerID) {
     return std::make_unique<FunctionalCommand>(
         CommandNames::DuplicateLayer,
         [layerID](EditorState& state) { state.canvas.duplicateLayer(layerID);  },
@@ -110,7 +110,7 @@ std::unique_ptr<FunctionalCommand> duplicateLayer(const size_t layerID) {
     );
 }
 
-std::unique_ptr<FunctionalCommand> moveLayerToIndex(const size_t layerID, const size_t index) {
+std::unique_ptr<Command> moveLayerToIndex(const size_t layerID, const size_t index) {
     return std::make_unique<FunctionalCommand>(
         CommandNames::Reorder,
         [layerID, index](EditorState& state) { state.canvas.moveLayerToIndex(layerID, index); },
@@ -118,7 +118,7 @@ std::unique_ptr<FunctionalCommand> moveLayerToIndex(const size_t layerID, const 
     );
 }
 
-std::unique_ptr<FunctionalCommand> changeOpacity(const float oldOpacity, const float newOpacity) {
+std::unique_ptr<Command> changeOpacity(const float oldOpacity, const float newOpacity) {
     return std::make_unique<FunctionalCommand>(
         CommandNames::ChangeOpacity,
         [newOpacity](EditorState& s) { s.canvas[s.selectedLayerID].opacity = newOpacity; },
@@ -126,7 +126,7 @@ std::unique_ptr<FunctionalCommand> changeOpacity(const float oldOpacity, const f
     );
 }
 
-std::unique_ptr<FunctionalCommand> changeFill(const float oldFill, const float newFill) {
+std::unique_ptr<Command> changeFill(const float oldFill, const float newFill) {
     return std::make_unique<FunctionalCommand>(
         CommandNames::ChangeOpacity,
         [newFill](EditorState& s) { s.canvas[s.selectedLayerID].fill = newFill; },

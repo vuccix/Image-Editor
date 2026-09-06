@@ -51,7 +51,7 @@ namespace Cmd {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
 
-std::unique_ptr<CanvasCommand> deleteLayer(const size_t layerID) {
+std::unique_ptr<Command> deleteLayer(const size_t layerID) {
     return std::make_unique<CanvasCommand>(
         CommandNames::DeleteLayer, [layerID](Canvas& canvas) {
             canvas.deleteLayer(layerID);
@@ -59,7 +59,7 @@ std::unique_ptr<CanvasCommand> deleteLayer(const size_t layerID) {
     );
 }
 
-std::unique_ptr<CanvasCommand> mergeWithLayerBelow(size_t layerID) {
+std::unique_ptr<Command> mergeWithLayerBelow(size_t layerID) {
     return std::make_unique<CanvasCommand>(
         CommandNames::MergeLayer, [layerID](Canvas& canvas) {
             canvas.mergeWithLayerBelow(layerID);
@@ -67,7 +67,7 @@ std::unique_ptr<CanvasCommand> mergeWithLayerBelow(size_t layerID) {
     );
 }
 
-std::unique_ptr<CanvasCommand> mergeAllLayers() {
+std::unique_ptr<Command> mergeAllLayers() {
     return std::make_unique<CanvasCommand>(
         CommandNames::Flatten, [](Canvas& canvas) {
             canvas.mergeAllLayers();
@@ -75,7 +75,7 @@ std::unique_ptr<CanvasCommand> mergeAllLayers() {
     );
 }
 
-std::unique_ptr<CanvasCommand> resize(const uint32_t width, const uint32_t height) {
+std::unique_ptr<Command> resize(const uint32_t width, const uint32_t height) {
     return std::make_unique<CanvasCommand>(
         CommandNames::Resize, [width, height](Canvas& canvas) {
             canvas.resize(width, height);
@@ -83,7 +83,7 @@ std::unique_ptr<CanvasCommand> resize(const uint32_t width, const uint32_t heigh
     );
 }
 
-std::unique_ptr<CanvasCommand> scale(const uint32_t width, const uint32_t height) {
+std::unique_ptr<Command> scale(const uint32_t width, const uint32_t height) {
     return std::make_unique<CanvasCommand>(
         CommandNames::CanvasSize, [width, height](Canvas& canvas) {
             canvas.scale(width, height);
@@ -91,7 +91,7 @@ std::unique_ptr<CanvasCommand> scale(const uint32_t width, const uint32_t height
     );
 }
 
-std::unique_ptr<CanvasCommand> seamCarving(const uint32_t width, const uint32_t height) {
+std::unique_ptr<Command> seamCarving(const uint32_t width, const uint32_t height) {
     return std::make_unique<CanvasCommand>(
         CommandNames::SeamCarving, [width, height](Canvas& canvas) {
             Filters::seamCarving(canvas, width, height);
