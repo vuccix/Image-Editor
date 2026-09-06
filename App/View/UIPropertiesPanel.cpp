@@ -5,7 +5,7 @@
 #include <Model/EditorState.h>
 #include <Controller/Controller.h>
 #include <Controller/Commands/CanvasCommand.h>
-#include <Controller/Commands/InvertibleCommand.h>
+#include <Controller/Commands/FunctionalCommand.h>
 
 void UIManager::drawPropertiesPanel(EditorState& state, Controller& controller) {
     assert(state.canvas.layerCount() > 0);
@@ -141,7 +141,7 @@ void UIManager::drawPropertiesPanel(EditorState& state, Controller& controller) 
             ImGui::SameLine();
 
             if (ImGui::Button("Duplicate"))
-                exec(Cmd::duplicateLayer(state.selectedLayerID));
+                exec(Cmd::duplicateLayer(state.selectedLayerID++));
 
             ImGui::SameLine();
 

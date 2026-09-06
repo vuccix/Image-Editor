@@ -5,7 +5,7 @@
 #include <Controller/Controller.h>
 #include <Controller/Commands/CanvasCommand.h>
 #include <Controller/Commands/LayerCommand.h>
-#include <Controller/Commands/InvertibleCommand.h>
+#include <Controller/Commands/FunctionalCommand.h>
 #include <Serialization/Serialize.h>
 #include <algorithm>
 
