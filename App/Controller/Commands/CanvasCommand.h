@@ -1,11 +1,9 @@
 #pragma once
 
 #include <Controller/Command.h>
-#include <Canvas/Pixel.h>
+#include <Canvas/Canvas.h>
 #include <functional>
 #include <vector>
-
-class Canvas;
 
 namespace Cmd {
 
@@ -18,7 +16,7 @@ namespace Cmd {
 
     private:
         std::move_only_function<void(Canvas&)> m_effectFunc;
-        std::vector<std::vector<Pixel>>        m_backup;
+        std::vector<Layer>                     m_backup;
         uint32_t                               m_width  = 0;
         uint32_t                               m_height = 0;
     };

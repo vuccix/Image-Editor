@@ -12,7 +12,7 @@ void Cmd::CanvasCommand::execute(EditorState& state) {
 
     m_backup.reserve(canvas.layerCount());
     for (const Layer& l : canvas)
-        m_backup.emplace_back(l.data().begin(), l.data().end());
+        m_backup.emplace_back(l);
 
     m_effectFunc(canvas);
 }
@@ -39,7 +39,7 @@ void Cmd::CanvasCommand::undo(EditorState& state) {
     }
 
     for (size_t i = 0; i < canvas.layerCount(); ++i)
-        canvas[i].setData(std::move(m_backup[i]));
+        canvas[i] = m_backup[i];
 
     m_backup.clear();
 }
