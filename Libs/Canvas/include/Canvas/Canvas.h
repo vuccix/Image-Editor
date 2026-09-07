@@ -19,16 +19,17 @@ public:
     void rotateRight();
 
     void addLayer();
+    void addLayer(size_t layerID, Layer layer);
     void deleteLayer(size_t layerID);
     void duplicateLayer(size_t layerID);
 
-    void mergeWithLayerBelow(size_t layerID);
+    void mergeWithLayerBelow(size_t topLayerID);
     void mergeAllLayers();
 
     void moveLayerToIndex(size_t layerID, size_t index);
 
     void updateComposite();
-    const Image& getComposite();
+    const Image& getComposite() const noexcept;
 
     const Layer& operator[](size_t layerID) const;
           Layer& operator[](size_t layerID);

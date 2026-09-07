@@ -85,6 +85,10 @@ void Canvas::addLayer() {
     m_layers.emplace_back(m_width, m_height, std::format("Layer {}", m_layers.size()));
 }
 
+void Canvas::addLayer(const size_t layerID, Layer layer) {
+    m_layers.emplace(m_layers.begin() + layerID, std::move(layer));
+}
+
 void Canvas::deleteLayer(const size_t layerID) {
     assert(layerID < m_layers.size());
     m_layers.erase(m_layers.begin() + layerID);
@@ -111,7 +115,7 @@ Pixel mergePixels(const Pixel bot, const Pixel top, const float opacity, const f
     const float topB =  top.b * ::norm;
     const float topA = (top.a * ::norm) * opacity * fill;
 
-    const float outA = topA + botA  * (1.f - topA);
+    const float outA =  topA + botA * (1.f - topA) ;
     const float invA = (outA > 0.f) ? (1.f / outA) : 0.f;
 
     const float outR = (topR * topA + botR * botA * (1.f - topA)) * invA;
@@ -128,14 +132,14 @@ Pixel mergePixels(const Pixel bot, const Pixel top, const float opacity, const f
 
 }
 
-void Canvas::mergeWithLayerBelow(const size_t layerID) {
-    assert(layerID > 0 && layerID < m_layers.size());
+void Canvas::mergeWithLayerBelow(const size_t topLayerID) {
+    assert(topLayerID > 0 && topLayerID < m_layers.size());
 
-    const auto top      = m_layers[layerID].pixels();
-    const auto bottom   = m_layers[layerID - 1].pixels();
+    const auto top      = m_layers[topLayerID].pixels();
+    const auto bottom   = m_layers[topLayerID - 1].pixels();
 
-    const float opacity = m_layers[layerID].opacity;
-    const float fill    = m_layers[layerID].fill;
+    const float opacity = m_layers[topLayerID].opacity;
+    const float fill    = m_layers[topLayerID].fill;
 
     for (uint32_t y = 0; y < m_height; ++y) {
         for (uint32_t x = 0; x < m_width; ++x) {
@@ -145,7 +149,8 @@ void Canvas::mergeWithLayerBelow(const size_t layerID) {
         }
     }
 
-    m_layers.erase(m_layers.begin() + layerID);
+    m_layers[topLayerID - 1].name = std::move(m_layers[topLayerID].name);
+    m_layers.erase(m_layers.begin() + topLayerID);
 }
 
 void Canvas::mergeAllLayers() {
@@ -206,7 +211,7 @@ void Canvas::updateComposite() {
     }
 }
 
-const Image& Canvas::getComposite() {
+const Image& Canvas::getComposite() const noexcept {
     return m_composite;
 }
 
