@@ -4,6 +4,7 @@ add_library(AppController OBJECT
         Commands/LayerCommand.cpp
         Commands/CanvasCommand.cpp
         Commands/FunctionalCommand.cpp
+        Commands/StatefulCommand.cpp
 )
 
 target_link_libraries(AppController
