@@ -9,16 +9,18 @@ namespace Cmd {
 
     class CanvasCommand final : public Command {
     public:
-        CanvasCommand(CommandNames name, std::move_only_function<void(Canvas&)> effectFunc);
+        using Function = std::move_only_function<void(Canvas&)>;
+
+        CanvasCommand(CommandNames name, std::move_only_function<void(Canvas&)> execute);
 
         void execute(EditorState& state) override;
         void undo(EditorState& state)    override;
 
     private:
-        std::move_only_function<void(Canvas&)> m_effectFunc;
-        std::vector<Layer>                     m_backup;
-        uint32_t                               m_width  = 0;
-        uint32_t                               m_height = 0;
+        Function           m_execute;
+        std::vector<Layer> m_backup;
+        uint32_t           m_width  = 0;
+        uint32_t           m_height = 0;
     };
 
     // -----------------------------------------------------------------------------------------------------------------

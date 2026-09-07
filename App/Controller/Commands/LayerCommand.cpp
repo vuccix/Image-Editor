@@ -4,15 +4,15 @@
 #include <Processing/Effects.h>
 #include <cstdint>
 
-Cmd::LayerCommand::LayerCommand(const CommandNames name, std::move_only_function<void(Layer&)> effectFunc)
-    : Command(name), m_effectFunc(std::move(effectFunc)) {}
+Cmd::LayerCommand::LayerCommand(const CommandNames name, Function execute)
+    : Command(name), m_execute(std::move(execute)) {}
 
 void Cmd::LayerCommand::execute(EditorState& state) {
     m_layerID    = state.selectedLayerID;
     Layer& layer = state.canvas[m_layerID];
     m_backup     = std::vector(layer.data().begin(), layer.data().end());
 
-    m_effectFunc(layer);
+    m_execute(layer);
 }
 
 void Cmd::LayerCommand::undo(EditorState& state) {
@@ -26,9 +26,6 @@ void Cmd::LayerCommand::undo(EditorState& state) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace Cmd {
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
 
 template <typename F, typename... Args>
 auto makeCmd(CommandNames name, F&& f, Args&&... args) {
@@ -123,6 +120,5 @@ std::unique_ptr<Command> normalMap(const float strength, const bool flipY) {
 }
 
 #undef DEFINE_COMMAND
-#pragma GCC diagnostic pop
 
 }

@@ -11,13 +11,15 @@ namespace Cmd {
 
     class LayerCommand final : public Command {
     public:
-        LayerCommand(CommandNames name, std::move_only_function<void(Layer&)> effectFunc);
+        using Function = std::move_only_function<void(Layer&)>;
+
+        LayerCommand(CommandNames name, Function execute);
 
         void execute(EditorState& state) override;
         void undo(EditorState& state)    override;
 
     private:
-        std::move_only_function<void(Layer&)> m_effectFunc;
+        std::move_only_function<void(Layer&)> m_execute;
         std::vector<Pixel>                    m_backup;
         size_t                                m_layerID = SIZE_MAX;
     };

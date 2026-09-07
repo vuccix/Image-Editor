@@ -2,8 +2,8 @@
 #include <Model/EditorState.h>
 #include <Processing/Filters.h>
 
-Cmd::CanvasCommand::CanvasCommand(const CommandNames name, std::move_only_function<void(Canvas&)> effectFunc)
-    : Command(name), m_effectFunc(std::move(effectFunc)) {}
+Cmd::CanvasCommand::CanvasCommand(const CommandNames name, Function execute)
+    : Command(name), m_execute(std::move(execute)) {}
 
 void Cmd::CanvasCommand::execute(EditorState& state) {
     Canvas& canvas = state.canvas;
@@ -14,7 +14,7 @@ void Cmd::CanvasCommand::execute(EditorState& state) {
     for (const Layer& l : canvas)
         m_backup.emplace_back(l);
 
-    m_effectFunc(canvas);
+    m_execute(canvas);
 }
 
 void Cmd::CanvasCommand::undo(EditorState& state) {
@@ -48,9 +48,6 @@ void Cmd::CanvasCommand::undo(EditorState& state) {
 
 namespace Cmd {
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-
 std::unique_ptr<Command> mergeAllLayers() {
     return std::make_unique<CanvasCommand>(
         CommandNames::Flatten, [](Canvas& canvas) {
@@ -82,7 +79,5 @@ std::unique_ptr<Command> seamCarving(const uint32_t width, const uint32_t height
         }
     );
 }
-
-#pragma GCC diagnostic pop
 
 }
