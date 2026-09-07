@@ -51,22 +51,6 @@ namespace Cmd {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
 
-std::unique_ptr<Command> deleteLayer(const size_t layerID) {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::DeleteLayer, [layerID](Canvas& canvas) {
-            canvas.deleteLayer(layerID);
-        }
-    );
-}
-
-std::unique_ptr<Command> mergeWithLayerBelow(size_t layerID) {
-    return std::make_unique<CanvasCommand>(
-        CommandNames::MergeLayer, [layerID](Canvas& canvas) {
-            canvas.mergeWithLayerBelow(layerID);
-        }
-    );
-}
-
 std::unique_ptr<Command> mergeAllLayers() {
     return std::make_unique<CanvasCommand>(
         CommandNames::Flatten, [](Canvas& canvas) {

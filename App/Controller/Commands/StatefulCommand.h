@@ -27,4 +27,9 @@ namespace Cmd {
         Function m_undo;
     };
 
+    // -----------------------------------------------------------------------------------------------------------------
+
+    std::unique_ptr<Command> deleteLayer(size_t layerID);
+    std::unique_ptr<Command> mergeWithLayerBelow(size_t topLayerID);
+
 }

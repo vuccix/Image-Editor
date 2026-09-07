@@ -23,9 +23,6 @@ namespace Cmd {
 
     // -----------------------------------------------------------------------------------------------------------------
 
-    std::unique_ptr<Command> deleteLayer(size_t layerID);
-
-    std::unique_ptr<Command> mergeWithLayerBelow(size_t layerID);
     std::unique_ptr<Command> mergeAllLayers();
 
     std::unique_ptr<Command> resize(uint32_t width, uint32_t height);

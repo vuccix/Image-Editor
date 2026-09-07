@@ -6,6 +6,7 @@
 #include <Controller/Commands/CanvasCommand.h>
 #include <Controller/Commands/LayerCommand.h>
 #include <Controller/Commands/FunctionalCommand.h>
+#include <Controller/Commands/StatefulCommand.h>
 #include <Serialization/Serialize.h>
 #include <algorithm>
 

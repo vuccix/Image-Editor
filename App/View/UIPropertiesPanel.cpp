@@ -6,6 +6,7 @@
 #include <Controller/Controller.h>
 #include <Controller/Commands/CanvasCommand.h>
 #include <Controller/Commands/FunctionalCommand.h>
+#include <Controller/Commands/StatefulCommand.h>
 
 void UIManager::drawPropertiesPanel(EditorState& state, Controller& controller) {
     assert(state.canvas.layerCount() > 0);
