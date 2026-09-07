@@ -9,32 +9,44 @@ Controller::Controller() {
     setHistoryLength(m_historyLength);
 }
 
-void Controller::execute(EditorState& state, std::unique_ptr<Command> command) {
-#ifndef NDEBUG
+namespace {
+
+void debugTime(const std::unique_ptr<Command>& command, auto&& func) {
     using clock      = std::chrono::steady_clock;
     const auto start = clock::now();
     const auto name  = command->getName();
-#endif
 
-    if (m_currentIndex < m_history.size())
-        m_history.erase(m_history.begin() + static_cast<int64_t>(m_currentIndex), m_history.end());
+    func();
 
-    command->execute(state);
-    ++state.version;
-
-    m_history.emplace_back(std::move(command));
-    m_currentIndex = m_history.size();
-
-    if (m_history.size() > m_historyLength) {
-        m_history.pop_front();
-        m_currentIndex = m_history.size();
-    }
-
-#ifndef NDEBUG
     const auto end = clock::now();
     const auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << name << " took " << dur.count() << " ms\n";
+}
+
+#ifdef NDEBUG
+    #define DEBUG_TIME(command, func) (func)()
+#else
+    #define DEBUG_TIME(command, func) debugTime(command, func)
 #endif
+
+}
+
+void Controller::execute(EditorState& state, std::unique_ptr<Command> command) {
+    DEBUG_TIME(command, [&] {
+        if (m_currentIndex < m_history.size())
+            m_history.erase(m_history.begin() + static_cast<int64_t>(m_currentIndex), m_history.end());
+
+        command->execute(state);
+        ++state.version;
+
+        m_history.emplace_back(std::move(command));
+        m_currentIndex = m_history.size();
+
+        if (m_history.size() > m_historyLength) {
+            m_history.pop_front();
+            m_currentIndex = m_history.size();
+        }
+    });
 }
 
 void Controller::undo(EditorState& state) {
@@ -47,8 +59,10 @@ void Controller::undo(EditorState& state) {
 void Controller::redo(EditorState& state) {
     assert(hasRedo());
 
-    m_history[m_currentIndex++]->execute(state);
-    ++state.version;
+    DEBUG_TIME(m_history[m_currentIndex], [&] {
+        m_history[m_currentIndex++]->execute(state);
+        ++state.version;
+    });
 }
 
 void Controller::jumpToHistoryIndex(EditorState& state, const size_t target) {
