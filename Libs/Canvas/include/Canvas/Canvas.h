@@ -19,6 +19,7 @@ public:
     void rotateRight();
 
     void addLayer();
+    void addLayer(size_t layerID);
     void addLayer(size_t layerID, Layer layer);
     void deleteLayer(size_t layerID);
     void duplicateLayer(size_t layerID);

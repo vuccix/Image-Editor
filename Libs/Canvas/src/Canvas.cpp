@@ -85,8 +85,13 @@ void Canvas::addLayer() {
     m_layers.emplace_back(m_width, m_height, std::format("Layer {}", m_layers.size()));
 }
 
+void Canvas::addLayer(const size_t layerID) {
+    Layer layer(m_width, m_height, std::format("Layer {}", m_layers.size()));
+    addLayer(layerID, std::move(layer));
+}
+
 void Canvas::addLayer(const size_t layerID, Layer layer) {
-    m_layers.emplace(m_layers.begin() + layerID, std::move(layer));
+    m_layers.emplace(m_layers.begin() + static_cast<int64_t>(layerID), std::move(layer));
 }
 
 void Canvas::deleteLayer(const size_t layerID) {

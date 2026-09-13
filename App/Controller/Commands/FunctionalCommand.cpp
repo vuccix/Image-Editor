@@ -96,7 +96,7 @@ std::unique_ptr<Command> swapChannels(const int32_t comb) {
 std::unique_ptr<Command> addLayer() {
     return std::make_unique<FunctionalCommand>(
         CommandNames::AddLayer,
-        [](EditorState& state) { state.canvas.addLayer(); },
+        [](EditorState& state) { state.canvas.addLayer(state.selectedLayerID + 1); },
         [](EditorState& state) { state.canvas.deleteLayer(state.canvas.layerCount() - 1); }
     );
 }
