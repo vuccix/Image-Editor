@@ -102,7 +102,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
         });
 
         ui.menu("Image", [&] {
-            ui.item("Resize...",      "Ctrl+R",       [&] { openSizeModal("Resize", Cmd::scale);       });
+            ui.item("Resize...",      "Ctrl+R",       [&] { openSizeModal("Resize",      Cmd::scale);  });
             ui.item("Canvas Size...", "Ctrl+Shift+R", [&] { openSizeModal("Canvas Size", Cmd::resize); });
 
             ui.disabled(true, [] {
@@ -121,20 +121,16 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
         ui.menu("Layers", [&] {
             const uint32_t selectedID = state.selectedLayerID;
 
-            ui.item("Add New Layer", "Ctrl+Shift+N", [&] {
-                exec(Cmd::addLayer());
-                state.selectedLayerID = static_cast<uint32_t>(state.canvas.layerCount() - 1);
-            });
+            ui.item("Add New Layer", "Ctrl+Shift+N", [&] { Utils::addLayer(state, controller); });
             ui.disabled(state.canvas.layerCount() == 1, [&] {
                 ui.item("Delete Layer", "Shift+Del", [&] { exec(Cmd::deleteLayer(selectedID)); });
             });
-            ui.item("Duplicate Layer", "Ctrl+Shift+D", [&] { exec(Cmd::duplicateLayer(selectedID)); });
+            ui.item("Duplicate Layer", "Ctrl+Shift+D", [&] { Utils::duplicateLayer(state, controller); });
             ui.disabled(selectedID == 0, [&] {
                 ui.item("Merge with Layer Below", "Ctrl+E", [&] { exec(Cmd::mergeWithLayerBelow(selectedID)); });
             });
             ui.item("Toggle Layer Visibility", "Ctrl+,", [&] {
                 state.canvas[selectedID].toggleActive();
-                state.canvas.updateComposite();
                 state.version++;
             });
             ui.separator();

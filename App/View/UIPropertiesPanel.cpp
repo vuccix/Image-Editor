@@ -11,14 +11,14 @@
 void UIManager::drawPropertiesPanel(EditorState& state, Controller& controller) {
     assert(state.canvas.layerCount() > 0);
 
-    auto exec = [&controller, &state](std::unique_ptr<Command>&& func) {
+    using CmdPtr = Controller::CommandUPtr;
+    auto exec    = [&controller, &state](CmdPtr&& func) {
         controller.execute(state, std::move(func));
     };
 
     ui.window("Layers", [&] {
         Canvas& canvas          = state.canvas;
         const size_t layerCount = canvas.layerCount();
-        bool hasChanged         = false;
 
         if (state.selectedLayerID >= layerCount)
             state.selectedLayerID = static_cast<uint32_t>(layerCount - 1);
@@ -102,7 +102,7 @@ void UIManager::drawPropertiesPanel(EditorState& state, Controller& controller) 
                 // visibility checkbox
                 ImGui::SetCursorScreenPos(ImVec2(rowStartPos.x + style.ItemSpacing.x, rowStartPos.y + cbOffsetY));
                 if (ImGui::Checkbox("##visible", &layer.isActive))
-                    hasChanged = true;
+                    ++state.version;
 
                 // thumbnail preview
                 ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + style.ItemSpacing.x, rowStartPos.y + thumbOffsetY));
@@ -134,15 +134,13 @@ void UIManager::drawPropertiesPanel(EditorState& state, Controller& controller) 
 
         // action buttons footer =======================================================================================
         {
-            if (ImGui::Button("+ New")) {
-                exec(Cmd::addLayer());
-                state.selectedLayerID = static_cast<uint32_t>(canvas.layerCount() - 1);
-            }
+            if (ImGui::Button("+ New"))
+                Utils::addLayer(state, controller);
 
             ImGui::SameLine();
 
             if (ImGui::Button("Duplicate"))
-                exec(Cmd::duplicateLayer(state.selectedLayerID++));
+                Utils::duplicateLayer(state, controller);
 
             ImGui::SameLine();
 
@@ -151,9 +149,6 @@ void UIManager::drawPropertiesPanel(EditorState& state, Controller& controller) 
                     exec(Cmd::deleteLayer(state.selectedLayerID));
             });
         }
-
-        if (hasChanged)
-            ++state.version;
     });
 
     ui.window("History", [&] {
