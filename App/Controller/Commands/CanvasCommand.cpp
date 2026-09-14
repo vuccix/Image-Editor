@@ -48,6 +48,10 @@ void Cmd::CanvasCommand::undo(EditorState& state) {
 
 namespace Cmd {
 
+std::unique_ptr<Command> open() {
+    return std::make_unique<CanvasCommand>(CommandNames::Open, [](Canvas&){});
+}
+
 std::unique_ptr<Command> mergeAllLayers() {
     return std::make_unique<CanvasCommand>(
         CommandNames::Flatten, [](Canvas& canvas) {

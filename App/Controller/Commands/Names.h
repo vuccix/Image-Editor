@@ -4,6 +4,8 @@
 #include <string>
 
 enum class CommandNames {
+    Open,
+
     // Filters
     DuoTone, WaterColor, OilPainting,
     Blur, GaussianBlur, MotionBlur,

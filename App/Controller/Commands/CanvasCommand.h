@@ -25,6 +25,8 @@ namespace Cmd {
 
     // -----------------------------------------------------------------------------------------------------------------
 
+    std::unique_ptr<Command> open();
+
     std::unique_ptr<Command> mergeAllLayers();
 
     std::unique_ptr<Command> resize(uint32_t width, uint32_t height);

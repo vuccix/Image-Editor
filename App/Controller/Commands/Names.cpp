@@ -2,6 +2,8 @@
 #include <cassert>
 
 CommandToString::CommandToString() {
+    m_commands[CommandNames::Open]             = "Open";
+
     // Filters
     m_commands[CommandNames::DuoTone]          = "Duo Tone";
     m_commands[CommandNames::WaterColor]       = "Water Color";
