@@ -10,7 +10,9 @@ void Cmd::CanvasCommand::execute(EditorState& state) {
     m_width        = canvas.width();
     m_height       = canvas.height();
 
+    m_backup.clear();
     m_backup.reserve(canvas.layerCount());
+
     for (const Layer& l : canvas)
         m_backup.emplace_back(l);
 

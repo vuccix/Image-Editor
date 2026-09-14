@@ -7,8 +7,6 @@
 namespace Cmd {
 
 std::unique_ptr<Command> deleteLayer(const size_t layerID) {
-    assert(layerID != 0);
-
     struct DeletedLayer {
         std::optional<Layer> backup;
         size_t               index;
