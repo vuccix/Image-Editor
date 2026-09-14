@@ -152,6 +152,41 @@ void UIManager::drawPropertiesPanel(EditorState& state, Controller& controller) 
     });
 
     ui.window("History", [&] {
-        // TODO
+        const std::deque<CmdPtr>& history = controller.getHistory();
+
+        ImGui::BeginChild("HistoryList", ImVec2(0, 0));
+        const ImGuiStyle& style   = ImGui::GetStyle();
+        constexpr float rowHeight = 24.f;
+
+        for (size_t i = history.size(); i-- > 0; ) {
+            ImGui::PushID(static_cast<int32_t>(i));
+
+            const ImVec2 rowStartPos = ImGui::GetCursorScreenPos();
+            const bool   isSelected  = controller.getCurrentIndex() == static_cast<int64_t>(i);
+
+            if (ImGui::Selectable("##row", isSelected, ImGuiSelectableFlags_AllowOverlap, ImVec2(0.f, rowHeight)))
+                controller.jumpToHistoryIndex(state, i);
+
+            const std::string_view name = history[i]->getName();
+            const ImVec2 textSize       = ImGui::CalcTextSize(name.data(), name.data() + name.size());
+            const float textOffsetY     = (rowHeight - textSize.y) * 0.5f;
+
+            ImGui::SetCursorScreenPos({
+                rowStartPos.x + style.ItemSpacing.x,
+                rowStartPos.y + textOffsetY
+            });
+
+            ImGui::TextUnformatted(name.data(), name.data() + name.size());
+
+            ImGui::SetCursorScreenPos({
+                rowStartPos.x,
+                rowStartPos.y + rowHeight + style.ItemSpacing.y
+            });
+
+            ui.separator();
+            ImGui::PopID();
+        }
+
+        ImGui::EndChild();
     });
 }
