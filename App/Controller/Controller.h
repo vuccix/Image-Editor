@@ -1,13 +1,16 @@
 #pragma once
 
 #include <Controller/Command.h>
+#include <cstdint>
 #include <deque>
 
 class Controller {
 public:
+    using CommandUPtr = std::unique_ptr<Command>;
+
     Controller();
 
-    void execute(EditorState& state, std::unique_ptr<Command> command);
+    void execute(EditorState& state, CommandUPtr command);
 
     void undo(EditorState& state);
     void redo(EditorState& state);
@@ -20,13 +23,11 @@ public:
     bool hasUndo() const noexcept;
     bool hasRedo() const noexcept;
 
-    using CommandUPtr = std::unique_ptr<Command>;
-
     const std::deque<CommandUPtr>& getHistory() const noexcept;
-    size_t getCurrentIndex() const noexcept;
+    int64_t getCurrentIndex() const noexcept;
 
 private:
     std::deque<CommandUPtr> m_history;
-    size_t                  m_currentIndex  = 0;
+    int64_t                 m_curIndex;
     size_t                  m_historyLength = 16;
 };

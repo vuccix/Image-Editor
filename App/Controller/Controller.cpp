@@ -5,13 +5,15 @@
 #include <cassert>
 #include <chrono>
 
-Controller::Controller() {
+Controller::Controller() : m_curIndex(-1) {
     setHistoryLength(m_historyLength);
 }
 
 namespace {
 
-void debugTime(const std::unique_ptr<Command>& command, auto&& func) {
+using CommandUPtr = std::unique_ptr<Command>;
+
+void debugTime(const ::CommandUPtr& command, auto&& func) {
     using clock      = std::chrono::steady_clock;
     const auto start = clock::now();
     const auto name  = command->getName();
@@ -31,64 +33,80 @@ void debugTime(const std::unique_ptr<Command>& command, auto&& func) {
 
 }
 
-void Controller::execute(EditorState& state, std::unique_ptr<Command> command) {
+void Controller::execute(EditorState& state, ::CommandUPtr command) {
     DEBUG_TIME(command, [&] {
-        if (m_currentIndex < m_history.size())
-            m_history.erase(m_history.begin() + static_cast<int64_t>(m_currentIndex), m_history.end());
+        if (m_curIndex < static_cast<int64_t>(m_history.size()) - 1)
+            m_history.erase(m_history.begin() + m_curIndex + 1, m_history.end());
 
         command->execute(state);
         ++state.version;
 
         m_history.emplace_back(std::move(command));
-        m_currentIndex = m_history.size();
 
-        if (m_history.size() > m_historyLength) {
+        if (m_history.size() > m_historyLength)
             m_history.pop_front();
-            m_currentIndex = m_history.size();
-        }
+
+        m_curIndex = m_history.size() - 1;
     });
 }
 
 void Controller::undo(EditorState& state) {
     assert(hasUndo());
 
-    m_history[--m_currentIndex]->undo(state);
+    m_history[m_curIndex--]->undo(state);
     ++state.version;
 }
 
 void Controller::redo(EditorState& state) {
     assert(hasRedo());
 
-    DEBUG_TIME(m_history[m_currentIndex], [&] {
-        m_history[m_currentIndex++]->execute(state);
+    const int64_t nextIndex = m_curIndex + 1;
+
+    DEBUG_TIME(m_history[nextIndex], [&] {
+        m_history[nextIndex]->execute(state);
+        m_curIndex = nextIndex;
         ++state.version;
     });
 }
 
 void Controller::jumpToHistoryIndex(EditorState& state, const size_t target) {
-    assert(target > m_history.size());
+    assert(target < m_history.size());
+    const auto t = static_cast<int64_t>(target);
 
-    while (m_currentIndex < target)
-        redo(state);
-
-    while (m_currentIndex > target)
-        undo(state);
+    if (m_curIndex < t) {
+        while (m_curIndex < t)
+            redo(state);
+    }
+    else {
+        while (m_curIndex > t)
+            undo(state);
+    }
 }
 
 void Controller::setHistoryLength(const size_t length) {
-    m_history.resize(length);
     m_history.clear();
     m_historyLength = length;
+    m_curIndex      = -1;
 }
 
 size_t Controller::getHistoryLength() const noexcept {
     return m_historyLength;
 }
 
-bool Controller::hasUndo() const noexcept { return m_currentIndex > 0;                }
-bool Controller::hasRedo() const noexcept { return m_currentIndex < m_history.size(); }
+bool Controller::hasUndo() const noexcept {
+    return m_curIndex > 0;
+}
 
-using CommandUPtr = std::unique_ptr<Command>;
+bool Controller::hasRedo() const noexcept {
+    return m_curIndex < static_cast<int64_t>(m_history.size()) - 1;
+}
 
-const std::deque<CommandUPtr>& Controller::getHistory()      const noexcept { return m_history;      }
-size_t                         Controller::getCurrentIndex() const noexcept { return m_currentIndex; }
+const std::deque<::CommandUPtr>& Controller::getHistory() const noexcept {
+    return m_history;
+}
+
+int64_t Controller::getCurrentIndex() const noexcept {
+    return m_curIndex;
+}
+
+#undef DEBUG_TIME
