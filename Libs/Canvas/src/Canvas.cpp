@@ -1,5 +1,6 @@
 #include <Canvas/Canvas.h>
 #include <cassert>
+#include <cstring>
 #include <format>
 #include <omp.h>
 
@@ -178,6 +179,28 @@ void Canvas::moveLayerToIndex(const size_t layerID, const size_t index) {
                     m_layers.begin() + layerID,
                     m_layers.begin() + layerID + 1);
     }
+}
+
+void Canvas::replaceWithImage(Image image) {
+    assert(image.width > 0 && image.height > 0);
+    assert(image.pixels.empty() == false);
+
+    std::vector<Pixel> pixels(image.pixels.size() / sizeof(Pixel));
+    std::memcpy(
+        pixels.data(),
+        image.pixels.data(),
+        image.pixels.size()
+    );
+
+    Layer layer(image.width, image.height, "Background");
+    layer.setData(std::move(pixels));
+
+    m_layers.clear();
+    m_layers.emplace_back(std::move(layer));
+
+    m_width     = image.width;
+    m_height    = image.height;
+    m_composite = std::move(image);
 }
 
 void Canvas::updateComposite() {
