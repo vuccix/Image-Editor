@@ -88,6 +88,7 @@ void Layer::setData(std::vector<Pixel>&& data, const uint32_t w, const uint32_t 
         m_height = h;
     }
 
+    assert(data.size() == (static_cast<size_t>(m_width) * m_height));
     m_data = std::move(data);
 }
 

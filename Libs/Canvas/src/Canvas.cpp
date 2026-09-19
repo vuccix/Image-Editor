@@ -108,31 +108,31 @@ void Canvas::duplicateLayer(const size_t layerID) {
 
 namespace {
 
-constexpr float norm = 1.f / 255.f;
-
 Pixel mergePixels(const Pixel bot, const Pixel top, const float opacity, const float fill) {
-    const float botR =  bot.r * ::norm;
-    const float botG =  bot.g * ::norm;
-    const float botB =  bot.b * ::norm;
-    const float botA =  bot.a * ::norm;
+    constexpr float norm = 1.f / 255.f;
 
-    const float topR =  top.r * ::norm;
-    const float topG =  top.g * ::norm;
-    const float topB =  top.b * ::norm;
-    const float topA = (top.a * ::norm) * opacity * fill;
+    const     float botR = bot.r * norm;
+    const     float botG = bot.g * norm;
+    const     float botB = bot.b * norm;
+    const     float botA = bot.a * norm;
 
-    const float outA =  topA + botA * (1.f - topA) ;
-    const float invA = (outA > 0.f) ? (1.f / outA) : 0.f;
+    const     float topR = top.r * norm;
+    const     float topG = top.g * norm;
+    const     float topB = top.b * norm;
+    const     float topA = top.a * norm * opacity * fill;
 
-    const float outR = (topR * topA + botR * botA * (1.f - topA)) * invA;
-    const float outG = (topG * topA + botG * botA * (1.f - topA)) * invA;
-    const float outB = (topB * topA + botB * botA * (1.f - topA)) * invA;
+    const     float outA = topA + botA * (1.f - topA);
+    const     float invA = outA > 0.f  ? (1.f / outA) : 0.f;
+
+    const     float outR = (topR * topA + botR * botA * (1.f - topA)) * invA;
+    const     float outG = (topG * topA + botG * botA * (1.f - topA)) * invA;
+    const     float outB = (topB * topA + botB * botA * (1.f - topA)) * invA;
 
     return Pixel{
-        static_cast<uint8_t>(std::clamp(outR * 255.f, 0.f, 255.f)),
-        static_cast<uint8_t>(std::clamp(outG * 255.f, 0.f, 255.f)),
-        static_cast<uint8_t>(std::clamp(outB * 255.f, 0.f, 255.f)),
-        static_cast<uint8_t>(std::clamp(outA * 255.f, 0.f, 255.f))
+        .r = static_cast<uint8_t>(std::clamp(outR * 255.f, 0.f, 255.f)),
+        .g = static_cast<uint8_t>(std::clamp(outG * 255.f, 0.f, 255.f)),
+        .b = static_cast<uint8_t>(std::clamp(outB * 255.f, 0.f, 255.f)),
+        .a = static_cast<uint8_t>(std::clamp(outA * 255.f, 0.f, 255.f))
     };
 }
 
@@ -167,17 +167,20 @@ void Canvas::mergeAllLayers() {
 void Canvas::moveLayerToIndex(const size_t layerID, const size_t index) {
     assert(layerID < m_layers.size() && index < m_layers.size());
 
+    const auto lID = static_cast<int64_t>(layerID);
+    const auto idx = static_cast<int64_t>(index);
+
     // move up
     if (layerID < index) {
-        std::rotate(m_layers.begin() + layerID,
-                    m_layers.begin() + layerID + 1,
-                    m_layers.begin() + index   + 1);
+        std::rotate(m_layers.begin() + lID,
+                    m_layers.begin() + lID + 1,
+                    m_layers.begin() + idx   + 1);
     }
     // move down
     else {
-        std::rotate(m_layers.begin() + index,
-                    m_layers.begin() + layerID,
-                    m_layers.begin() + layerID + 1);
+        std::rotate(m_layers.begin() + idx,
+                    m_layers.begin() + lID,
+                    m_layers.begin() + lID + 1);
     }
 }
 
