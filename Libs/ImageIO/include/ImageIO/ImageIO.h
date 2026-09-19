@@ -19,12 +19,12 @@ namespace ImageIO {
     };
 
     struct SaveOptions {
-        ImageFormat format      = {};
-        int32_t     jpegQuality = 95;
+        ImageFormat format;
+        int32_t     jpegQuality;
     };
 
     std::expected<Image, Error> load(const std::filesystem::path& path);
-    std::expected<void,  Error> save(const std::filesystem::path& path, const Image& image, SaveOptions options = {});
+    std::expected<void,  Error> save(const std::filesystem::path& path, const Image& image, SaveOptions options);
 
     void showError(Error err);
 

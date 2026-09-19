@@ -5,9 +5,9 @@
 #include <iostream>
 #include <string>
 
-namespace fs = std::filesystem;
-
 namespace {
+
+namespace fs = std::filesystem;
 
 std::string toLower(const std::string& s) {
     std::string result = s;

@@ -59,11 +59,12 @@ std::optional<fs::path> getPath(const ::Path pathType) {
 
     // filters for dialog
     constexpr std::array filterItem = {
-        nfdfilteritem_t{ "PNG", "png"           },
-        nfdfilteritem_t{ "JPG", "jpg,jpeg,jfif" },
-        nfdfilteritem_t{ "TGA", "tga"           },
-        nfdfilteritem_t{ "GIF", "gif"           },
-        // TODO: webp
+        nfdfilteritem_t{ "PNG",  "png"           },
+        nfdfilteritem_t{ "JPEG", "jpg,jpeg,jfif" },
+        nfdfilteritem_t{ "TGA",  "tga"           },
+        nfdfilteritem_t{ "GIF",  "gif"           },
+        nfdfilteritem_t{ "WEBP", "webp"          },
+        // ...
     };
 
     // show dialog
@@ -75,6 +76,15 @@ std::optional<fs::path> getPath(const ::Path pathType) {
         return outPath.get();
 
     return std::nullopt;
+}
+
+std::string toLower(const std::string& s) {
+    std::string result = s;
+
+    for (size_t i = 1; i < s.length(); ++i)
+        result[i] = static_cast<char>(std::tolower(s[i]));
+
+    return result;
 }
 
 }
@@ -100,6 +110,17 @@ void Utils::saveImage(Canvas& canvas) {
 
     canvas.updateComposite();
 
-    const auto result = ImageIO::save(*path, canvas.getComposite());
+    ImageIO::SaveOptions options{};
+    const std::string ext = ::toLower(path->extension().generic_string());
+
+    if      (ext == ".png") options.format = ImageIO::ImageFormat::PNG;
+    else if (ext == ".tga") options.format = ImageIO::ImageFormat::TGA;
+    else if (ext == ".jpg" || ext == ".jpeg" || ext == ".jfif") {
+        options.format      = ImageIO::ImageFormat::JPEG;
+        options.jpegQuality = 100; // TODO: add JPEG quality selection
+    }
+    else throw std::runtime_error("Unknown image format");
+
+    const auto result = ImageIO::save(*path, canvas.getComposite(), options);
     if (!result) ImageIO::showError(result.error());
 }
