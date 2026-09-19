@@ -54,6 +54,15 @@ std::vector<Pixel> rotate(Layer& layer, auto&& mapCoords) {
     return result;
 }
 
+void rotateLayers(std::vector<Layer>& layers, auto&& mapCoords, uint32_t& width, uint32_t& height) {
+    for (Layer& layer : layers) {
+        std::vector<Pixel> data = ::rotate(layer, mapCoords);
+        layer.setData(std::move(data), layer.height(), layer.width());
+    }
+
+    std::swap(width, height);
+}
+
 }
 
 void Canvas::rotateLeft() {
@@ -61,12 +70,7 @@ void Canvas::rotateLeft() {
         return std::make_pair(w - 1 - x, y);
     };
 
-    for (Layer& layer : m_layers) {
-        std::vector<Pixel> data = ::rotate(layer, mapCoords);
-        layer.setData(std::move(data), layer.height(), layer.width());
-    }
-
-    std::swap(m_width, m_height);
+    ::rotateLayers(m_layers, mapCoords, m_width, m_height);
 }
 
 void Canvas::rotateRight() {
@@ -74,12 +78,7 @@ void Canvas::rotateRight() {
         return std::make_pair(x, h - 1 - y);
     };
 
-    for (Layer& layer : m_layers) {
-        std::vector<Pixel> data = ::rotate(layer, mapCoords);
-        layer.setData(std::move(data), layer.height(), layer.width());
-    }
-
-    std::swap(m_width, m_height);
+    ::rotateLayers(m_layers, mapCoords, m_width, m_height);
 }
 
 void Canvas::addLayer() {
@@ -97,18 +96,18 @@ void Canvas::addLayer(const size_t layerID, Layer layer) {
 
 void Canvas::deleteLayer(const size_t layerID) {
     assert(layerID < m_layers.size());
-    m_layers.erase(m_layers.begin() + layerID);
+    m_layers.erase(m_layers.begin() + static_cast<int64_t>(layerID));
 }
 
 void Canvas::duplicateLayer(const size_t layerID) {
     assert(layerID < m_layers.size());
-    const auto layer = m_layers.insert(m_layers.begin() + layerID + 1, m_layers[layerID]);
+    const auto layer = m_layers.insert(m_layers.begin() + static_cast<int64_t>(layerID) + 1, m_layers[layerID]);
     layer->name      = layer->name + " (copy)";
 }
 
 namespace {
 
-Pixel mergePixels(const Pixel bot, const Pixel top, const float opacity, const float fill) {
+Pixel mergePixels(const Pixel bot, const Pixel top, const float alpha) {
     constexpr float norm = 1.f / 255.f;
 
     const     float botR = bot.r * norm;
@@ -119,7 +118,7 @@ Pixel mergePixels(const Pixel bot, const Pixel top, const float opacity, const f
     const     float topR = top.r * norm;
     const     float topG = top.g * norm;
     const     float topB = top.b * norm;
-    const     float topA = top.a * norm * opacity * fill;
+    const     float topA = top.a * norm * alpha;
 
     const     float outA = topA + botA * (1.f - topA);
     const     float invA = outA > 0.f  ? (1.f / outA) : 0.f;
@@ -141,22 +140,17 @@ Pixel mergePixels(const Pixel bot, const Pixel top, const float opacity, const f
 void Canvas::mergeWithLayerBelow(const size_t topLayerID) {
     assert(topLayerID > 0 && topLayerID < m_layers.size());
 
-    const auto top      = m_layers[topLayerID].pixels();
-    const auto bottom   = m_layers[topLayerID - 1].pixels();
+    const auto  top   = m_layers[topLayerID - 0].pixels();
+    const auto  bot   = m_layers[topLayerID - 1].pixels();
+    const float alpha = m_layers[topLayerID].opacity * m_layers[topLayerID].fill;
 
-    const float opacity = m_layers[topLayerID].opacity;
-    const float fill    = m_layers[topLayerID].fill;
-
-    for (uint32_t y = 0; y < m_height; ++y) {
-        for (uint32_t x = 0; x < m_width; ++x) {
-            const Pixel b = bottom[y, x];
-            const Pixel t = top[y, x];
-            bottom[y, x]  = ::mergePixels(b, t, opacity, fill);
-        }
-    }
+    #pragma omp parallel for schedule(static)
+    for (uint32_t y = 0; y < m_height; ++y)
+        for (uint32_t x = 0; x < m_width; ++x)
+            bot[y, x] = ::mergePixels(bot[y, x], top[y, x], alpha);
 
     m_layers[topLayerID - 1].name = std::move(m_layers[topLayerID].name);
-    m_layers.erase(m_layers.begin() + topLayerID);
+    m_layers.erase(m_layers.begin() + static_cast<int64_t>(topLayerID));
 }
 
 void Canvas::mergeAllLayers() {
@@ -208,20 +202,24 @@ void Canvas::updateComposite() {
         m_composite.pixels.resize(static_cast<size_t>(m_width) * m_height);
     }
 
-    auto mergePixelStack = [&](const uint32_t x, const uint32_t y) -> Pixel {
+    std::vector<const Layer*> activeLayers;
+    activeLayers.reserve(m_layers.size());
+
+    for (const Layer& layer : m_layers) {
+        if (layer.isActive)
+            activeLayers.emplace_back(&layer);
+    }
+
+    auto mergePixelStack = [&activeLayers](const uint32_t x, const uint32_t y) -> Pixel {
         Pixel res{ 0, 0, 0, 0 };
 
-        for (const Layer& layer : m_layers) {
-            // skip hidden layers
-            if (!layer.isActive)
-                continue;
-
-            res = ::mergePixels(res, layer.pixels()[y, x], layer.opacity, layer.fill);
-        }
+        for (const Layer* layer : activeLayers)
+            res = ::mergePixels(res, layer->pixels()[y, x], layer->opacity * layer->fill);
 
         return res;
     };
 
+    #pragma omp parallel for schedule(static)
     for (uint32_t y = 0; y < m_height; ++y)
         for (uint32_t x = 0; x < m_width; ++x)
             m_composite.pixels[y * m_width + x] = mergePixelStack(x, y);
