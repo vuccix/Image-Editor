@@ -7,7 +7,6 @@
 #include <Controller/Commands/LayerCommand.h>
 #include <Controller/Commands/FunctionalCommand.h>
 #include <Controller/Commands/StatefulCommand.h>
-#include <Serialization/Serialize.h>
 #include <algorithm>
 
 void UIManager::drawMenuBar(EditorState& state, Controller& controller, const std::function<void()>& onQuitRequest) {
@@ -62,13 +61,9 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                 state.selectedLayerID = 0;
                 state.version++;
             });
-            ui.item("Open...", "Ctrl+O", [&] {
-                Serialize::loadImage(state.canvas);
-                state.selectedLayerID = 0;
-                ++state.version;
-            });
+            ui.item("Open...", "Ctrl+O", [&] { Utils::openImage(state); });
             ui.separator();
-            ui.item("Save", "Ctrl+S", [&] { Serialize::saveImage(state.canvas); });
+            ui.item("Save", "Ctrl+S", [&] { Utils::saveImage(state.canvas); });
             ui.item("Save As...", "Ctrl+Shift+S", [&] {});
             ui.item("Save All...", "Ctrl+Shift+All", [&] {});
             ui.separator();

@@ -13,10 +13,11 @@ target_link_libraries(AppView
         imgui
         glm
         glfw
+        nfd
         Renderer
         AppModel
         AppController
-        Serialization
+        ImageIO
         PUBLIC
         Assets
 )
