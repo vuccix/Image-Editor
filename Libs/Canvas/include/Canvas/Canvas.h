@@ -29,7 +29,7 @@ public:
 
     void moveLayerToIndex(size_t layerID, size_t index);
 
-    void replaceWithImage(Image image);
+    void replaceWithImage(Image&& image);
 
     void updateComposite();
     const Image& getComposite() const noexcept;

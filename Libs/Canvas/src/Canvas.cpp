@@ -184,26 +184,18 @@ void Canvas::moveLayerToIndex(const size_t layerID, const size_t index) {
     }
 }
 
-void Canvas::replaceWithImage(Image image) {
-    assert(image.width > 0 && image.height > 0);
-    assert(image.pixels.empty() == false);
-
-    std::vector<Pixel> pixels(image.pixels.size() / sizeof(Pixel));
-    std::memcpy(
-        pixels.data(),
-        image.pixels.data(),
-        image.pixels.size()
-    );
+void Canvas::replaceWithImage(Image&& image) {
+    assert(image.pixels.empty() == false && "No Image allocated!");
+    assert(image.width > 0 && image.height > 0 && "Incorrect width and/or height!");
 
     Layer layer(image.width, image.height, "Background");
-    layer.setData(std::move(pixels));
+    layer.setData(std::move(image.pixels), image.width, image.height);
 
     m_layers.clear();
     m_layers.emplace_back(std::move(layer));
 
-    m_width     = image.width;
-    m_height    = image.height;
-    m_composite = std::move(image);
+    m_width  = image.width;
+    m_height = image.height;
 }
 
 void Canvas::updateComposite() {
@@ -213,7 +205,7 @@ void Canvas::updateComposite() {
     if (m_composite.width != m_width || m_composite.height != m_height) {
         m_composite.width  = m_width;
         m_composite.height = m_height;
-        m_composite.pixels.resize(m_width * m_height * sizeof(Pixel));
+        m_composite.pixels.resize(static_cast<size_t>(m_width) * m_height);
     }
 
     auto mergePixelStack = [&](const uint32_t x, const uint32_t y) -> Pixel {
@@ -230,16 +222,9 @@ void Canvas::updateComposite() {
         return res;
     };
 
-    uint8_t* outPtr = m_composite.pixels.data();
-    for (uint32_t y = 0; y < m_height; ++y) {
-        for (uint32_t x = 0; x < m_width; ++x) {
-            const auto [r, g, b, a] = mergePixelStack(x, y);
-            *outPtr++ = r;
-            *outPtr++ = g;
-            *outPtr++ = b;
-            *outPtr++ = a;
-        }
-    }
+    for (uint32_t y = 0; y < m_height; ++y)
+        for (uint32_t x = 0; x < m_width; ++x)
+            m_composite.pixels[y * m_width + x] = mergePixelStack(x, y);
 }
 
 const Image& Canvas::getComposite() const noexcept {
