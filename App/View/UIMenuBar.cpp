@@ -22,8 +22,8 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
         };
     };
 
-    auto openParamModal = [&]<typename T0>(const char* title, T0 initialVal, auto widgetFunc, auto makeCmd) {
-        auto popupState = std::make_shared<T0>(initialVal);
+    auto openParamModal = [&]<typename T>(const std::string_view title, T initialVal, auto widgetFunc, auto makeCmd) {
+        auto popupState = std::make_shared<T>(initialVal);
         openModal(title,
             [popupState, widgetFunc] { widgetFunc(*popupState); },
             [popupState, exec, makeCmd] { exec(makeCmd(*popupState)); }
@@ -139,7 +139,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.menu("Adjust", [&] {
                 ui.item("Brightness...", [&] {
                     openParamModal("Brightness Adjust", 0,
-                        [](int& val) { ImGui::DragInt("Brightness", &val, 1, -255, 255); },
+                        [](int32_t& val) { ImGui::DragInt("Brightness", &val, 1, -255, 255); },
                         Cmd::brightness
                     );
                 });
@@ -198,15 +198,15 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             ui.menu("Blur", [&] {
                 auto openBlurModal = [&](const char* name, auto makeCmd) {
                     openParamModal(name, 0,
-                        [](int& amt) { ImGui::DragInt("Amount", &amt, 1, 0, 100); },
+                        [](int32_t& amt) { ImGui::DragInt("Amount", &amt, 1, 0, 100); },
                         makeCmd
                     );
                 };
 
-                ui.item("Blur...",          [&] { openBlurModal("Mean Blur", Cmd::blur);             });
+                ui.item("Blur...",          [&] { openBlurModal("Mean Blur",     Cmd::blur);         });
                 ui.item("Gaussian Blur...", [&] { openBlurModal("Gaussian Blur", Cmd::gaussianBlur); });
                 ui.item("Motion Blur...", [&] {
-                    struct MotionState { int distance = 0; float angle = 0.f; };
+                    struct MotionState { int32_t distance = 0; float angle = 0.f; };
                     openParamModal("Motion Blur", MotionState{},
                         [](MotionState& s) {
                             ImGui::DragInt("Distance", &s.distance, 1, 0, 1'000);
@@ -219,7 +219,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
 
             ui.menu("Effects", [&] {
                 ui.item("Swap Channels...", [&] {
-                    struct State { int combination = 0; };
+                    struct State { int32_t combination = 0; };
                     auto popupState = std::make_shared<State>();
                     openModal("Swap Channels",
                         [popupState] {
@@ -242,12 +242,10 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                     );
                 });
                 ui.item("Pixelate...", [&] {
-                    ui.item("Pixelate...", [&] {
-                        openParamModal("Pixelate", 1,
-                            [](int& val) { ImGui::DragInt("Block Size", &val, 1, 1, 100); },
-                            Cmd::pixelate
-                        );
-                    });
+                    openParamModal("Pixelate", 1,
+                        [](int32_t& val) { ImGui::DragInt("Block Size", &val, 1, 1, 100); },
+                        Cmd::pixelate
+                    );
                 });
             });
 
@@ -290,14 +288,14 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                     );
                 });
                 ui.item("Seam Carving...", [&] {
-                    struct State { unsigned w, h; };
+                    struct State { uint32_t w, h; };
                     auto popupState = std::make_shared<State>(state.canvas.width(), state.canvas.height());
 
                     openModal("Seam Carving",
                         [popupState, &state] {
-                            constexpr unsigned min  = 1;
-                            const     unsigned maxW = state.canvas.width();
-                            const     unsigned maxH = state.canvas.height();
+                            constexpr uint32_t min  = 1;
+                            const     uint32_t maxW = state.canvas.width();
+                            const     uint32_t maxH = state.canvas.height();
                             ImGui::DragScalar("Width",  ImGuiDataType_U32, &popupState->w, 1, &min, &maxW);
                             ImGui::DragScalar("Height", ImGuiDataType_U32, &popupState->h, 1, &min, &maxH);
                         },
