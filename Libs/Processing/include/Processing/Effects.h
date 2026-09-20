@@ -18,6 +18,9 @@ namespace Effects {
     void contrast(Layer& image, float factor);
     void saturation(Layer& image, float factor);
 
+    void toHSV(Layer& image);
+    void toRGB(Layer& image);
+
     void invert(Layer& image);
     void invertAlpha(Layer& image);
 

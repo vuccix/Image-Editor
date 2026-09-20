@@ -39,6 +39,8 @@ CommandToString::CommandToString() {
     m_commands[CommandNames::Grayscale]        = "Grayscale";
     m_commands[CommandNames::Luminance]        = "Luminance";
     m_commands[CommandNames::Sepia]            = "Sepia";
+    m_commands[CommandNames::toHSV]            = "To HSV";
+    m_commands[CommandNames::toRGB]            = "To RGB";
 
     // Canvas
     m_commands[CommandNames::Resize]           = "Resize";

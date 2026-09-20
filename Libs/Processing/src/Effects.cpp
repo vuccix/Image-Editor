@@ -3,6 +3,7 @@
 #include <Canvas/Layer.h>
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <omp.h>
 
 void Effects::flipHorizontally(Layer& image) {
@@ -84,6 +85,93 @@ void Effects::saturation(Layer& image, const float factor) {
         pixel.b           = static_cast<uint8_t>(std::clamp(new_b, 0.f, 255.f));
     }
 }
+
+#define CLAMP(X) static_cast<uint8_t>(std::clamp(X * 255.f, 0.f, 255.f))
+
+void Effects::toHSV(Layer& image) {
+    auto convert = [](const Pixel rgb) -> Pixel {
+        const float r    = rgb.r / 255.f;
+        const float g    = rgb.g / 255.f;
+        const float b    = rgb.b / 255.f;
+
+        const float maxC = std::max(std::max(r, g), b);
+        const float minC = std::min(std::min(r, g), b);
+
+        const float v    = maxC;
+
+        if (minC == maxC)
+            return Pixel{ 0, 0, CLAMP(v), rgb.a };
+
+        const float s  = (maxC - minC) / maxC;
+
+        const float rC = (maxC - r) / (maxC - minC);
+        const float gC = (maxC - g) / (maxC - minC);
+        const float bC = (maxC - b) / (maxC - minC);
+
+        float h;
+
+        if      (r == maxC) h = 0.f + bC - gC;
+        else if (g == maxC) h = 2.f + rC - bC;
+        else                h = 4.f + gC - rC;
+
+        h = std::fmod(h / 6.f + 1.f, 1.f);
+
+        return Pixel{ CLAMP(h), CLAMP(s), CLAMP(v), rgb.a };
+    };
+
+    const std::mdspan pixels = image.pixels();
+
+    #pragma omp parallel for schedule(static)
+    for (uint32_t y = 0; y < image.height(); ++y)
+        for (uint32_t x = 0; x < image.width(); ++x)
+            pixels[y, x] = convert(pixels[y, x]);
+}
+
+void Effects::toRGB(Layer& image) {
+    auto convert = [](const Pixel hsv) -> Pixel {
+        const float h = hsv.r / 255.f;
+        const float s = hsv.g / 255.f;
+        const float v = hsv.b / 255.f;
+
+        if (s == 0.f) {
+            const uint8_t value = CLAMP(v);
+            return Pixel{ value, value, value, hsv.a };
+        }
+
+        const float hue = h * 6.f;
+
+        auto sector          = static_cast<int32_t>(std::floor(hue));
+        const float fraction = hue - sector;
+
+        sector %= 6;
+
+        const float p = v * (1.f - s);
+        const float q = v * (1.f - s * fraction);
+        const float t = v * (1.f - s * (1.f - fraction));
+
+        float r, g, b;
+
+        switch (sector) {
+            case 0:  r = v;   g = t;   b = p; break;
+            case 1:  r = q;   g = v;   b = p; break;
+            case 2:  r = p;   g = v;   b = t; break;
+            case 3:  r = p;   g = q;   b = v; break;
+            case 4:  r = t;   g = p;   b = v; break;
+            default: r = v;   g = p;   b = q; break; // sector == 5
+        }
+
+        return Pixel{ CLAMP(r), CLAMP(g), CLAMP(b), hsv.a };
+    };
+
+    const std::mdspan pixels = image.pixels();
+
+    #pragma omp parallel for schedule(static)
+    for (uint32_t y = 0; y < image.height(); ++y)
+        for (uint32_t x = 0; x < image.width(); ++x)
+            pixels[y, x] = convert(pixels[y, x]);
+}
+
+#undef CLAMP
 
 void Effects::invert(Layer& image) {
     for (Pixel& pixel : image.data()) {

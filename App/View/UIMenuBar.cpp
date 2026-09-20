@@ -163,6 +163,9 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                 ui.item("Grayscale",    [&] { exec(Cmd::grayscale());   });
                 ui.item("Luminance",    [&] { exec(Cmd::luminance());   });
                 ui.item("Sepia",        [&] { exec(Cmd::sepia());       });
+                ui.separator();
+                ui.item("To HSV",       [&] { exec(Cmd::toHSV());       });
+                ui.item("To RGB",       [&] { exec(Cmd::toRGB());       });
             });
 
             ui.separator();

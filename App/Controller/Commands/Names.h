@@ -18,6 +18,7 @@ enum class CommandNames {
     RotateLeft, RotateRight, Rotate180,
     Brightness, Contrast, Saturation,
     InvertColors, InvertAlpha, Grayscale, Luminance, Sepia,
+    toHSV, toRGB,
 
     // Canvas
     Resize, CanvasSize,

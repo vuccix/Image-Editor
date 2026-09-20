@@ -63,6 +63,14 @@ std::unique_ptr<Command> sepia() {
     DEFINE_COMMAND(Sepia, Effects::sepia);
 }
 
+std::unique_ptr<Command> toHSV() {
+    DEFINE_COMMAND(toHSV, Effects::toHSV);
+}
+
+std::unique_ptr<Command> toRGB() {
+    DEFINE_COMMAND(toRGB, Effects::toRGB);
+}
+
 std::unique_ptr<Command> duoTone(const float colorA[3], const float colorB[3]) {
     DEFINE_COMMAND(DuoTone, Filters::duoTone, colorA, colorB);
 }
