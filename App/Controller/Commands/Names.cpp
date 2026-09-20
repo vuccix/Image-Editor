@@ -16,6 +16,9 @@ CommandToString::CommandToString() {
     m_commands[CommandNames::Outline]          = "Outline";
     m_commands[CommandNames::Sharpen]          = "Sharpen";
     m_commands[CommandNames::Pixelate]         = "Pixelate";
+    m_commands[CommandNames::GaussianNoise]    = "Gaussian Noise";
+    m_commands[CommandNames::UniformNoise]     = "Uniform Noise";
+    m_commands[CommandNames::FilmGrain]        = "Film Grain";
     m_commands[CommandNames::Canny]            = "Canny";
     m_commands[CommandNames::Laplace]          = "Laplace";
     m_commands[CommandNames::Prewitt]          = "Prewitt";

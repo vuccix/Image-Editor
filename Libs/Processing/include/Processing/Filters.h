@@ -21,6 +21,10 @@ namespace Filters {
     void sharpen(Layer& image, float amount);
     void pixelate(Layer& image, int32_t blockSize);
 
+    void gaussianNoise(Layer& image, float amount);
+    void uniformNoise(Layer& image, int32_t amount);
+    void filmGrain(Layer& image, float strength);
+
     void canny(Layer& image, float lowThreshold, float highThreshold);
     void laplace(Layer& image);
     void prewitt(Layer& image);

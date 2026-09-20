@@ -48,6 +48,10 @@ namespace Cmd {
     std::unique_ptr<Command> sharpen(float amount);
     std::unique_ptr<Command> pixelate(int32_t blockSize);
 
+    std::unique_ptr<Command> gaussianNoise(float amount);
+    std::unique_ptr<Command> uniformNoise(int32_t amount);
+    std::unique_ptr<Command> filmGrain(float strength);
+
     std::unique_ptr<Command> canny(float lowThreshold, float highThreshold);
     std::unique_ptr<Command> laplace();
     std::unique_ptr<Command> prewitt();

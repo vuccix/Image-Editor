@@ -10,6 +10,7 @@ enum class CommandNames {
     DuoTone, WaterColor, OilPainting,
     Blur, GaussianBlur, MotionBlur,
     SwapChannels, Emboss, Outline, Sharpen, Pixelate,
+    GaussianNoise, UniformNoise, FilmGrain,
     Canny, Laplace, Prewitt, Scharr, Sobel,
     FourierTransform, NormalMap, SeamCarving,
 

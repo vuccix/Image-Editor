@@ -252,6 +252,27 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                 });
             });
 
+            ui.menu("Noise", [&] {
+                ui.item("Gaussian Noise", [&] {
+                    openParamModal("Gaussian Noise Amount", 0.f,
+                        [](float& val) { ImGui::DragFloat("Noise", &val, 0.1f, 0.f, 255.f, "%.2f"); },
+                        Cmd::gaussianNoise
+                    );
+                });
+                ui.item("Uniform Noise", [&] {
+                    openParamModal("Uniform Noise Amount", 0,
+                        [](int32_t& val) { ImGui::DragInt("Noise", &val, 1, 0, 255); },
+                        Cmd::uniformNoise
+                    );
+                });
+                ui.item("Film Grain", [&] {
+                    openParamModal("Film Grain Strength", 0.f,
+                        [](float& val) { ImGui::DragFloat("Noise", &val, 0.1f, 0.f, 255.f, "%.2f"); },
+                        Cmd::filmGrain
+                    );
+                });
+            });
+
             ui.separator();
 
             ui.menu("Edge Detection", [&] {
