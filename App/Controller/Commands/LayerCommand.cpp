@@ -51,26 +51,6 @@ std::unique_ptr<Command> saturation(const float factor) {
     DEFINE_COMMAND(Saturation, Effects::saturation, factor);
 }
 
-std::unique_ptr<Command> grayscale() {
-    DEFINE_COMMAND(Grayscale, Effects::grayscale);
-}
-
-std::unique_ptr<Command> luminance() {
-    DEFINE_COMMAND(Luminance, Effects::luminance);
-}
-
-std::unique_ptr<Command> sepia() {
-    DEFINE_COMMAND(Sepia, Effects::sepia);
-}
-
-std::unique_ptr<Command> toHSV() {
-    DEFINE_COMMAND(toHSV, Effects::toHSV);
-}
-
-std::unique_ptr<Command> toRGB() {
-    DEFINE_COMMAND(toRGB, Effects::toRGB);
-}
-
 std::unique_ptr<Command> duoTone(const float colorA[3], const float colorB[3]) {
     DEFINE_COMMAND(DuoTone, Filters::duoTone, colorA, colorB);
 }
@@ -87,14 +67,6 @@ std::unique_ptr<Command> motionBlur(const int32_t distance, const float angle) {
     DEFINE_COMMAND(MotionBlur, Filters::motionBlur, distance, angle);
 }
 
-std::unique_ptr<Command> emboss() {
-    DEFINE_COMMAND(Emboss, Filters::emboss);
-}
-
-std::unique_ptr<Command> outline() {
-    DEFINE_COMMAND(Outline, Filters::outline);
-}
-
 std::unique_ptr<Command> sharpen(const float amount) {
     DEFINE_COMMAND(Sharpen, Filters::sharpen, amount);
 }
@@ -103,29 +75,37 @@ std::unique_ptr<Command> pixelate(const int32_t blockSize) {
     DEFINE_COMMAND(Pixelate, Filters::pixelate, blockSize);
 }
 
+std::unique_ptr<Command> gaussianNoise(float amount) {
+    DEFINE_COMMAND(GaussianNoise, Filters::gaussianNoise, amount);
+}
+
+std::unique_ptr<Command> uniformNoise(int32_t amount) {
+    DEFINE_COMMAND(UniformNoise, Filters::uniformNoise, amount);
+}
+
+std::unique_ptr<Command> filmGrain(float strength) {
+    DEFINE_COMMAND(FilmGrain, Filters::filmGrain, strength);
+}
+
 std::unique_ptr<Command> canny(const float lowThreshold, const float highThreshold) {
     DEFINE_COMMAND(Canny, Filters::canny, lowThreshold, highThreshold);
-}
-
-std::unique_ptr<Command> laplace() {
-    DEFINE_COMMAND(Laplace, Filters::laplace);
-}
-
-std::unique_ptr<Command> prewitt() {
-    DEFINE_COMMAND(Prewitt, Filters::prewitt);
-}
-
-std::unique_ptr<Command> scharr() {
-    DEFINE_COMMAND(Scharr, Filters::scharr);
-}
-
-std::unique_ptr<Command> sobel() {
-    DEFINE_COMMAND(Sobel, Filters::sobel);
 }
 
 std::unique_ptr<Command> normalMap(const float strength, const bool flipY) {
     DEFINE_COMMAND(NormalMap, Filters::normalMap, strength, flipY);
 }
+
+std::unique_ptr<Command> grayscale() { DEFINE_COMMAND(Grayscale, Effects::grayscale); }
+std::unique_ptr<Command> luminance() { DEFINE_COMMAND(Luminance, Effects::luminance); }
+std::unique_ptr<Command> sepia()     { DEFINE_COMMAND(Sepia,     Effects::sepia);     }
+std::unique_ptr<Command> toHSV()     { DEFINE_COMMAND(toHSV,     Effects::toHSV);     }
+std::unique_ptr<Command> toRGB()     { DEFINE_COMMAND(toRGB,     Effects::toRGB);     }
+std::unique_ptr<Command> emboss()    { DEFINE_COMMAND(Emboss,    Filters::emboss);    }
+std::unique_ptr<Command> outline()   { DEFINE_COMMAND(Outline,   Filters::outline);   }
+std::unique_ptr<Command> laplace()   { DEFINE_COMMAND(Laplace,   Filters::laplace);   }
+std::unique_ptr<Command> prewitt()   { DEFINE_COMMAND(Prewitt,   Filters::prewitt);   }
+std::unique_ptr<Command> scharr()    { DEFINE_COMMAND(Scharr,    Filters::scharr);    }
+std::unique_ptr<Command> sobel()     { DEFINE_COMMAND(Sobel,     Filters::sobel);     }
 
 #undef DEFINE_COMMAND
 
