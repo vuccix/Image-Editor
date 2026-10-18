@@ -1,6 +1,6 @@
 #include <Canvas/Canvas.h>
+#include <algorithm>
 #include <cassert>
-#include <cstring>
 #include <format>
 #include <omp.h>
 
@@ -66,7 +66,7 @@ void rotateLayers(std::vector<Layer>& layers, auto&& mapCoords, uint32_t& width,
 }
 
 void Canvas::rotateLeft() {
-    auto mapCoords = [](const uint32_t x, const uint32_t y, const uint32_t w, const uint32_t h) {
+    auto mapCoords = [](const uint32_t x, const uint32_t y, const uint32_t w, uint32_t) {
         return std::make_pair(w - 1 - x, y);
     };
 
@@ -74,7 +74,7 @@ void Canvas::rotateLeft() {
 }
 
 void Canvas::rotateRight() {
-    auto mapCoords = [](const uint32_t x, const uint32_t y, const uint32_t w, const uint32_t h) {
+    auto mapCoords = [](const uint32_t x, const uint32_t y, uint32_t, const uint32_t h) {
         return std::make_pair(x, h - 1 - y);
     };
 
