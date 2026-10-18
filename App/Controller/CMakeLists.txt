@@ -1,4 +1,8 @@
-add_library(AppController OBJECT
+add_library(p++_appController OBJECT)
+add_library(Paint++::AppController ALIAS p++_appController)
+
+target_sources(p++_appController
+        PRIVATE
         Controller.cpp
         Commands/Names.cpp
         Commands/LayerCommand.cpp
@@ -7,11 +11,16 @@ add_library(AppController OBJECT
         Commands/StatefulCommand.cpp
 )
 
-target_link_libraries(AppController
+target_include_directories(p++_appController
         PUBLIC
-        AppModel
-        PRIVATE
-        Processing
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(AppController PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(p++_appController
+        PUBLIC
+        Paint++::AppModel
+        PRIVATE
+        Paint++::Processing
+        ProjectWarnings
+)

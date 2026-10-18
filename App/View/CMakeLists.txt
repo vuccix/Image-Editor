@@ -1,4 +1,8 @@
-add_library(AppView OBJECT
+add_library(p++_appView OBJECT)
+add_library(Paint++::AppView ALIAS p++_appView)
+
+target_sources(p++_appView
+        PRIVATE
         UIManager.cpp
         UIMenuBar.cpp
         UIToolbar.cpp
@@ -8,18 +12,29 @@ add_library(AppView OBJECT
         UI/UI.cpp
 )
 
-target_link_libraries(AppView
+target_include_directories(p++_appView
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<INSTALL_INTERFACE:include>
+)
+
+# internal
+target_link_libraries(p++_appView
+        PRIVATE
+        Paint++::Renderer
+        Paint++::AppModel
+        Paint++::AppController
+        Paint++::ImageIO
+        ProjectWarnings
+        PUBLIC
+        Paint++::Assets
+)
+
+# external
+target_link_libraries(p++_appView
         PRIVATE
         imgui
         glm
         glfw
         nfd
-        Renderer
-        AppModel
-        AppController
-        ImageIO
-        PUBLIC
-        Assets
 )
-
-target_include_directories(AppView PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

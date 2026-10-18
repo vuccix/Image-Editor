@@ -1,9 +1,26 @@
-add_library(ImageIO STATIC src/ImageIO.cpp)
+add_library(p++_imageIO)
+add_library(Paint++::ImageIO ALIAS p++_imageIO)
 
-target_link_libraries(ImageIO
+target_sources(p++_imageIO
         PRIVATE
-        stb
-        Canvas
+        src/ImageIO.cpp
 )
 
-target_include_directories(ImageIO PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(p++_imageIO
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
+# internal
+target_link_libraries(p++_imageIO
+        PRIVATE
+        Paint++::Canvas
+        ProjectWarnings
+)
+
+# external
+target_link_libraries(p++_imageIO
+        PRIVATE
+        stb
+)

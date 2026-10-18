@@ -2,19 +2,20 @@ add_subdirectory(Model)
 add_subdirectory(View)
 add_subdirectory(Controller)
 
-add_executable(Editor main.cpp Application.cpp)
+add_executable(Paint++ WIN32)
 
-target_link_libraries(Editor
+target_sources(Paint++
         PRIVATE
-        AppController
-        AppView
-        AppModel
-        Window
-        Renderer
+        main.cpp
+        Application.cpp
 )
 
-## TODO: enable
-##target_compile_options(Editor PRIVATE
-##        $<$<CONFIG:Debug>:-O0 -g>
-##        $<$<CONFIG:Release>:-O3>
-##)
+target_link_libraries(Paint++
+        PRIVATE
+        Paint++::AppController
+        Paint++::AppView
+        Paint++::AppModel
+        Paint++::Window
+        Paint++::Renderer
+        ProjectWarnings
+)
