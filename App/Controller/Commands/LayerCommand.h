@@ -38,6 +38,7 @@ namespace Cmd {
     std::unique_ptr<Command> toRGB();
 
     std::unique_ptr<Command> duoTone(const float colorA[3], const float colorB[3]);
+    std::unique_ptr<Command> dither();
 
     std::unique_ptr<Command> blur(int32_t amount);
     std::unique_ptr<Command> gaussianBlur(int32_t amount);

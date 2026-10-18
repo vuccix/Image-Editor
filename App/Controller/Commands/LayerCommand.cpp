@@ -101,6 +101,7 @@ std::unique_ptr<Command> sepia()     { DEFINE_COMMAND(Sepia,     Effects::sepia)
 std::unique_ptr<Command> toHSV()     { DEFINE_COMMAND(toHSV,     Effects::toHSV);     }
 std::unique_ptr<Command> toRGB()     { DEFINE_COMMAND(toRGB,     Effects::toRGB);     }
 std::unique_ptr<Command> emboss()    { DEFINE_COMMAND(Emboss,    Filters::emboss);    }
+std::unique_ptr<Command> dither()    { DEFINE_COMMAND(Dithering, Filters::dither);   }
 std::unique_ptr<Command> outline()   { DEFINE_COMMAND(Outline,   Filters::outline);   }
 std::unique_ptr<Command> laplace()   { DEFINE_COMMAND(Laplace,   Filters::laplace);   }
 std::unique_ptr<Command> prewitt()   { DEFINE_COMMAND(Prewitt,   Filters::prewitt);   }

@@ -8,6 +8,7 @@ CommandToString::CommandToString() {
     m_commands[CommandNames::DuoTone]          = "Duo Tone";
     m_commands[CommandNames::WaterColor]       = "Water Color";
     m_commands[CommandNames::OilPainting]      = "Oil Painting";
+    m_commands[CommandNames::Dithering]        = "Dithering";
     m_commands[CommandNames::Blur]             = "Blur";
     m_commands[CommandNames::GaussianBlur]     = "Gaussian Blur";
     m_commands[CommandNames::MotionBlur]       = "Motion Blur";

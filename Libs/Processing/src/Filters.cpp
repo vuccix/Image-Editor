@@ -7,8 +7,15 @@
 #include <cmath>
 #include <omp.h>
 
+namespace {
+
 template <typename T>
 using KernelOp = Utils::KernelOp<std::array<T, 3>, T>;
+
+template <typename T, typename U>
+constexpr T cast(U value) { return static_cast<T>(std::clamp(value, U{0}, U{255})); }
+
+}
 
 void Filters::swapChannels(Layer& image, const int32_t change) {
     assert(change >= 0 && change < 6);
@@ -178,6 +185,68 @@ void Filters::duoTone(Layer& image, const float colorA[3], const float colorB[3]
                 .g = g,
                 .b = b,
                 .a = pixel.a,
+            };
+        }
+    }
+}
+
+void Filters::dither(Layer& image) {
+    const std::span data = image.data();
+
+    struct FPixel { float r, g, b; };
+
+    std::vector<FPixel> fImage(image.height() * image.width());
+    for (size_t i = 0; i < data.size(); ++i) {
+        fImage[i] = {
+            .r = data[i].r / 255.f,
+            .g = data[i].g / 255.f,
+            .b = data[i].b / 255.f,
+        };
+    }
+
+    const std::mdspan img(fImage.data(), image.height(), image.width());
+
+    auto getError = [](const FPixel& p, const FPixel& error, const size_t idx) -> FPixel {
+        constexpr float values[] = { 7.f / 16.f, 3.f / 16.f, 5.f / 16.f, 1.f / 16.f };
+        return FPixel{
+            .r = p.r + error.r * values[idx],
+            .g = p.g + error.g * values[idx],
+            .b = p.b + error.b * values[idx],
+        };
+    };
+
+    for (uint32_t y = 0; y < image.height() - 1; ++y) {
+        for (uint32_t x = 1; x < image.width() - 1; ++x) {
+            const auto [r, g, b]   = img[y, x];
+            const FPixel threshold = {
+                .r = r >= 0.5f ? 1.f : 0.f,
+                .g = g >= 0.5f ? 1.f : 0.f,
+                .b = b >= 0.5f ? 1.f : 0.f,
+            };
+
+            img[y, x] = threshold;
+
+            const FPixel error = {
+                .r = r - threshold.r,
+                .g = g - threshold.g,
+                .b = b - threshold.b,
+            };
+
+            img[y + 0, x + 1] = getError(img[y + 0, x + 1], error, 0);
+            img[y + 1, x - 1] = getError(img[y + 1, x - 1], error, 1);
+            img[y + 1, x + 0] = getError(img[y + 1, x + 0], error, 2);
+            img[y + 1, x + 1] = getError(img[y + 1, x + 1], error, 3);
+        }
+    }
+
+    const std::mdspan pixels = image.pixels();
+    for (uint32_t y = 0; y < image.height(); ++y) {
+        for (uint32_t x = 0; x < image.width(); ++x) {
+            pixels[y, x] = {
+                .r = cast<uint8_t>(img[y, x].r * 255.f),
+                .g = cast<uint8_t>(img[y, x].g * 255.f),
+                .b = cast<uint8_t>(img[y, x].b * 255.f),
+                .a = pixels[y, x].a,
             };
         }
     }

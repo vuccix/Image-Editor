@@ -196,6 +196,7 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                     ui.item("Water Color...", [&] {});
                     ui.item("Oil Painting...", [&] {});
                 });
+                ui.item("Diethering", [&]{ exec(Cmd::dither()); });
             });
 
             ui.menu("Blur", [&] {

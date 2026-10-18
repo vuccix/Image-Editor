@@ -7,7 +7,7 @@ enum class CommandNames {
     Open,
 
     // Filters
-    DuoTone, WaterColor, OilPainting,
+    DuoTone, WaterColor, OilPainting, Dithering,
     Blur, GaussianBlur, MotionBlur,
     SwapChannels, Emboss, Outline, Sharpen, Pixelate,
     GaussianNoise, UniformNoise, FilmGrain,
