@@ -1,7 +1,7 @@
 #include <Processing/Filters.h>
-#include "Utils.h"
 #include <Processing/Effects.h>
 #include <Canvas/Layer.h>
+#include "Utils.h"
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -106,9 +106,7 @@ std::array<float, 25> getSharpenKernel(const float amount) {
     for (int32_t y = 0; y < size; ++y) {
         for (int32_t x = 0; x < size; ++x) {
             const float gNorm = kernel[y, x] / gaussSum;
-
-            if (y == r && x == r) kernel[y, x] = (1.f + k) - (k * gNorm);
-            else                  kernel[y, x] = -k * gNorm;
+            kernel[y, x]      = (y == r && x == r) ? (1.f + k) - (k * gNorm) : -k * gNorm;
         }
     }
 
@@ -191,22 +189,44 @@ void Filters::duoTone(Layer& image, const float colorA[3], const float colorB[3]
 }
 
 void Filters::dither(Layer& image) {
-    const std::span data = image.data();
+    if (image.height() <= 1 && image.width() <= 1)
+        return;
 
     struct FPixel { float r, g, b; };
-
     std::vector<FPixel> fImage(image.height() * image.width());
-    for (size_t i = 0; i < data.size(); ++i) {
-        fImage[i] = {
-            .r = data[i].r / 255.f,
-            .g = data[i].g / 255.f,
-            .b = data[i].b / 255.f,
-        };
-    }
 
+    const std::mdspan pixels = image.pixels();
     const std::mdspan img(fImage.data(), image.height(), image.width());
 
-    auto getError = [](const FPixel& p, const FPixel& error, const size_t idx) -> FPixel {
+    #pragma omp parallel for schedule(static)
+    for (uint32_t y = 0; y < image.height(); ++y) {
+        for (uint32_t x = 0; x < image.width(); ++x) {
+            img[y, x] = {
+                .r = pixels[y, x].r / 255.f,
+                .g = pixels[y, x].g / 255.f,
+                .b = pixels[y, x].b / 255.f,
+            };
+        }
+    }
+
+    auto getError = [&img](const uint32_t x, const uint32_t y) -> FPixel {
+        const auto [r, g, b]   = img[y, x];
+        const FPixel threshold = {
+            .r = r >= 0.5f ? 1.f : 0.f,
+            .g = g >= 0.5f ? 1.f : 0.f,
+            .b = b >= 0.5f ? 1.f : 0.f,
+        };
+
+        img[y, x] = threshold;
+
+        return FPixel{
+            .r = r - threshold.r,
+            .g = g - threshold.g,
+            .b = b - threshold.b,
+        };
+    };
+
+    auto nextError = [](const FPixel& p, const FPixel& error, const size_t idx) -> FPixel {
         constexpr float values[] = { 7.f / 16.f, 3.f / 16.f, 5.f / 16.f, 1.f / 16.f };
         return FPixel{
             .r = p.r + error.r * values[idx],
@@ -215,37 +235,47 @@ void Filters::dither(Layer& image) {
         };
     };
 
-    for (uint32_t y = 0; y < image.height() - 1; ++y) {
-        for (uint32_t x = 1; x < image.width() - 1; ++x) {
-            const auto [r, g, b]   = img[y, x];
-            const FPixel threshold = {
-                .r = r >= 0.5f ? 1.f : 0.f,
-                .g = g >= 0.5f ? 1.f : 0.f,
-                .b = b >= 0.5f ? 1.f : 0.f,
-            };
+    {
+        for (uint32_t y = 0; y < image.height() - 1; ++y) {
+            uint32_t x = 0;
+            {
+                FPixel error = getError(x, y);
+                img[y + 0, x + 1] = nextError(img[y + 0, x + 1], error, 0);
+                img[y + 1, x + 0] = nextError(img[y + 1, x + 0], error, 2);
+                img[y + 1, x + 1] = nextError(img[y + 1, x + 1], error, 3);
+            }
 
-            img[y, x] = threshold;
+            for (x = 1; x < image.width() - 1; ++x) {
+                FPixel error = getError(x, y);
+                img[y + 0, x + 1] = nextError(img[y + 0, x + 1], error, 0);
+                img[y + 1, x - 1] = nextError(img[y + 1, x - 1], error, 1);
+                img[y + 1, x + 0] = nextError(img[y + 1, x + 0], error, 2);
+                img[y + 1, x + 1] = nextError(img[y + 1, x + 1], error, 3);
+            }
 
-            const FPixel error = {
-                .r = r - threshold.r,
-                .g = g - threshold.g,
-                .b = b - threshold.b,
-            };
+            x = image.width() - 1;
+            {
+                FPixel error = getError(x, y);
+                img[y + 1, x - 1] = nextError(img[y + 1, x - 1], error, 1);
+                img[y + 1, x + 0] = nextError(img[y + 1, x + 0], error, 2);
+            }
+        }
 
-            img[y + 0, x + 1] = getError(img[y + 0, x + 1], error, 0);
-            img[y + 1, x - 1] = getError(img[y + 1, x - 1], error, 1);
-            img[y + 1, x + 0] = getError(img[y + 1, x + 0], error, 2);
-            img[y + 1, x + 1] = getError(img[y + 1, x + 1], error, 3);
+        const uint32_t y = image.height() - 1;
+        for (uint32_t x = 0; x < image.width(); ++x) {
+            FPixel error = getError(x, y);
+            if (x + 1 < image.width())
+                img[y, x + 1] = nextError(img[y, x + 1], error, 0);
         }
     }
 
-    const std::mdspan pixels = image.pixels();
+    #pragma omp parallel for schedule(static)
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
             pixels[y, x] = {
-                .r = cast<uint8_t>(img[y, x].r * 255.f),
-                .g = cast<uint8_t>(img[y, x].g * 255.f),
-                .b = cast<uint8_t>(img[y, x].b * 255.f),
+                .r = ::cast<uint8_t>(img[y, x].r * 255.f),
+                .g = ::cast<uint8_t>(img[y, x].g * 255.f),
+                .b = ::cast<uint8_t>(img[y, x].b * 255.f),
                 .a = pixels[y, x].a,
             };
         }
