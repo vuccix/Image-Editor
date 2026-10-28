@@ -6,6 +6,15 @@
 #include <cmath>
 #include <omp.h>
 
+namespace {
+
+template <typename U>
+constexpr uint8_t toByte(U value) {
+    return static_cast<uint8_t>(std::clamp(value, U{0}, U{255}));
+}
+
+}
+
 void Effects::flipHorizontally(Layer& image) {
     const std::mdspan pixels = image.pixels();
 
@@ -48,9 +57,9 @@ void Effects::rotate180(Canvas& canvas) {
 
 void Effects::brightness(Layer& image, const int32_t value) {
     for (Pixel& pixel : image.data()) {
-        pixel.r = static_cast<uint8_t>(std::clamp(pixel.r + value, 0, 255));
-        pixel.g = static_cast<uint8_t>(std::clamp(pixel.g + value, 0, 255));
-        pixel.b = static_cast<uint8_t>(std::clamp(pixel.b + value, 0, 255));
+        pixel.r = ::toByte(pixel.r + value);
+        pixel.g = ::toByte(pixel.g + value);
+        pixel.b = ::toByte(pixel.b + value);
     }
 }
 
@@ -62,9 +71,9 @@ void Effects::contrast(Layer& image, const float factor) {
             factor * static_cast<float>(pixel.b - 128) + 128.f,
         };
 
-        pixel.r = static_cast<uint8_t>(std::clamp(value[0], 0.f, 255.f));
-        pixel.g = static_cast<uint8_t>(std::clamp(value[1], 0.f, 255.f));
-        pixel.b = static_cast<uint8_t>(std::clamp(value[2], 0.f, 255.f));
+        pixel.r = ::toByte(value[0]);
+        pixel.g = ::toByte(value[1]);
+        pixel.b = ::toByte(value[2]);
     }
 }
 
@@ -80,13 +89,11 @@ void Effects::saturation(Layer& image, const float factor) {
         const float new_g = lum + factor * (static_cast<float>(pixel.g) - lum);
         const float new_b = lum + factor * (static_cast<float>(pixel.b) - lum);
 
-        pixel.r           = static_cast<uint8_t>(std::clamp(new_r, 0.f, 255.f));
-        pixel.g           = static_cast<uint8_t>(std::clamp(new_g, 0.f, 255.f));
-        pixel.b           = static_cast<uint8_t>(std::clamp(new_b, 0.f, 255.f));
+        pixel.r           = ::toByte(new_r);
+        pixel.g           = ::toByte(new_g);
+        pixel.b           = ::toByte(new_b);
     }
 }
-
-#define CLAMP(X) static_cast<uint8_t>(std::clamp(X * 255.f, 0.f, 255.f))
 
 void Effects::toHSV(Layer& image) {
     auto convert = [](const Pixel rgb) -> Pixel {
@@ -100,7 +107,7 @@ void Effects::toHSV(Layer& image) {
         const float v    = maxC;
 
         if (minC == maxC)
-            return Pixel{ 0, 0, CLAMP(v), rgb.a };
+            return Pixel{ 0, 0, ::toByte(v * 255.f), rgb.a };
 
         const float s  = (maxC - minC) / maxC;
 
@@ -116,7 +123,12 @@ void Effects::toHSV(Layer& image) {
 
         h = std::fmod(h / 6.f + 1.f, 1.f);
 
-        return Pixel{ CLAMP(h), CLAMP(s), CLAMP(v), rgb.a };
+        return Pixel{
+            .r = ::toByte(h * 255.f),
+            .g = ::toByte(s * 255.f),
+            .b = ::toByte(v * 255.f),
+            .a = rgb.a
+        };
     };
 
     const std::mdspan pixels = image.pixels();
@@ -134,24 +146,21 @@ void Effects::toRGB(Layer& image) {
         const float v = hsv.b / 255.f;
 
         if (s == 0.f) {
-            const uint8_t value = CLAMP(v);
+            const uint8_t value = ::toByte(v * 255.f);
             return Pixel{ value, value, value, hsv.a };
         }
 
-        const float hue = h * 6.f;
+        const float hue   = h * 6.f;
+        const auto sector = static_cast<int32_t>(std::floor(hue));
+        const float frac  = hue - sector;
 
-        auto sector          = static_cast<int32_t>(std::floor(hue));
-        const float fraction = hue - sector;
-
-        sector %= 6;
-
-        const float p = v * (1.f - s);
-        const float q = v * (1.f - s * fraction);
-        const float t = v * (1.f - s * (1.f - fraction));
+        const float p     = v * (1.f - s);
+        const float q     = v * (1.f - s * frac);
+        const float t     = v * (1.f - s * (1.f - frac));
 
         float r, g, b;
 
-        switch (sector) {
+        switch (sector % 6) {
             case 0:  r = v;   g = t;   b = p; break;
             case 1:  r = q;   g = v;   b = p; break;
             case 2:  r = p;   g = v;   b = t; break;
@@ -160,7 +169,12 @@ void Effects::toRGB(Layer& image) {
             default: r = v;   g = p;   b = q; break; // sector == 5
         }
 
-        return Pixel{ CLAMP(r), CLAMP(g), CLAMP(b), hsv.a };
+        return Pixel{
+            .r = ::toByte(r * 255.f),
+            .g = ::toByte(g * 255.f),
+            .b = ::toByte(b * 255.f),
+            .a = hsv.a
+        };
     };
 
     const std::mdspan pixels = image.pixels();
@@ -170,8 +184,6 @@ void Effects::toRGB(Layer& image) {
         for (uint32_t x = 0; x < image.width(); ++x)
             pixels[y, x] = convert(pixels[y, x]);
 }
-
-#undef CLAMP
 
 void Effects::invert(Layer& image) {
     for (Pixel& pixel : image.data()) {
@@ -190,18 +202,16 @@ void Effects::grayscale(Layer& image) {
     constexpr std::array arr = { 0.2989f, 0.5870f, 0.1140f };
     const auto pixels        = image.pixels();
 
-    #pragma omp parallel for collapse (2)
+    #pragma omp parallel for schedule(static)
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
-            Pixel& pixel      = pixels[y, x];
-            const float value = pixel.r * arr[0] + pixel.g * arr[1] + pixel.b * arr[2];
+            Pixel& pixel       = pixels[y, x];
+            const float value  = pixel.r * arr[0] + pixel.g * arr[1] + pixel.b * arr[2];
+            const auto channel = ::toByte(value);
 
-            pixel = {
-                .r = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
-                .g = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
-                .b = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
-                .a = pixel.a
-            };
+            pixel.r            = channel;
+            pixel.g            = channel;
+            pixel.b            = channel;
         }
     }
 }
@@ -210,18 +220,16 @@ void Effects::luminance(Layer& image) {
     constexpr std::array arr = { 0.2126f, 0.7152f, 0.0722f };
     const auto pixels        = image.pixels();
 
-    #pragma omp parallel for collapse (2)
+    #pragma omp parallel for schedule(static)
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
-            Pixel& pixel      = pixels[y, x];
-            const float value = pixel.r * arr[0] + pixel.g * arr[1] + pixel.b * arr[2];
+            Pixel& pixel       = pixels[y, x];
+            const float value  = pixel.r * arr[0] + pixel.g * arr[1] + pixel.b * arr[2];
+            const auto channel = ::toByte(value);
 
-            pixel = {
-                .r = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
-                .g = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
-                .b = static_cast<uint8_t>(std::clamp(value, 0.f, 255.f)),
-                .a = pixel.a
-            };
+            pixel.r            = channel;
+            pixel.g            = channel;
+            pixel.b            = channel;
         }
     }
 }
@@ -233,9 +241,9 @@ void Effects::sepia(Layer& image) {
         0.272f, 0.534f, 0.131f
     };
 
-    const auto pixels = image.pixels();
+    const std::mdspan pixels = image.pixels();
 
-    #pragma omp parallel for collapse (2)
+    #pragma omp parallel for schedule(static)
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& pixel      = pixels[y, x];
@@ -243,12 +251,9 @@ void Effects::sepia(Layer& image) {
             const float new_g = m[3] * pixel.r + m[4] * pixel.g + m[5] * pixel.b;
             const float new_b = m[6] * pixel.r + m[7] * pixel.g + m[8] * pixel.b;
 
-            pixel = {
-                .r = static_cast<uint8_t>(std::clamp(new_r, 0.f, 255.f)),
-                .g = static_cast<uint8_t>(std::clamp(new_g, 0.f, 255.f)),
-                .b = static_cast<uint8_t>(std::clamp(new_b, 0.f, 255.f)),
-                .a = pixel.a
-            };
+            pixel.r           = ::toByte(new_r);
+            pixel.g           = ::toByte(new_g);
+            pixel.b           = ::toByte(new_b);
         }
     }
 }

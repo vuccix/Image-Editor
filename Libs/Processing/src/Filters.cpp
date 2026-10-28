@@ -12,8 +12,10 @@ namespace {
 template <typename T>
 using KernelOp = Utils::KernelOp<std::array<T, 3>, T>;
 
-template <typename T, typename U>
-constexpr T cast(U value) { return static_cast<T>(std::clamp(value, U{0}, U{255})); }
+template <typename U>
+constexpr uint8_t toByte(U value) {
+    return static_cast<uint8_t>(std::clamp(value, U{0}, U{255}));
+}
 
 }
 
@@ -32,7 +34,7 @@ void Filters::swapChannels(Layer& image, const int32_t change) {
     }
 
     const std::mdspan img = image.pixels();
-    #pragma omp parallel for collapse (2)
+    #pragma omp parallel for schedule(static)
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& p = img[y,x];
@@ -50,12 +52,10 @@ void Filters::emboss(Layer& image) {
 
     Utils::convolution(src, 3, 3, KernelOp{ std::mdspan(kernel, 3, 3) },
         [&](const int32_t x, const int32_t y, const std::array<int32_t, 3> sum) {
-            dst[y, x] = {
-                .r = static_cast<uint8_t>(std::clamp(sum[0], 0, 255)),
-                .g = static_cast<uint8_t>(std::clamp(sum[1], 0, 255)),
-                .b = static_cast<uint8_t>(std::clamp(sum[2], 0, 255)),
-                .a = dst[y, x].a
-            };
+            Pixel& pixel = dst[y, x];
+            pixel.r      = ::toByte(sum[0]);
+            pixel.g      = ::toByte(sum[1]);
+            pixel.b      = ::toByte(sum[2]);
         }
     );
 }
@@ -71,12 +71,10 @@ void Filters::outline(Layer& image) {
 
     Utils::convolution(src, 3, 3, KernelOp{ std::mdspan(kernel, 3, 3) },
         [&](const int32_t x, const int32_t y, const std::array<int32_t, 3> sum) {
-            dst[y, x] = {
-                .r = static_cast<uint8_t>(std::clamp(sum[0], 0, 255)),
-                .g = static_cast<uint8_t>(std::clamp(sum[1], 0, 255)),
-                .b = static_cast<uint8_t>(std::clamp(sum[2], 0, 255)),
-                .a = dst[y, x].a
-            };
+            Pixel& pixel = dst[y, x];
+            pixel.r      = ::toByte(sum[0]);
+            pixel.g      = ::toByte(sum[1]);
+            pixel.b      = ::toByte(sum[2]);
         }
     );
 }
@@ -126,12 +124,10 @@ void Filters::sharpen(Layer& image, const float amount) {
 
     Utils::convolution(src, 5, 5, KernelOp{ std::mdspan(kernel.data(), 5, 5) },
         [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
-            dst[y, x] = {
-                .r = static_cast<uint8_t>(std::clamp(sum[0], 0.f, 255.f)),
-                .g = static_cast<uint8_t>(std::clamp(sum[1], 0.f, 255.f)),
-                .b = static_cast<uint8_t>(std::clamp(sum[2], 0.f, 255.f)),
-                .a = dst[y, x].a
-            };
+            Pixel& pixel = dst[y, x];
+            pixel.r      = ::toByte(sum[0]);
+            pixel.g      = ::toByte(sum[1]);
+            pixel.b      = ::toByte(sum[2]);
         }
     );
 }
@@ -154,12 +150,10 @@ void Filters::pixelate(Layer& image, const int32_t blockSize) {
 
             for (int32_t iy = y; iy < maxY; ++iy) {
                 for (int32_t jx = x; jx < maxX; ++jx) {
-                    pixels[iy, jx] = {
-                        .r = p.r,
-                        .g = p.g,
-                        .b = p.b,
-                        .a = pixels[iy, jx].a
-                    };
+                    Pixel& pixel = pixels[iy, jx];
+                    pixel.r      = p.r;
+                    pixel.g      = p.g;
+                    pixel.b      = p.b;
                 }
             }
         }
@@ -172,18 +166,15 @@ void Filters::duoTone(Layer& image, const float colorA[3], const float colorB[3]
     #pragma omp parallel for collapse (2)
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
-            Pixel& pixel     = pixels[y, x];
-            const float lum  = (pixel.r * 0.2126f + pixel.g * 0.7152f + pixel.b * 0.0722f) / (1.f / 255.f);
-            const auto  r    = static_cast<uint8_t>(std::clamp(colorA[0] + (colorB[0] - colorA[0]) * lum, 0.f, 255.f));
-            const auto  g    = static_cast<uint8_t>(std::clamp(colorA[1] + (colorB[1] - colorA[1]) * lum, 0.f, 255.f));
-            const auto  b    = static_cast<uint8_t>(std::clamp(colorA[2] + (colorB[2] - colorA[2]) * lum, 0.f, 255.f));
+            Pixel& pixel    = pixels[y, x];
+            const float lum = (pixel.r * 0.2126f + pixel.g * 0.7152f + pixel.b * 0.0722f) / (1.f / 255.f);
+            const auto  r   = ::toByte(colorA[0] + (colorB[0] - colorA[0]) * lum);
+            const auto  g   = ::toByte(colorA[1] + (colorB[1] - colorA[1]) * lum);
+            const auto  b   = ::toByte(colorA[2] + (colorB[2] - colorA[2]) * lum);
 
-            pixel = {
-                .r = r,
-                .g = g,
-                .b = b,
-                .a = pixel.a,
-            };
+            pixel.r         = r;
+            pixel.g         = g;
+            pixel.b         = b;
         }
     }
 }
@@ -272,12 +263,10 @@ void Filters::dither(Layer& image) {
     #pragma omp parallel for schedule(static)
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
-            pixels[y, x] = {
-                .r = ::cast<uint8_t>(img[y, x].r * 255.f),
-                .g = ::cast<uint8_t>(img[y, x].g * 255.f),
-                .b = ::cast<uint8_t>(img[y, x].b * 255.f),
-                .a = pixels[y, x].a,
-            };
+            Pixel& pixel = pixels[y, x];
+            pixel.r      = ::toByte(img[y, x].r * 255.f);
+            pixel.g      = ::toByte(img[y, x].g * 255.f);
+            pixel.b      = ::toByte(img[y, x].b * 255.f);
         }
     }
 }
@@ -306,7 +295,7 @@ void Filters::normalMap(Layer& image, const float strength, const bool flipY) {
     const auto cols   = static_cast<int32_t>(image.width());
     const float sign  = flipY ? -1.f : 1.f;
 
-    #pragma omp parallel for collapse (2)
+    #pragma omp parallel for schedule(static)
     for (int32_t y = 0; y < rows; ++y) {
         for (int32_t x = 0; x < cols; ++x) {
             const int32_t id = y * cols + x;
@@ -321,12 +310,10 @@ void Filters::normalMap(Layer& image, const float strength, const bool flipY) {
             normalize(nx, ny, nz);
 
             // [-1,1] -> [0,255]
-            pixels[y, x] = {
-                .r = static_cast<uint8_t>((nx * 0.5f + 0.5f) * 255.f),
-                .g = static_cast<uint8_t>((ny * 0.5f + 0.5f) * 255.f),
-                .b = static_cast<uint8_t>((nz * 0.5f + 0.5f) * 255.f),
-                .a = pixels[y, x].a
-            };
+            Pixel& p = pixels[y, x];
+            p.r      = ::toByte((nx * 0.5f + 0.5f) * 255.f);
+            p.g      = ::toByte((ny * 0.5f + 0.5f) * 255.f);
+            p.b      = ::toByte((nz * 0.5f + 0.5f) * 255.f);
         }
     }
 }
