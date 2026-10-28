@@ -196,19 +196,20 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                     ui.item("Water Color...", [&] {});
                     ui.item("Oil Painting...", [&] {});
                 });
-                ui.item("Diethering", [&]{ exec(Cmd::dither()); });
+                ui.item("Dithering", [&]{ exec(Cmd::dither()); });
             });
 
             ui.menu("Blur", [&] {
                 auto openBlurModal = [&](const char* name, auto makeCmd) {
-                    openParamModal(name, 0,
-                        [](int32_t& amt) { ImGui::DragInt("Amount", &amt, 1, 0, 100); },
+                    openParamModal(name, 1,
+                        [](int32_t& amt) { ImGui::DragInt("Amount", &amt, 1, 1, 100); },
                         makeCmd
                     );
                 };
 
                 ui.item("Blur...",          [&] { openBlurModal("Mean Blur",     Cmd::blur);         });
                 ui.item("Gaussian Blur...", [&] { openBlurModal("Gaussian Blur", Cmd::gaussianBlur); });
+                ui.item("Median Blur...",   [&] { openBlurModal("Median Blur",   Cmd::medianBlur);   });
                 ui.item("Motion Blur...", [&] {
                     struct MotionState { int32_t distance = 0; float angle = 0.f; };
                     openParamModal("Motion Blur", MotionState{},
@@ -240,13 +241,13 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
                 ui.item("Emboss",  [&] { exec(Cmd::emboss());  });
                 ui.item("Outline", [&] { exec(Cmd::outline()); });
                 ui.item("Sharpen...", [&] {
-                    openParamModal("Sharpen", 0.f,
+                    openParamModal("Sharpen", 1.f,
                         [](float& val) { ImGui::DragFloat("Amount", &val, 0.1f, 0.f, 10.f, "%.2f"); },
                         Cmd::sharpen
                     );
                 });
                 ui.item("Pixelate...", [&] {
-                    openParamModal("Pixelate", 1,
+                    openParamModal("Pixelate", 5,
                         [](int32_t& val) { ImGui::DragInt("Block Size", &val, 1, 1, 100); },
                         Cmd::pixelate
                     );
@@ -254,21 +255,21 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
             });
 
             ui.menu("Noise", [&] {
-                ui.item("Gaussian Noise", [&] {
-                    openParamModal("Gaussian Noise Amount", 0.f,
-                        [](float& val) { ImGui::DragFloat("Noise", &val, 0.1f, 0.f, 255.f, "%.2f"); },
+                ui.item("Gaussian Noise...", [&] {
+                    openParamModal("Gaussian Noise Amount", 1.f,
+                        [](float& val) { ImGui::DragFloat("Noise", &val, 0.1f, 0.1f, 255.f, "%.2f"); },
                         Cmd::gaussianNoise
                     );
                 });
-                ui.item("Uniform Noise", [&] {
-                    openParamModal("Uniform Noise Amount", 0,
-                        [](int32_t& val) { ImGui::DragInt("Noise", &val, 1, 0, 255); },
+                ui.item("Uniform Noise...", [&] {
+                    openParamModal("Uniform Noise Amount", 1,
+                        [](int32_t& val) { ImGui::DragInt("Noise", &val, 1, 1, 255); },
                         Cmd::uniformNoise
                     );
                 });
-                ui.item("Film Grain", [&] {
-                    openParamModal("Film Grain Strength", 0.f,
-                        [](float& val) { ImGui::DragFloat("Noise", &val, 0.1f, 0.f, 255.f, "%.2f"); },
+                ui.item("Film Grain...", [&] {
+                    openParamModal("Film Grain Strength", 1.f,
+                        [](float& val) { ImGui::DragFloat("Noise", &val, 0.1f, 0.1f, 255.f, "%.2f"); },
                         Cmd::filmGrain
                     );
                 });
