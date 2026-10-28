@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <complex>
+#include <ranges>
 #include <cmath>
 
 template <typename T>
@@ -87,6 +88,42 @@ void Filters::gaussianBlur(Layer& image, const int32_t amount) {
     const int32_t     kSize  = 2 * amount + 1;
 
     ::blurHelper(image, kernel, kSize);
+}
+
+void Filters::medianBlur(Layer& image, const int32_t amount) {
+    assert(amount > 0);
+
+    const std::vector clone(image.data().begin(), image.data().end());
+    const std::mdspan src(clone.data(), image.height(), image.width());
+    const std::mdspan dst = image.pixels();
+
+    const int32_t width   = static_cast<int32_t>(image.width());
+    const int32_t height  = static_cast<int32_t>(image.height());
+    const int32_t kSize   = 2 * amount + 1;
+    const int32_t halfD   = kSize / 2;
+
+    auto index = [](const int32_t id, const int32_t max) -> int32_t {
+        return (id < 0) ? -id - 1 : (id >= max) ? 2 * max - id - 1 : id;
+    };
+
+    #pragma omp parallel for schedule(static)
+    for (int32_t y = 0; y < height; ++y) {
+        std::vector<Pixel> surroundings(kSize * kSize);
+        const std::mdspan  surr(surroundings.data(), kSize, kSize);
+
+        for (int32_t x = 0; x < width; ++x) {
+            for (int32_t k = -halfD; k < halfD; ++k) {
+                const int32_t iy = index(y + k, height);
+                for (int32_t l = -halfD; l < halfD; ++l) {
+                    const int32_t ix           = index(x + l, width);
+                    surr[k + halfD, l + halfD] = src[iy, ix];
+                }
+            }
+
+            std::ranges::sort(surroundings);
+            dst[y, x] = surroundings[surroundings.size() / 2];
+        }
+    }
 }
 
 void Filters::motionBlur(Layer& image, int32_t distance, const float angle) {

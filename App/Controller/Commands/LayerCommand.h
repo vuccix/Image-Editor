@@ -42,6 +42,7 @@ namespace Cmd {
 
     std::unique_ptr<Command> blur(int32_t amount);
     std::unique_ptr<Command> gaussianBlur(int32_t amount);
+    std::unique_ptr<Command> medianBlur(int32_t amount);
     std::unique_ptr<Command> motionBlur(int32_t distance, float angle);
 
     std::unique_ptr<Command> emboss();

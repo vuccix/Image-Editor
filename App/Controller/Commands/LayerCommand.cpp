@@ -63,6 +63,10 @@ std::unique_ptr<Command> gaussianBlur(const int32_t amount) {
     DEFINE_COMMAND(GaussianBlur, Filters::gaussianBlur, amount);
 }
 
+std::unique_ptr<Command> medianBlur(const int32_t amount) {
+    DEFINE_COMMAND(MedianBlur, Filters::medianBlur, amount);
+}
+
 std::unique_ptr<Command> motionBlur(const int32_t distance, const float angle) {
     DEFINE_COMMAND(MotionBlur, Filters::motionBlur, distance, angle);
 }

@@ -9,8 +9,10 @@ CommandToString::CommandToString() {
     m_commands[CommandNames::WaterColor]       = "Water Color";
     m_commands[CommandNames::OilPainting]      = "Oil Painting";
     m_commands[CommandNames::Dithering]        = "Dithering";
+    m_commands[CommandNames::Quantization]     = "Quantization";
     m_commands[CommandNames::Blur]             = "Blur";
     m_commands[CommandNames::GaussianBlur]     = "Gaussian Blur";
+    m_commands[CommandNames::MedianBlur]       = "Median Blur";
     m_commands[CommandNames::MotionBlur]       = "Motion Blur";
     m_commands[CommandNames::SwapChannels]     = "Swap Channels";
     m_commands[CommandNames::Emboss]           = "Emboss";
