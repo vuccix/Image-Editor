@@ -5,6 +5,7 @@
 #include <cassert>
 #include <complex>
 #include <ranges>
+#include <array>
 #include <cmath>
 
 template <typename T>
@@ -46,12 +47,10 @@ void blurHelper(Layer& image, const std::vector<float>& kernel, const int32_t kS
 
     Utils::convolution(src, kSize, 1, KernelOp{ std::mdspan(kernel.data(), kSize, 1) },
         [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
-            dst[y, x] = {
-                .r = static_cast<uint8_t>(std::clamp(sum[0], 0.f, 255.f)),
-                .g = static_cast<uint8_t>(std::clamp(sum[1], 0.f, 255.f)),
-                .b = static_cast<uint8_t>(std::clamp(sum[2], 0.f, 255.f)),
-                .a = dst[y, x].a
-            };
+            Pixel& out = dst[y, x];
+            out.r      = static_cast<uint8_t>(std::clamp(sum[0], 0.f, 255.f));
+            out.g      = static_cast<uint8_t>(std::clamp(sum[1], 0.f, 255.f));
+            out.b      = static_cast<uint8_t>(std::clamp(sum[2], 0.f, 255.f));
         }
     );
 
@@ -60,12 +59,10 @@ void blurHelper(Layer& image, const std::vector<float>& kernel, const int32_t kS
 
     Utils::convolution(src, 1, kSize, KernelOp{ std::mdspan(kernel.data(), 1, kSize) },
         [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
-            dst[y, x] = {
-                .r = static_cast<uint8_t>(std::clamp(sum[0], 0.f, 255.f)),
-                .g = static_cast<uint8_t>(std::clamp(sum[1], 0.f, 255.f)),
-                .b = static_cast<uint8_t>(std::clamp(sum[2], 0.f, 255.f)),
-                .a = dst[y, x].a
-            };
+            Pixel& out = dst[y, x];
+            out.r      = static_cast<uint8_t>(std::clamp(sum[0], 0.f, 255.f));
+            out.g      = static_cast<uint8_t>(std::clamp(sum[1], 0.f, 255.f));
+            out.b      = static_cast<uint8_t>(std::clamp(sum[2], 0.f, 255.f));
         }
     );
 }
@@ -214,7 +211,7 @@ void Filters::motionBlur(Layer& image, int32_t distance, const float angle) {
         for (int32_t x = 0; x < cols; ++x) {
             std::array sum = { 0.f, 0.f, 0.f };
 
-            for (const auto& [ox, oy] : lineOffsets) {
+            for (const auto [ox, oy] : lineOffsets) {
                 const int32_t ix  = index(x + ox, cols);
                 const int32_t iy  = index(y + oy, rows);
 
@@ -224,12 +221,10 @@ void Filters::motionBlur(Layer& image, int32_t distance, const float angle) {
                 sum[2] += pixel.b;
             }
 
-            dst[y, x] = {
-                .r = static_cast<uint8_t>(std::clamp(sum[0] * scale, 0.f, 255.f)),
-                .g = static_cast<uint8_t>(std::clamp(sum[1] * scale, 0.f, 255.f)),
-                .b = static_cast<uint8_t>(std::clamp(sum[2] * scale, 0.f, 255.f)),
-                .a = dst[y, x].a
-            };
+            Pixel& out = dst[y, x];
+            out.r      = static_cast<uint8_t>(std::clamp(sum[0] * scale, 0.f, 255.f));
+            out.g      = static_cast<uint8_t>(std::clamp(sum[1] * scale, 0.f, 255.f));
+            out.b      = static_cast<uint8_t>(std::clamp(sum[2] * scale, 0.f, 255.f));
         }
     }
 }
