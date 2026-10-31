@@ -90,38 +90,83 @@ void Filters::gaussianBlur(Layer& image, const int32_t amount) {
     ::blurHelper(image, kernel, kSize);
 }
 
-void Filters::medianBlur(Layer& image, const int32_t amount) {
-    assert(amount > 0);
+void Filters::medianBlur(Layer& image, const int32_t radius) {
+    assert(radius > 0);
+
+    const int32_t  width       = static_cast<int32_t>(image.width());
+    const int32_t  height      = static_cast<int32_t>(image.height());
+    const int32_t  kSize       = 2 * radius + 1;
+    const uint32_t medianIndex = static_cast<uint32_t>(kSize) * kSize / 2;
 
     const std::vector clone(image.data().begin(), image.data().end());
-    const std::mdspan src(clone.data(), image.height(), image.width());
+    const std::mdspan src(clone.data(), height, width);
     const std::mdspan dst = image.pixels();
 
-    const int32_t width   = static_cast<int32_t>(image.width());
-    const int32_t height  = static_cast<int32_t>(image.height());
-    const int32_t kSize   = 2 * amount + 1;
-    const int32_t halfD   = kSize / 2;
+    auto reflect = [](int32_t i, const int32_t size) -> int32_t {
+        const int32_t period = 2 * size;
+        i %= period;
+        if (i < 0)
+            i += period;
+        return (i < size) ? i : period - 1 - i;
+    };
 
-    auto index = [](const int32_t id, const int32_t max) -> int32_t {
-        return (id < 0) ? -id - 1 : (id >= max) ? 2 * max - id - 1 : id;
+    auto channel = [](const Pixel& p, const int32_t c) -> uint8_t {
+        switch (c) {
+            case 0:  return p.r;
+            case 1:  return p.g;
+            default: return p.b;
+        }
+    };
+
+    auto adjustPixel = [&](std::array<std::array<uint32_t, 256>, 3>& hist, const Pixel& p, const int32_t delta) {
+        for (int32_t c = 0; c < 3; ++c) {
+            const uint8_t value = channel(p, c);
+            if (delta > 0) ++hist[c][value];
+            else           --hist[c][value];
+        }
+    };
+
+    auto findMedian = [&](const std::array<uint32_t, 256>& hist) -> uint8_t {
+        uint32_t count = 0;
+        for (int32_t value = 0; value < 256; ++value) {
+            count += hist[value];
+            if (count > medianIndex)
+                return static_cast<uint8_t>(value);
+        }
+        return 255;
     };
 
     #pragma omp parallel for schedule(static)
     for (int32_t y = 0; y < height; ++y) {
-        std::vector<Pixel> surroundings(kSize * kSize);
-        const std::mdspan  surr(surroundings.data(), kSize, kSize);
+        std::array<std::array<uint32_t, 256>, 3> hist{};
+
+        // build window histogram for output position (0, y)
+        for (int32_t ky = -radius; ky <= radius; ++ky) {
+            const int32_t sy = reflect(y + ky, height);
+            for (int32_t kx = -radius; kx <= radius; ++kx) {
+                const int32_t sx = reflect(kx, width);
+                adjustPixel(hist, src[sy, sx], +1);
+            }
+        }
 
         for (int32_t x = 0; x < width; ++x) {
-            for (int32_t k = -halfD; k < halfD; ++k) {
-                const int32_t iy = index(y + k, height);
-                for (int32_t l = -halfD; l < halfD; ++l) {
-                    const int32_t ix           = index(x + l, width);
-                    surr[k + halfD, l + halfD] = src[iy, ix];
+            Pixel result = src[y, x];
+            result.r     = findMedian(hist[0]);
+            result.g     = findMedian(hist[1]);
+            result.b     = findMedian(hist[2]);
+
+            dst[y, x]    = result;
+
+            if (x + 1 < width) {
+                const int32_t leavingX  = reflect(x - radius,     width); // remove window's left column
+                const int32_t enteringX = reflect(x + radius + 1, width); // add new column on the right
+
+                for (int32_t ky = -radius; ky <= radius; ++ky) {
+                    const int32_t sy = reflect(y + ky, height);
+                    adjustPixel(hist, src[sy, leavingX],  -1);
+                    adjustPixel(hist, src[sy, enteringX], +1);
                 }
             }
-
-            std::ranges::sort(surroundings);
-            dst[y, x] = surroundings[surroundings.size() / 2];
         }
     }
 }
