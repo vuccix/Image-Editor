@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <vector>
 #include <mdspan>
@@ -14,6 +15,11 @@ namespace Utils {
 
     template <typename T>
     void demote(std::span<const T> data, std::span<Pixel> pixels);
+
+    template <typename U>
+    constexpr uint8_t toByte(U value) {
+        return static_cast<uint8_t>(std::clamp(value, U{0}, U{255}));
+    }
 
     template <typename T>
     using std_mdspan = std::mdspan<T, std::dextents<size_t, 2>>;
