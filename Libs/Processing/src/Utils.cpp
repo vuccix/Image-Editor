@@ -37,6 +37,24 @@ void Utils::demote(const std::span<const T> data, const std::span<Pixel> pixels)
     }
 }
 
+template <typename T>
+void Utils::convolve(Layer& image, const int32_t kHeight, const int32_t kWidth, const std::span<const T> kernel) {
+    const std::vector clone(image.data().begin(), image.data().end());
+    const std::mdspan src(clone.data(), image.height(), image.width());
+    const std::mdspan dst = image.pixels();
+
+    using KernelOp = Utils::KernelOp<std::array<T, 3>, T>;
+
+    Utils::convolution(src, kHeight, kWidth, KernelOp{ std::mdspan(kernel.data(), kHeight, kWidth) },
+        [&](const int32_t x, const int32_t y, const std::array<T, 3> sum) {
+            Pixel& pixel = dst[y, x];
+            pixel.r      = Utils::toByte(sum[0]);
+            pixel.g      = Utils::toByte(sum[1]);
+            pixel.b      = Utils::toByte(sum[2]);
+        }
+    );
+}
+
 // explicit instantiation ==============================================================================================
 
 namespace Utils {
@@ -47,17 +65,23 @@ namespace Utils {
 #define INSTANTIATE_DEMOTE(T)                                         \
     template void demote<T>(std::span<const T>, std::span<Pixel>);    \
 
-#define INSTANTIATE_CONVERSION(T)                                     \
+#define INSTANTIATE_CONVOLVE(T)                                       \
+    template void convolve<T>(Layer&, const int32_t, const int32_t,   \
+                              const std::span<const T>);              \
+
+#define INSTANTIATE_UTILITIES(T)                                      \
     INSTANTIATE_PROMOTE(T)                                            \
     INSTANTIATE_DEMOTE(T)                                             \
+    INSTANTIATE_CONVOLVE(T)                                           \
 
 // promote/demote
-INSTANTIATE_CONVERSION(int32_t)
-INSTANTIATE_CONVERSION(float)
+INSTANTIATE_UTILITIES(int32_t)
+INSTANTIATE_UTILITIES(float)
 
 #undef INSTANTIATE_PROMOTE
 #undef INSTANTIATE_DEMOTE
-#undef INSTANTIATE_CONVERSION
+#undef INSTANTIATE_CONVOLVE
+#undef INSTANTIATE_UTILITIES
 
 }
 

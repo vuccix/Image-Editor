@@ -45,6 +45,9 @@ namespace Utils {
     template <typename T, typename Op, typename Writer>
     void convolution(std_mdspan<const T> image, int32_t kHeight, int32_t kWidth, Op&& op, Writer&& writer);
 
+    template <typename T>
+    void convolve(Layer& image, int32_t kHeight, int32_t kWidth, std::span<const T> kernel);
+
     struct SobelData {
         std::vector<float> magnitude;
         std::vector<float> Gx;

@@ -40,38 +40,14 @@ void Filters::swapChannels(Layer& image, const int32_t change) {
 
 void Filters::emboss(Layer& image) {
     constexpr int32_t kernel[] = { -2, -1, 0, /**/ -1,  1, 1, /**/ 0,  1, 2 };
-
-    const std::vector clone(image.data().begin(), image.data().end());
-    const std::mdspan src(clone.data(), image.height(), image.width());
-    const std::mdspan dst = image.pixels();
-
-    Utils::convolution(src, 3, 3, KernelOp{ std::mdspan(kernel, 3, 3) },
-        [&](const int32_t x, const int32_t y, const std::array<int32_t, 3> sum) {
-            Pixel& pixel = dst[y, x];
-            pixel.r      = Utils::toByte(sum[0]);
-            pixel.g      = Utils::toByte(sum[1]);
-            pixel.b      = Utils::toByte(sum[2]);
-        }
-    );
+    Utils::convolve<int32_t>(image, 3, 3, kernel);
 }
 
 void Filters::outline(Layer& image) {
-    constexpr int32_t kernel[] = { -1, -1, -1, /**/ -1,  8, -1, /**/ -1, -1, -1 };
-
     Effects::grayscale(image);
 
-    const std::vector clone(image.data().begin(), image.data().end());
-    const std::mdspan src(clone.data(), image.height(), image.width());
-    const std::mdspan dst = image.pixels();
-
-    Utils::convolution(src, 3, 3, KernelOp{ std::mdspan(kernel, 3, 3) },
-        [&](const int32_t x, const int32_t y, const std::array<int32_t, 3> sum) {
-            Pixel& pixel = dst[y, x];
-            pixel.r      = Utils::toByte(sum[0]);
-            pixel.g      = Utils::toByte(sum[1]);
-            pixel.b      = Utils::toByte(sum[2]);
-        }
-    );
+    constexpr int32_t kernel[] = { -1, -1, -1, /**/ -1,  8, -1, /**/ -1, -1, -1 };
+    Utils::convolve<int32_t>(image, 3, 3, kernel);
 }
 
 namespace {
@@ -111,20 +87,8 @@ std::array<float, 25> getSharpenKernel(const float amount) {
 void Filters::sharpen(Layer& image, const float amount) {
     assert(amount >= 0.f && amount <= 100.f);
 
-    const std::vector clone(image.data().begin(), image.data().end());
-    const std::mdspan src(clone.data(), image.height(), image.width());
-    const std::mdspan dst    = image.pixels();
-
-    const std::array  kernel = ::getSharpenKernel(amount);
-
-    Utils::convolution(src, 5, 5, KernelOp{ std::mdspan(kernel.data(), 5, 5) },
-        [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
-            Pixel& pixel = dst[y, x];
-            pixel.r      = Utils::toByte(sum[0]);
-            pixel.g      = Utils::toByte(sum[1]);
-            pixel.b      = Utils::toByte(sum[2]);
-        }
-    );
+    const std::array kernel = ::getSharpenKernel(amount);
+    Utils::convolve<float>(image, 5, 5, kernel);
 }
 
 void Filters::pixelate(Layer& image, const int32_t blockSize) {
