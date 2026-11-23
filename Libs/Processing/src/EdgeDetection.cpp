@@ -19,13 +19,12 @@ void Filters::laplace(Layer& image) {
 
     Utils::convolution(src, 3, 3, Utils::KernelOp<int32_t, int32_t>{ std::mdspan(kernel, 3, 3) },
         [&](const int32_t x, const int32_t y, const int32_t sum) {
-            const uint8_t G = static_cast<uint8_t>(std::clamp(std::abs(sum), 0, 255));
-            dst[y, x] = {
-                .r = G,
-                .g = G,
-                .b = G,
-                .a = dst[y, x].a
-            };
+            const uint8_t G = Utils::toByte(std::abs(sum));
+
+            Pixel& pixel    = dst[y, x];
+            pixel.r         = G;
+            pixel.g         = G;
+            pixel.b         = G;
         }
     );
 }
@@ -62,14 +61,12 @@ void edgeDetectionHelper(Layer& image, const std_mdspan<const int32_t> dx, const
     Utils::convolution(src, 3, 3, GradientOp{ dx, dy },
         [&](const int32_t x, const int32_t y, const State& state) {
             const int32_t G = std::abs(state.sumX) + std::abs(state.sumY);
-            const uint8_t v = static_cast<uint8_t>(std::clamp(G, 0, 255));
+            const uint8_t v = Utils::toByte(G);
 
-            dst[y, x] = {
-                .r = v,
-                .g = v,
-                .b = v,
-                .a = dst[y, x].a
-            };
+            Pixel& pixel    = dst[y, x];
+            pixel.r         = v;
+            pixel.g         = v;
+            pixel.b         = v;
         }
     );
 }

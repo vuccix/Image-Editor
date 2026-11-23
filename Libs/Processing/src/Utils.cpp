@@ -8,7 +8,7 @@ template <typename T>
 std::vector<T> Utils::promote(const std::span<const Pixel> pixels, const bool normalize) {
     assert(pixels.empty() == false);
 
-    std::vector<T> result(pixels.size(), T{});
+    std::vector<T> result(pixels.size());
 
     if (normalize) {
         for (size_t i = 0; i < pixels.size(); ++i)
@@ -30,9 +30,10 @@ void Utils::demote(const std::span<const T> data, const std::span<Pixel> pixels)
 
     for (size_t i = 0; i < data.size(); ++i) {
         const auto val = static_cast<uint8_t>(std::clamp(data[i], lo, hi));
-        pixels[i].r    = val;
-        pixels[i].g    = val;
-        pixels[i].b    = val;
+        Pixel& pixel   = pixels[i];
+        pixel.r        = val;
+        pixel.g        = val;
+        pixel.b        = val;
     }
 }
 
