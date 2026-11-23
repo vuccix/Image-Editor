@@ -187,9 +187,39 @@ std::vector<float> hysteresis(const std::span<const float> suppressed,
     return result;
 }
 
+float percentile(const std::span<float> values, const float p) {
+    if (values.empty())
+        return 0.f;
+
+    const auto index = static_cast<int64_t>(p * static_cast<float>(values.size() - 1));
+    std::ranges::nth_element(values, values.begin() + index);
+
+    return values[index];
 }
 
-void Filters::canny(Layer& image, const float lowThreshold, const float highThreshold) {
+std::pair<float, float> autoThresholds(const std::span<const float> mag,
+                                       const float                  loRatio      = 0.4f,
+                                       const float                  hiPercentile = 0.85f) {
+    std::vector<float> nonZero;
+    nonZero.reserve(mag.size());
+
+    for (const float value : mag) {
+        if (value > 0.f)
+            nonZero.push_back(value);
+    }
+
+    if (nonZero.empty())
+        return { 0.f, 0.f };
+
+    const float hi = ::percentile(nonZero, hiPercentile);
+    const float lo = loRatio * hi;
+
+    return { lo, hi };
+}
+
+}
+
+void Filters::canny(Layer& image, const bool isAutomatic, float lowThreshold, float highThreshold) {
     assert(0 <= lowThreshold && lowThreshold <= highThreshold && lowThreshold <= 100.f);
 
     Effects::grayscale(image);
@@ -200,7 +230,14 @@ void Filters::canny(Layer& image, const float lowThreshold, const float highThre
 
     const auto& [magnitude, Gx, Gy] = Utils::getSobel(image);
     const std::vector suppressed    = ::nonMaximumSuppression(magnitude, Gx, Gy, width, height);
-    const std::vector result        = ::hysteresis(suppressed, width, height, lowThreshold, highThreshold);
+
+    if (isAutomatic) {
+        const auto [low, high] = ::autoThresholds(suppressed, 0.4f, 0.85f);
+        lowThreshold           = low;
+        highThreshold          = high;
+    }
+
+    const std::vector result = ::hysteresis(suppressed, width, height, lowThreshold, highThreshold);
 
     Utils::demote(std::span(result), image.data());
 }

@@ -279,16 +279,20 @@ void UIManager::drawMenuBar(EditorState& state, Controller& controller, const st
 
             ui.menu("Edge Detection", [&] {
                 ui.item("Canny...",   [&] {
-                    struct State { float lo = 20.f, hi = 50.f; };
+                    struct State { float lo = 20.f, hi = 50.f; bool isAutomatic = true; };
                     auto popupState = std::make_shared<State>();
 
                     openModal("Canny",
                         [popupState] {
-                            ImGui::TextUnformatted("Select thresholds:");
-                            ImGui::DragFloat("Low",  &popupState->lo, 1.f, 0.f, popupState->hi,   "%.0f");
-                            ImGui::DragFloat("High", &popupState->hi, 1.f, popupState->lo, 100.f, "%.0f");
+                            ImGui::Checkbox("Use automatic thresholds", &popupState->isAutomatic);
+
+                            ui.disabled(popupState->isAutomatic, [&] {
+                                ImGui::TextUnformatted("Select thresholds:");
+                                ImGui::DragFloat("Low",  &popupState->lo, 1.f, 0.f, popupState->hi,   "%.0f");
+                                ImGui::DragFloat("High", &popupState->hi, 1.f, popupState->lo, 100.f, "%.0f");
+                            });
                         },
-                        [popupState, exec] { exec(Cmd::canny(popupState->lo, popupState->hi)); }
+                        [popupState, exec] { exec(Cmd::canny(popupState->isAutomatic, popupState->lo, popupState->hi)); }
                     );
                 });
                 ui.item("Laplace", [&] { exec(Cmd::laplace()); });

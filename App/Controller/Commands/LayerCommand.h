@@ -54,7 +54,7 @@ namespace Cmd {
     std::unique_ptr<Command> uniformNoise(int32_t amount);
     std::unique_ptr<Command> filmGrain(float strength);
 
-    std::unique_ptr<Command> canny(float lowThreshold, float highThreshold);
+    std::unique_ptr<Command> canny(bool isAutomatic, float lowThreshold, float highThreshold);
     std::unique_ptr<Command> laplace();
     std::unique_ptr<Command> prewitt();
     std::unique_ptr<Command> scharr();

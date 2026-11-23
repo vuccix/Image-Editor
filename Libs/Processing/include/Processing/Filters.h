@@ -27,7 +27,7 @@ namespace Filters {
     void uniformNoise(Layer& image, int32_t amount);
     void filmGrain(Layer& image, float strength);
 
-    void canny(Layer& image, float lowThreshold, float highThreshold);
+    void canny(Layer& image, bool isAutomatic, float lowThreshold, float highThreshold);
     void laplace(Layer& image);
     void prewitt(Layer& image);
     void scharr(Layer& image);
