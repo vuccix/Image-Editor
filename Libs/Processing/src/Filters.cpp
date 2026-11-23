@@ -12,11 +12,6 @@ namespace {
 template <typename T>
 using KernelOp = Utils::KernelOp<std::array<T, 3>, T>;
 
-template <typename U>
-constexpr uint8_t toByte(U value) {
-    return static_cast<uint8_t>(std::clamp(value, U{0}, U{255}));
-}
-
 }
 
 void Filters::swapChannels(Layer& image, const int32_t change) {
@@ -53,9 +48,9 @@ void Filters::emboss(Layer& image) {
     Utils::convolution(src, 3, 3, KernelOp{ std::mdspan(kernel, 3, 3) },
         [&](const int32_t x, const int32_t y, const std::array<int32_t, 3> sum) {
             Pixel& pixel = dst[y, x];
-            pixel.r      = ::toByte(sum[0]);
-            pixel.g      = ::toByte(sum[1]);
-            pixel.b      = ::toByte(sum[2]);
+            pixel.r      = Utils::toByte(sum[0]);
+            pixel.g      = Utils::toByte(sum[1]);
+            pixel.b      = Utils::toByte(sum[2]);
         }
     );
 }
@@ -72,9 +67,9 @@ void Filters::outline(Layer& image) {
     Utils::convolution(src, 3, 3, KernelOp{ std::mdspan(kernel, 3, 3) },
         [&](const int32_t x, const int32_t y, const std::array<int32_t, 3> sum) {
             Pixel& pixel = dst[y, x];
-            pixel.r      = ::toByte(sum[0]);
-            pixel.g      = ::toByte(sum[1]);
-            pixel.b      = ::toByte(sum[2]);
+            pixel.r      = Utils::toByte(sum[0]);
+            pixel.g      = Utils::toByte(sum[1]);
+            pixel.b      = Utils::toByte(sum[2]);
         }
     );
 }
@@ -125,9 +120,9 @@ void Filters::sharpen(Layer& image, const float amount) {
     Utils::convolution(src, 5, 5, KernelOp{ std::mdspan(kernel.data(), 5, 5) },
         [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
             Pixel& pixel = dst[y, x];
-            pixel.r      = ::toByte(sum[0]);
-            pixel.g      = ::toByte(sum[1]);
-            pixel.b      = ::toByte(sum[2]);
+            pixel.r      = Utils::toByte(sum[0]);
+            pixel.g      = Utils::toByte(sum[1]);
+            pixel.b      = Utils::toByte(sum[2]);
         }
     );
 }
@@ -168,9 +163,9 @@ void Filters::duoTone(Layer& image, const float colorA[3], const float colorB[3]
         for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& pixel    = pixels[y, x];
             const float lum = (pixel.r * 0.2126f + pixel.g * 0.7152f + pixel.b * 0.0722f) / (1.f / 255.f);
-            const auto  r   = ::toByte(colorA[0] + (colorB[0] - colorA[0]) * lum);
-            const auto  g   = ::toByte(colorA[1] + (colorB[1] - colorA[1]) * lum);
-            const auto  b   = ::toByte(colorA[2] + (colorB[2] - colorA[2]) * lum);
+            const auto  r   = Utils::toByte(colorA[0] + (colorB[0] - colorA[0]) * lum);
+            const auto  g   = Utils::toByte(colorA[1] + (colorB[1] - colorA[1]) * lum);
+            const auto  b   = Utils::toByte(colorA[2] + (colorB[2] - colorA[2]) * lum);
 
             pixel.r         = r;
             pixel.g         = g;
@@ -264,9 +259,9 @@ void Filters::dither(Layer& image) {
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& pixel = pixels[y, x];
-            pixel.r      = ::toByte(img[y, x].r * 255.f);
-            pixel.g      = ::toByte(img[y, x].g * 255.f);
-            pixel.b      = ::toByte(img[y, x].b * 255.f);
+            pixel.r      = Utils::toByte(img[y, x].r * 255.f);
+            pixel.g      = Utils::toByte(img[y, x].g * 255.f);
+            pixel.b      = Utils::toByte(img[y, x].b * 255.f);
         }
     }
 }
@@ -311,9 +306,9 @@ void Filters::normalMap(Layer& image, const float strength, const bool flipY) {
 
             // [-1,1] -> [0,255]
             Pixel& p = pixels[y, x];
-            p.r      = ::toByte((nx * 0.5f + 0.5f) * 255.f);
-            p.g      = ::toByte((ny * 0.5f + 0.5f) * 255.f);
-            p.b      = ::toByte((nz * 0.5f + 0.5f) * 255.f);
+            p.r      = Utils::toByte((nx * 0.5f + 0.5f) * 255.f);
+            p.g      = Utils::toByte((ny * 0.5f + 0.5f) * 255.f);
+            p.b      = Utils::toByte((nz * 0.5f + 0.5f) * 255.f);
         }
     }
 }

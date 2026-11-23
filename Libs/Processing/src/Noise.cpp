@@ -1,5 +1,6 @@
 #include <Processing/Filters.h>
 #include <Canvas/Layer.h>
+#include "Utils.h"
 #include <algorithm>
 #include <cassert>
 #include <random>
@@ -9,11 +10,6 @@ namespace {
 
 std::random_device g_seed;
 std::mt19937 g_generator(::g_seed());
-
-template <typename U>
-constexpr uint8_t toByte(U value) {
-    return static_cast<uint8_t>(std::clamp(value, U{0}, U{255}));
-}
 
 }
 
@@ -27,9 +23,9 @@ void Filters::uniformNoise(Layer& image, const int32_t amount) {
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& pixel = pixels[y, x];
-            pixel.r      = ::toByte(pixel.r + distribution(::g_generator));
-            pixel.g      = ::toByte(pixel.g + distribution(::g_generator));
-            pixel.b      = ::toByte(pixel.b + distribution(::g_generator));
+            pixel.r      = Utils::toByte(pixel.r + distribution(::g_generator));
+            pixel.g      = Utils::toByte(pixel.g + distribution(::g_generator));
+            pixel.b      = Utils::toByte(pixel.b + distribution(::g_generator));
         }
     }
 }
@@ -44,9 +40,9 @@ void Filters::gaussianNoise(Layer& image, const float amount) {
     for (uint32_t y = 0; y < image.height(); ++y) {
         for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& pixel = pixels[y, x];
-            pixel.r      = ::toByte(pixel.r + distribution(::g_generator));
-            pixel.g      = ::toByte(pixel.g + distribution(::g_generator));
-            pixel.b      = ::toByte(pixel.b + distribution(::g_generator));
+            pixel.r      = Utils::toByte(pixel.r + distribution(::g_generator));
+            pixel.g      = Utils::toByte(pixel.g + distribution(::g_generator));
+            pixel.b      = Utils::toByte(pixel.b + distribution(::g_generator));
         }
     }
 }
@@ -68,9 +64,9 @@ void Filters::filmGrain(Layer& image, const float strength) {
             const float grainAmount = strength * std::sqrt(std::max(normBright, 0.01f));
             const float grain       = noise(::g_generator) * grainAmount;
 
-            pixel.r                 = ::toByte(pixel.r + grain);
-            pixel.g                 = ::toByte(pixel.g + grain);
-            pixel.b                 = ::toByte(pixel.b + grain);
+            pixel.r                 = Utils::toByte(pixel.r + grain);
+            pixel.g                 = Utils::toByte(pixel.g + grain);
+            pixel.b                 = Utils::toByte(pixel.b + grain);
         }
     }
 }

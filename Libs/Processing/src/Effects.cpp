@@ -1,19 +1,11 @@
 #include <Processing/Effects.h>
 #include <Canvas/Canvas.h>
 #include <Canvas/Layer.h>
+#include "Utils.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <omp.h>
-
-namespace {
-
-template <typename U>
-constexpr uint8_t toByte(U value) {
-    return static_cast<uint8_t>(std::clamp(value, U{0}, U{255}));
-}
-
-}
 
 void Effects::flipHorizontally(Layer& image) {
     const std::mdspan pixels = image.pixels();
@@ -57,9 +49,9 @@ void Effects::rotate180(Canvas& canvas) {
 
 void Effects::brightness(Layer& image, const int32_t value) {
     for (Pixel& pixel : image.data()) {
-        pixel.r = ::toByte(pixel.r + value);
-        pixel.g = ::toByte(pixel.g + value);
-        pixel.b = ::toByte(pixel.b + value);
+        pixel.r = Utils::toByte(pixel.r + value);
+        pixel.g = Utils::toByte(pixel.g + value);
+        pixel.b = Utils::toByte(pixel.b + value);
     }
 }
 
@@ -71,9 +63,9 @@ void Effects::contrast(Layer& image, const float factor) {
             factor * static_cast<float>(pixel.b - 128) + 128.f,
         };
 
-        pixel.r = ::toByte(value[0]);
-        pixel.g = ::toByte(value[1]);
-        pixel.b = ::toByte(value[2]);
+        pixel.r = Utils::toByte(value[0]);
+        pixel.g = Utils::toByte(value[1]);
+        pixel.b = Utils::toByte(value[2]);
     }
 }
 
@@ -89,9 +81,9 @@ void Effects::saturation(Layer& image, const float factor) {
         const float new_g = lum + factor * (static_cast<float>(pixel.g) - lum);
         const float new_b = lum + factor * (static_cast<float>(pixel.b) - lum);
 
-        pixel.r           = ::toByte(new_r);
-        pixel.g           = ::toByte(new_g);
-        pixel.b           = ::toByte(new_b);
+        pixel.r           = Utils::toByte(new_r);
+        pixel.g           = Utils::toByte(new_g);
+        pixel.b           = Utils::toByte(new_b);
     }
 }
 
@@ -107,7 +99,7 @@ void Effects::toHSV(Layer& image) {
         const float v    = maxC;
 
         if (minC == maxC)
-            return Pixel{ 0, 0, ::toByte(v * 255.f), rgb.a };
+            return Pixel{ 0, 0, Utils::toByte(v * 255.f), rgb.a };
 
         const float s  = (maxC - minC) / maxC;
 
@@ -124,9 +116,9 @@ void Effects::toHSV(Layer& image) {
         h = std::fmod(h / 6.f + 1.f, 1.f);
 
         return Pixel{
-            .r = ::toByte(h * 255.f),
-            .g = ::toByte(s * 255.f),
-            .b = ::toByte(v * 255.f),
+            .r = Utils::toByte(h * 255.f),
+            .g = Utils::toByte(s * 255.f),
+            .b = Utils::toByte(v * 255.f),
             .a = rgb.a
         };
     };
@@ -146,7 +138,7 @@ void Effects::toRGB(Layer& image) {
         const float v = hsv.b / 255.f;
 
         if (s == 0.f) {
-            const uint8_t value = ::toByte(v * 255.f);
+            const uint8_t value = Utils::toByte(v * 255.f);
             return Pixel{ value, value, value, hsv.a };
         }
 
@@ -170,9 +162,9 @@ void Effects::toRGB(Layer& image) {
         }
 
         return Pixel{
-            .r = ::toByte(r * 255.f),
-            .g = ::toByte(g * 255.f),
-            .b = ::toByte(b * 255.f),
+            .r = Utils::toByte(r * 255.f),
+            .g = Utils::toByte(g * 255.f),
+            .b = Utils::toByte(b * 255.f),
             .a = hsv.a
         };
     };
@@ -207,7 +199,7 @@ void Effects::grayscale(Layer& image) {
         for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& pixel       = pixels[y, x];
             const float value  = pixel.r * arr[0] + pixel.g * arr[1] + pixel.b * arr[2];
-            const auto channel = ::toByte(value);
+            const auto channel = Utils::toByte(value);
 
             pixel.r            = channel;
             pixel.g            = channel;
@@ -225,7 +217,7 @@ void Effects::luminance(Layer& image) {
         for (uint32_t x = 0; x < image.width(); ++x) {
             Pixel& pixel       = pixels[y, x];
             const float value  = pixel.r * arr[0] + pixel.g * arr[1] + pixel.b * arr[2];
-            const auto channel = ::toByte(value);
+            const auto channel = Utils::toByte(value);
 
             pixel.r            = channel;
             pixel.g            = channel;
@@ -251,9 +243,9 @@ void Effects::sepia(Layer& image) {
             const float new_g = m[3] * pixel.r + m[4] * pixel.g + m[5] * pixel.b;
             const float new_b = m[6] * pixel.r + m[7] * pixel.g + m[8] * pixel.b;
 
-            pixel.r           = ::toByte(new_r);
-            pixel.g           = ::toByte(new_g);
-            pixel.b           = ::toByte(new_b);
+            pixel.r           = Utils::toByte(new_r);
+            pixel.g           = Utils::toByte(new_g);
+            pixel.b           = Utils::toByte(new_b);
         }
     }
 }
