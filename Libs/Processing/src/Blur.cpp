@@ -45,26 +45,19 @@ void blurHelper(Layer& image, const std::vector<float>& kernel, const int32_t kS
     std::mdspan src = std::as_const(image).pixels();
     std::mdspan dst(clone.data(), image.height(), image.width());
 
-    Utils::convolution(src, kSize, 1, KernelOp{ std::mdspan(kernel.data(), kSize, 1) },
-        [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
-            Pixel& out = dst[y, x];
-            out.r      = static_cast<uint8_t>(std::clamp(sum[0], 0.f, 255.f));
-            out.g      = static_cast<uint8_t>(std::clamp(sum[1], 0.f, 255.f));
-            out.b      = static_cast<uint8_t>(std::clamp(sum[2], 0.f, 255.f));
-        }
-    );
+    auto writer = [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
+        Pixel& out = dst[y, x];
+        out.r      = Utils::toByte(sum[0]);
+        out.g      = Utils::toByte(sum[1]);
+        out.b      = Utils::toByte(sum[2]);
+    };
+
+    Utils::convolution(src, kSize, 1, KernelOp{ std::mdspan(kernel.data(), kSize, 1) }, writer);
 
     src = std::mdspan(clone.data(), image.height(), image.width());
     dst = image.pixels();
 
-    Utils::convolution(src, 1, kSize, KernelOp{ std::mdspan(kernel.data(), 1, kSize) },
-        [&](const int32_t x, const int32_t y, const std::array<float, 3> sum) {
-            Pixel& out = dst[y, x];
-            out.r      = static_cast<uint8_t>(std::clamp(sum[0], 0.f, 255.f));
-            out.g      = static_cast<uint8_t>(std::clamp(sum[1], 0.f, 255.f));
-            out.b      = static_cast<uint8_t>(std::clamp(sum[2], 0.f, 255.f));
-        }
-    );
+    Utils::convolution(src, 1, kSize, KernelOp{ std::mdspan(kernel.data(), 1, kSize) }, writer);
 }
 
 }
@@ -199,8 +192,8 @@ void Filters::motionBlur(Layer& image, int32_t distance, const float angle) {
 
     // -----------------------------------------------------------------------------------------------------------------
 
-    const auto rows  = static_cast<int32_t>(image.height());
-    const auto cols  = static_cast<int32_t>(image.width());
+    const auto rows = static_cast<int32_t>(image.height());
+    const auto cols = static_cast<int32_t>(image.width());
 
     auto index = [](const int32_t id, const int32_t max) -> int32_t {
         return (id < 0) ? -id - 1 : (id >= max) ? 2 * max - id - 1 : id;
@@ -222,9 +215,9 @@ void Filters::motionBlur(Layer& image, int32_t distance, const float angle) {
             }
 
             Pixel& out = dst[y, x];
-            out.r      = static_cast<uint8_t>(std::clamp(sum[0] * scale, 0.f, 255.f));
-            out.g      = static_cast<uint8_t>(std::clamp(sum[1] * scale, 0.f, 255.f));
-            out.b      = static_cast<uint8_t>(std::clamp(sum[2] * scale, 0.f, 255.f));
+            out.r      = Utils::toByte(sum[0] * scale);
+            out.g      = Utils::toByte(sum[1] * scale);
+            out.b      = Utils::toByte(sum[2] * scale);
         }
     }
 }
